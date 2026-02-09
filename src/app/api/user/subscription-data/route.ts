@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SystemSettings } from '@/types/api'
+import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
 
 async function getSystemSettings() {
   try {
@@ -65,12 +65,12 @@ export async function GET() {
   try {
     const { userId } = await auth()
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user || !user.subscription) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     // Get both subscription data and permissions in parallel
@@ -104,7 +104,7 @@ export async function GET() {
       atsUsageLimit = settings.maxProATSChecks !== null && settings.maxProATSChecks !== undefined ? settings.maxProATSChecks : -1
     }
 
-    return NextResponse.json({
+    return successResponse({
       // Subscription data
       subscription: {
         currentPlan: plan,
@@ -134,6 +134,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('[SubscriptionData] Failed to fetch:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse('Internal server error', 500)
   }
 }

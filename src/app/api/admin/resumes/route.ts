@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { Resume, ResumeStatus } from '@prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
 
 interface ResumeWithUser extends Resume {
   user: {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     // Check if user table exists and has role column
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
         where: { clerkId: userId }});
 
       if (!user || user.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return forbiddenResponse();
       }
     } catch (error) {
       console.error('[AdminResumes] Failed to check user role:', error);
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
         where: { clerkId: userId }});
       
       if (!userExists) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        return notFoundResponse('User not found');
       }
     }
 
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
       // Return empty array if tables don't exist yet
     }
 
-    return NextResponse.json({
+    return successResponse({
       resumes: resumes as ResumeWithUser[],
       pagination: {
         total,
@@ -102,10 +103,7 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(total / limit)}});
   } catch (error) {
     console.error('[AdminResumes] Failed to get resumes:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return errorResponse('Internal Server Error', 500);
   }
 }
 
@@ -113,30 +111,27 @@ export async function DELETE(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId }});
 
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return forbiddenResponse();
     }
 
     const { ids } = await req.json();
     if (!ids || !Array.isArray(ids)) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+      return validationErrorResponse('Invalid request');
     }
 
     await prisma.resume.deleteMany({
       where: { id: { in: ids } }});
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
     console.error('[AdminResumes] Failed to delete resumes:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return errorResponse('Internal Server Error', 500);
   }
 }

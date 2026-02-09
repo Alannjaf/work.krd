@@ -5,19 +5,20 @@ import { getTemplate } from '@/lib/getTemplate';
 import { pdf } from '@react-pdf/renderer';
 import React from 'react';
 import { tempStore } from '@/lib/tempStore';
+import { errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     const { id } = await params;
     const stored = tempStore.get(id);
 
     if (!stored || stored.userId !== userId) {
-      return NextResponse.json({ error: 'Data not found' }, { status: 404 });
+      return notFoundResponse('Data not found');
     }
 
     // Clean up the stored data
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const limits = await checkUserLimits(userId);
     
     if (!limits.subscription) {
-      return NextResponse.json({ error: 'User subscription not found' }, { status: 404 });
+      return notFoundResponse('User subscription not found');
     }
 
     // Check if user has access to the template
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const templateComponent = await getTemplate(template, resumeData);
     
     if (!templateComponent) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return notFoundResponse('Template not found');
     }
 
     // Generate PDF blob
@@ -65,9 +66,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
   } catch (error) {
     console.error('[TempPDF] Failed to generate PDF:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate PDF' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to generate PDF', 500);
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getUserResumes, createResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 // GET - List all resumes for the current user
 export async function GET(req: Request) {
@@ -9,7 +10,7 @@ export async function GET(req: Request) {
     const { userId: clerkId } = await auth()
     
     if (!clerkId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Parse pagination parameters
@@ -67,10 +68,7 @@ export async function GET(req: Request) {
     return response
   } catch (error) {
     console.error('Error fetching resumes:', error)
-    return NextResponse.json({ 
-      error: 'Failed to fetch resumes',
-      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
-    }, { status: 500 })
+    return errorResponse('Failed to fetch resumes', 500)
   }
 }
 
@@ -80,7 +78,7 @@ export async function POST(req: Request) {
     const { userId: clerkId } = await auth()
     
     if (!clerkId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Get user with single query
@@ -91,7 +89,7 @@ export async function POST(req: Request) {
     })
     
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     const body = await req.json()
@@ -99,15 +97,13 @@ export async function POST(req: Request) {
 
 
     if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+      return validationErrorResponse('Title is required')
     }
 
     // Check user limits using Clerk ID
     const { canCreateResume } = await import('@/lib/db').then(m => m.checkUserLimits(clerkId))
     if (!canCreateResume) {
-      return NextResponse.json({ 
-        error: 'Resume limit reached. Please upgrade your plan.' 
-      }, { status: 403 })
+      return forbiddenResponse('Resume limit reached. Please upgrade your plan.')
     }
 
     // Validate template access
@@ -115,9 +111,7 @@ export async function POST(req: Request) {
       const limits = await checkUserLimits(clerkId)
       const availableTemplates = limits.availableTemplates || ['modern']
       if (!availableTemplates.includes(template)) {
-        return NextResponse.json({ 
-          error: 'Template not available for your subscription plan. Please upgrade to access this template.' 
-        }, { status: 403 })
+        return forbiddenResponse('Template not available for your subscription plan. Please upgrade to access this template.')
       }
     }
 
@@ -213,14 +207,12 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ 
+    return successResponse({
       resume,
-      message: 'Resume created successfully' 
+      message: 'Resume created successfully'
     })
   } catch (error) {
     console.error('[Resumes] Failed to create resume:', error);
-    return NextResponse.json({
-      error: 'Failed to create resume'
-    }, { status: 500 })
+    return errorResponse('Failed to create resume', 500)
   }
 }

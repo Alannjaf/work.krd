@@ -1,19 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { tempStore } from '@/lib/tempStore';
+import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers';
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     const body = await request.json();
     const { resumeData, template } = body;
 
     if (!resumeData || !template) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return validationErrorResponse('Missing required fields');
     }
 
     // Generate a simple ID
@@ -27,13 +28,10 @@ export async function POST(request: NextRequest) {
       createdAt: Date.now()
     });
 
-    return NextResponse.json({ id });
+    return successResponse({ id });
   } catch (error) {
     console.error('[TempCreate] Failed to store temporary data:', error);
-    return NextResponse.json(
-      { error: 'Failed to store data' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to store data', 500);
   }
 }
 

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AIService } from '@/lib/ai'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function POST(req: NextRequest) {
   const { success, resetIn } = rateLimit(req, {
@@ -16,33 +17,29 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth()
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     // Check AI usage limits using Clerk ID
     const limits = await checkUserLimits(userId)
     if (!limits.canUseAI) {
-      return NextResponse.json({ 
-        error: 'AI usage limit reached. Please upgrade your plan.' 
-      }, { status: 403 })
+      return forbiddenResponse('AI usage limit reached. Please upgrade your plan.')
     }
 
     if (!limits.subscription) {
-      return NextResponse.json({ 
-        error: 'User subscription not found.' 
-      }, { status: 404 })
+      return notFoundResponse('User subscription not found.')
     }
 
     const body = await req.json()
     const { jobTitle, industry, experience, skills, language } = body
 
     if (!jobTitle) {
-      return NextResponse.json({ error: 'Job title is required' }, { status: 400 })
+      return validationErrorResponse('Job title is required')
     }
 
     const summary = await AIService.generateProfessionalSummary({
@@ -60,10 +57,8 @@ export async function POST(req: NextRequest) {
       data: { aiUsageCount: { increment: 1 } }
     })
 
-    return NextResponse.json({ summary })
+    return successResponse({ summary })
   } catch (error) {
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Failed to generate summary' 
-    }, { status: 500 })
+    return errorResponse(error instanceof Error ? error.message : 'Failed to generate summary', 500)
   }
 }

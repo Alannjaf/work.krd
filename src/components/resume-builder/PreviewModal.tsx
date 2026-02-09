@@ -110,15 +110,12 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
 
       if (!response.ok) throw new Error('Failed to generate secure preview')
 
-      const { pdf: base64Pdf, hasAccess, mimeType } = await response.json()
+      // Read metadata from response headers
+      const hasAccess = response.headers.get('X-Has-Access') === 'true'
       setTemplateAccess(hasAccess ? 'granted' : 'restricted')
 
-      const binaryString = atob(base64Pdf)
-      const bytes = new Uint8Array(binaryString.length)
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i)
-      }
-      const blob = new Blob([bytes], { type: mimeType })
+      // Get binary PDF data directly
+      const blob = await response.blob()
 
       const pageCount = await getPDFPageCount(blob)
       setTotalPdfPages(pageCount)
@@ -131,7 +128,13 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
         setPdfUrl(null)
       } else {
         if (currentPdfUrlRef.current) URL.revokeObjectURL(currentPdfUrlRef.current)
-        const base64DataUrl = `data:${mimeType};base64,${base64Pdf}`
+        // Convert blob to base64 data URL for iframe rendering
+        const base64DataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
         setPdfUrl(base64DataUrl)
         updatePdfUrl(base64DataUrl, 1)
         currentPdfUrlRef.current = null
@@ -169,16 +172,9 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
         throw new Error(error.error || 'Failed to download')
       }
 
-      const { pdf: base64Pdf, mimeType } = await response.json()
-      
-      // Convert base64 to blob
-      const binaryString = atob(base64Pdf)
-      const bytes = new Uint8Array(binaryString.length)
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i)
-      }
-      const blob = new Blob([bytes], { type: mimeType })
-      
+      // Get binary PDF data directly
+      const blob = await response.blob()
+
       downloadBlob(blob, `${data.personal.fullName.replace(/\s+/g, '_')}_Resume.pdf`)
       toast.success('Resume downloaded successfully!')
     } catch (error) {

@@ -1,25 +1,25 @@
-import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
     const { userId } = await auth()
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Get user details from Clerk
     const clerkUser = await currentUser()
     
     if (!clerkUser) {
-      return NextResponse.json({ error: 'Could not fetch user details' }, { status: 400 })
+      return validationErrorResponse('Could not fetch user details')
     }
 
     const email = clerkUser.emailAddresses[0]?.emailAddress
     if (!email) {
-      return NextResponse.json({ error: 'No email found' }, { status: 400 })
+      return validationErrorResponse('No email found')
     }
 
     // Upsert user in database
@@ -45,7 +45,7 @@ export async function GET() {
           status: 'ACTIVE'}})
     }
 
-    return NextResponse.json({
+    return successResponse({
       message: 'User synced successfully!',
       user: {
         id: user.id,
@@ -54,9 +54,6 @@ export async function GET() {
         name: user.name}
     })
   } catch (error) {
-    return NextResponse.json({ 
-      error: 'Failed to sync user',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return errorResponse('Failed to sync user', 500)
   }
 }

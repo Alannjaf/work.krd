@@ -3,19 +3,20 @@ import { auth } from '@clerk/nextjs/server'
 import { checkUserLimits } from '@/lib/db'
 import { AIService } from '@/lib/ai'
 import { prisma } from '@/lib/prisma'
+import { successResponse, errorResponse, authErrorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Check user limits for ATS
     const limits = await checkUserLimits(userId)
     
     if (!limits.subscription) {
-      return NextResponse.json({ error: 'Subscription not found' }, { status: 404 })
+      return notFoundResponse('Subscription not found')
     }
 
     if (!limits.canUseATS) {
@@ -30,13 +31,11 @@ export async function POST(request: NextRequest) {
     const { resumeData, jobDescription } = body
 
     if (!resumeData) {
-      return NextResponse.json({ error: 'Resume data is required' }, { status: 400 })
+      return validationErrorResponse('Resume data is required')
     }
 
     if (!jobDescription || jobDescription.trim().length < 50) {
-      return NextResponse.json({ 
-        error: 'Job description is required (minimum 50 characters)' 
-      }, { status: 400 })
+      return validationErrorResponse('Job description is required (minimum 50 characters)')
     }
 
     // Match keywords
@@ -48,7 +47,7 @@ export async function POST(request: NextRequest) {
       data: { atsUsageCount: { increment: 1 } }
     })
 
-    return NextResponse.json({
+    return successResponse({
       ...result,
       usage: {
         used: limits.atsUsed + 1,
@@ -56,10 +55,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to match keywords' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error.message : 'Failed to match keywords', 500)
   }
 }
 

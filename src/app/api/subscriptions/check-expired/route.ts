@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
+import { successResponse, errorResponse } from '@/lib/api-helpers'
 
 export async function POST() {
   try {
@@ -33,7 +33,7 @@ export async function POST() {
     // Found expired subscriptions
 
     if (expiredSubscriptions.length === 0) {
-      return NextResponse.json({ 
+      return successResponse({
         message: 'No expired subscriptions found',
         processed: 0,
         successful: 0,
@@ -90,7 +90,7 @@ export async function POST() {
       return result.value
     })
 
-    return NextResponse.json({
+    return successResponse({
       message: `Processed ${expiredSubscriptions.length} expired subscriptions`,
       processed: expiredSubscriptions.length,
       successful: successful.length,
@@ -104,10 +104,9 @@ export async function POST() {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     const isAuthError = message.includes('Unauthorized') || message.includes('Admin')
-    return NextResponse.json({ 
-      error: isAuthError ? 'Unauthorized: Admin access required' : 'Failed to check expired subscriptions',
-      details: isAuthError ? undefined : message
-    }, { status: isAuthError ? 403 : 500 })
+    return isAuthError
+      ? errorResponse('Unauthorized: Admin access required', 403)
+      : errorResponse('Failed to check expired subscriptions', 500)
   }
 }
 
@@ -163,7 +162,7 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({
+    return successResponse({
       expired: {
         count: expiredSubscriptions.length,
         subscriptions: expiredSubscriptions.map(sub => ({
@@ -191,9 +190,8 @@ export async function GET() {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     const isAuthError = message.includes('Unauthorized') || message.includes('Admin')
-    return NextResponse.json({ 
-      error: isAuthError ? 'Unauthorized: Admin access required' : 'Failed to check subscription status',
-      details: isAuthError ? undefined : message
-    }, { status: isAuthError ? 403 : 500 })
+    return isAuthError
+      ? errorResponse('Unauthorized: Admin access required', 403)
+      : errorResponse('Failed to check subscription status', 500)
   }
 }

@@ -1,6 +1,7 @@
 import { Text, View, Image } from '@react-pdf/renderer'
 import { PersonalInfo } from '@/types/resume'
 import { executiveStyles } from '../styles/executiveStyles'
+import { hasDemographics, buildDemographicsString } from '@/lib/pdf-helpers'
 
 interface ExecutiveHeaderProps {
   personal: PersonalInfo
@@ -41,16 +42,10 @@ export const ExecutiveHeader = ({ personal }: ExecutiveHeaderProps) => {
           </View>
 
           {/* Optional Demographics - Compact Layout */}
-          {(personal.dateOfBirth || personal.gender || personal.nationality || personal.maritalStatus || personal.country) && (
+          {hasDemographics(personal) && (
             <View style={executiveStyles.demographicsCompact}>
               <Text style={executiveStyles.demographicsText}>
-                {[
-                  personal.dateOfBirth && `Born: ${personal.dateOfBirth}`,
-                  personal.gender && `Gender: ${personal.gender}`,
-                  personal.nationality && `Nationality: ${personal.nationality}`,
-                  personal.maritalStatus && `Marital: ${personal.maritalStatus}`,
-                  personal.country && `Country: ${personal.country}`
-                ].filter(Boolean).join(' • ')}
+                {buildDemographicsString(personal)}
               </Text>
             </View>
           )}

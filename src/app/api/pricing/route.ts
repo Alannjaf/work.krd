@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { getSystemSettings } from '@/lib/system-settings'
+import { successResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
@@ -61,7 +61,7 @@ export async function GET() {
       }
     ]
 
-    return NextResponse.json({ plans })
+    return successResponse({ plans })
   } catch (error) {
     console.error('[Pricing] Failed to fetch pricing plans:', error);
     // Return default pricing on error
@@ -98,6 +98,6 @@ export async function GET() {
       }
     ]
     
-    return NextResponse.json({ plans: defaultPlans })
+    return successResponse({ plans: defaultPlans })
   }
 }

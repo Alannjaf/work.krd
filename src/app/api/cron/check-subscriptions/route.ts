@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
 
 // This endpoint can be called by external cron services like Vercel Cron, GitHub Actions, or any other scheduler
 export async function GET() {
@@ -10,7 +10,7 @@ export async function GET() {
     
     // You can set CRON_SECRET in your environment variables for security
     if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Cron job started: Checking for expired subscriptions
@@ -31,19 +31,14 @@ export async function GET() {
     
     // Cron job completed
     
-    return NextResponse.json({
+    return successResponse({
       success: true,
       timestamp: new Date().toISOString(),
       result: _result
     })
 
   } catch (error) {
-    return NextResponse.json({ 
-      success: false,
-      error: 'Cron job failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+    return errorResponse('Cron job failed', 500)
   }
 }
 
@@ -67,7 +62,7 @@ export async function POST() {
 
     const _result = await response.json()
     
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Manual subscription check completed',
       timestamp: new Date().toISOString(),
@@ -75,11 +70,6 @@ export async function POST() {
     })
 
   } catch (error) {
-    return NextResponse.json({ 
-      success: false,
-      error: 'Manual subscription check failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+    return errorResponse('Manual subscription check failed', 500)
   }
 }

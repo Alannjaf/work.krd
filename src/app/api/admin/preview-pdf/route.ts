@@ -5,12 +5,13 @@ import { getTemplate } from '@/lib/getTemplate';
 import { pdf } from '@react-pdf/renderer';
 import { initializePDFFonts, areFontsRegistered } from '@/lib/pdfFonts';
 import React from 'react';
+import { errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     // Check if user is admin
@@ -23,14 +24,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return forbiddenResponse();
     }
 
     const body = await request.json();
     const { resumeData, template } = body;
 
     if (!resumeData || !template) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return validationErrorResponse('Missing required fields');
     }
 
     // Initialize fonts for Unicode support (Kurdish Sorani, Arabic, English)
@@ -46,15 +47,12 @@ export async function POST(request: NextRequest) {
     const templateComponent = await getTemplate(template, resumeData);
     
     if (!templateComponent) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return notFoundResponse('Template not found');
     }
 
     // Validate resume data before generating PDF
     if (!resumeData || typeof resumeData !== 'object') {
-      return NextResponse.json(
-        { error: 'Invalid resume data provided' },
-        { status: 400 }
-      );
+      return validationErrorResponse('Invalid resume data provided');
     }
 
     // Ensure personal info exists (required for PDF generation)
@@ -110,9 +108,6 @@ export async function POST(request: NextRequest) {
       console.error('Error stack:', errorStack);
     }
     
-    return NextResponse.json(
-      { error: `Failed to generate preview PDF: ${errorMessage}` },
-      { status: 500 }
-    );
+    return errorResponse(`Failed to generate preview PDF: ${errorMessage}`, 500);
   }
 }

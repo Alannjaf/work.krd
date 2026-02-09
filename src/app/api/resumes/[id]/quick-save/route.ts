@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SectionType } from '@prisma/client'
+import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
 
 // PUT - Quick save for partial updates
 export async function PUT(
@@ -14,12 +14,12 @@ export async function PUT(
     const { id } = await params
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     const body = await req.json()
@@ -31,7 +31,7 @@ export async function PUT(
     })
 
     if (!resume) {
-      return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
+      return notFoundResponse('Resume not found')
     }
 
     // Start a transaction for better performance
@@ -91,14 +91,12 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({ 
+    return successResponse({
       message: 'Progress saved',
       resumeId: id
     })
   } catch (error) {
     console.error('[QuickSave] Failed to save progress:', error);
-    return NextResponse.json({
-      error: 'Failed to save progress'
-    }, { status: 500 })
+    return errorResponse('Failed to save progress', 500)
   }
 }

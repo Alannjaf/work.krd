@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { UserWithSubscription } from '@/types/api'
+import { successResponse, forbiddenResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
@@ -41,11 +41,9 @@ export async function GET() {
       } : null
     }))
 
-    return NextResponse.json({ users: usersWithRole })
+    return successResponse({ users: usersWithRole })
   } catch (error) {
     console.error('[AdminUsers] Failed to fetch users:', error);
-    return NextResponse.json({
-      error: 'Unauthorized or failed to fetch users'
-    }, { status: 403 })
+    return forbiddenResponse('Unauthorized or failed to fetch users')
   }
 }

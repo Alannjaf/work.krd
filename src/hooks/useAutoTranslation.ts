@@ -351,52 +351,45 @@ export function useAutoTranslation() {
         return translatedData
       }
 
-      // Process translations in batches
-      const batchSize = 5
-      for (let i = 0; i < translationTasks.length; i += batchSize) {
-        const batch = translationTasks.slice(i, i + batchSize)
-        
-        await Promise.all(batch.map(async (task) => {
-          try {
-            const response = await fetch('/api/ai/translate-enhance', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: task.content,
-                contentType: task.contentType,
-                contextInfo: task.contextInfo
-              })
-            })
+      // Single bulk API call for all translations
+      const response = await fetch('/api/ai/translate-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: translationTasks.map(task => ({
+            content: task.content,
+            contentType: task.contentType,
+            contextInfo: task.contextInfo,
+          }))
+        })
+      })
 
-            if (response.ok) {
-              const data = await response.json()
-              
-              // Update the translated data
-              if (task.index !== undefined) {
-                const section = translatedData[task.updatePath[0] as keyof ResumeData] as unknown as Array<Record<string, unknown>>
-                if (section[task.index]) {
-                  section[task.index][task.updatePath[1]] = data.enhancedContent
-                  hasTranslations = true
-                }
-              } else if (task.updatePath.length === 2) {
-                const section = translatedData[task.updatePath[0] as keyof ResumeData] as unknown as Record<string, unknown>
-                section[task.updatePath[1]] = data.enhancedContent
-                hasTranslations = true
-              } else if (task.updatePath.length === 1) {
-                (translatedData as Record<string, unknown>)[task.updatePath[0]] = data.enhancedContent
-                hasTranslations = true
-              }
-            }
-          } catch (error) {
-            console.error('[AutoTranslation] Failed to translate item:', error);
-          }
-        }))
-
-        // Small delay between batches to avoid overwhelming the API
-        if (i + batchSize < translationTasks.length) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
+      if (!response.ok) {
+        throw new Error('Bulk translation failed')
       }
+
+      const { translations } = await response.json()
+
+      // Map results back to translatedData
+      translations.forEach((translation: { enhancedContent: string; detectedLanguage: string }, i: number) => {
+        const task = translationTasks[i]
+        if (!translation.enhancedContent) return
+
+        if (task.index !== undefined) {
+          const section = translatedData[task.updatePath[0] as keyof ResumeData] as unknown as Array<Record<string, unknown>>
+          if (section[task.index]) {
+            section[task.index][task.updatePath[1]] = translation.enhancedContent
+            hasTranslations = true
+          }
+        } else if (task.updatePath.length === 2) {
+          const section = translatedData[task.updatePath[0] as keyof ResumeData] as unknown as Record<string, unknown>
+          section[task.updatePath[1]] = translation.enhancedContent
+          hasTranslations = true
+        } else if (task.updatePath.length === 1) {
+          (translatedData as Record<string, unknown>)[task.updatePath[0]] = translation.enhancedContent
+          hasTranslations = true
+        }
+      })
 
       if (hasTranslations) {
         toast.success(t('pages.resumeBuilder.autoTranslate.success'))

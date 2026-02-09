@@ -1,18 +1,18 @@
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { checkUserLimits } from '@/lib/db'
+import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
     const { userId } = await auth()
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const limits = await checkUserLimits(userId)
     
-    return NextResponse.json({
+    return successResponse({
       canCreateResume: limits.canCreateResume,
       canUseAI: limits.canUseAI,
       canExport: limits.canExport,
@@ -25,8 +25,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('[Permissions] Failed to fetch permissions:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch permissions'
-    }, { status: 500 })
+    return errorResponse('Failed to fetch permissions', 500)
   }
 }

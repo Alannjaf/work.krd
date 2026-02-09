@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { successResponse, errorResponse } from '@/lib/api-helpers';
 
 export async function GET() {
   try {
@@ -15,17 +15,13 @@ export async function GET() {
       // Resume table might not exist yet
     }
     
-    return NextResponse.json({
+    return successResponse({
       success: true,
       userCount,
       resumeCount,
       message: 'Database connection successful'
     });
   } catch (error) {
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      message: 'Database connection failed'
-    }, { status: 500 });
+    return errorResponse(error instanceof Error ? error.message : 'Database connection failed', 500);
   }
 }

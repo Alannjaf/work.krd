@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
+import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function POST(
   req: Request,
@@ -13,9 +13,7 @@ export async function POST(
     const { plan } = await req.json()
 
     if (!['FREE', 'BASIC', 'PRO'].includes(plan)) {
-      return NextResponse.json({ 
-        error: 'Invalid plan' 
-      }, { status: 400 })
+      return validationErrorResponse('Invalid plan')
     }
 
     // Check if user has a subscription
@@ -51,14 +49,12 @@ export async function POST(
       })
     }
 
-    return NextResponse.json({ 
+    return successResponse({
       success: true,
       message: `User upgraded to ${plan} plan`
     })
   } catch (error) {
     console.error('[AdminUpgrade] Failed to upgrade user:', error);
-    return NextResponse.json({
-      error: 'Failed to upgrade user'
-    }, { status: 500 })
+    return errorResponse('Failed to upgrade user', 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ResumeParser } from '@/lib/resume-parser'
 import { ResumeData } from '@/types/resume'
@@ -6,6 +6,7 @@ import { checkUserLimits } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
 import { AIExtractedData } from '@/types/api'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 // Initialize OpenRouter client
 const openai = new OpenAI({
@@ -21,22 +22,18 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authErrorResponse()
     }
 
     // Check import limits (PRO feature)
     const limits = await checkUserLimits(userId)
     
     if (!limits.canImport) {
-      return NextResponse.json({ 
-        error: 'You have reached your import limit. Please upgrade your plan to import more resumes.' 
-      }, { status: 403 })
+      return forbiddenResponse('You have reached your import limit. Please upgrade your plan to import more resumes.')
     }
 
     if (!limits.subscription) {
-      return NextResponse.json({ 
-        error: 'User subscription not found.' 
-      }, { status: 404 })
+      return notFoundResponse('User subscription not found.')
     }
 
     // Get form data
@@ -44,7 +41,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      return validationErrorResponse('No file provided')
     }
 
     // Validate file type
@@ -55,20 +52,14 @@ export async function POST(request: NextRequest) {
     ]
     
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Please upload a PDF or DOCX file.' },
-        { status: 400 }
-      )
+      return validationErrorResponse('Invalid file type. Please upload a PDF or DOCX file.')
     }
 
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024 // 5MB
     
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 5MB.' },
-        { status: 400 }
-      )
+      return validationErrorResponse('File too large. Maximum size is 5MB.')
     }
 
     // Convert file to buffer
@@ -341,7 +332,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
           where: { id: limits.subscription.id },
           data: { importCount: { increment: 1 } }
         })
-        return NextResponse.json({
+        return successResponse({
           success: true,
           data: transformedData,
           extractedText: 'PDF processed with single API call'
@@ -350,10 +341,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
       } catch (error) {
         // Return more specific error for debugging
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-        return NextResponse.json(
-          { error: `Failed to process PDF: ${errorMessage}. Please try again or convert to DOCX format.` },
-          { status: 400 }
-        )
+        return validationErrorResponse(`Failed to process PDF: ${errorMessage}. Please try again or convert to DOCX format.`)
       }
     } else {
       // For DOCX files, extract text first then send to AI
@@ -361,10 +349,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
         const extractedText = await ResumeParser.extractText(buffer, file.type)
         
         if (!extractedText || extractedText.trim().length === 0) {
-          return NextResponse.json(
-            { error: 'Could not extract text from the file. Please ensure the file contains readable text.' },
-            { status: 400 }
-          )
+          return validationErrorResponse('Could not extract text from the file. Please ensure the file contains readable text.')
         }
 
         // Get basic extraction as fallback
@@ -485,7 +470,7 @@ Return valid JSON only, no explanations.`
           data: { importCount: { increment: 1 } }
         })
 
-        return NextResponse.json({
+        return successResponse({
           success: true,
           data: mergedData,
           extractedText: extractedText.slice(0, 500)})
@@ -501,7 +486,7 @@ Return valid JSON only, no explanations.`
           data: { importCount: { increment: 1 } }
         })
         
-        return NextResponse.json({
+        return successResponse({
           success: true,
           data: basicData as ResumeData,
           extractedText: (await ResumeParser.extractText(buffer, file.type)).slice(0, 500),
@@ -511,9 +496,6 @@ Return valid JSON only, no explanations.`
 
   } catch (error) {
     console.error('[ResumeUpload] Failed to process resume:', error);
-    return NextResponse.json(
-      { error: 'Failed to process resume. Please try again.' },
-      { status: 500 }
-    )
+    return errorResponse('Failed to process resume. Please try again.', 500)
   }
 }

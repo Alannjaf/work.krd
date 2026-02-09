@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAllTemplates } from '@/lib/templates'
+import { successResponse, errorResponse } from '@/lib/api-helpers'
 
 interface TemplateWithTier {
   id: string
@@ -24,7 +24,7 @@ export async function GET() {
     
     if (!systemSettings) {
       // Fallback to default settings if none exist
-      return NextResponse.json({
+      return successResponse({
         free: [],
         basic: [],
         pro: getAllTemplates().map(template => ({
@@ -78,11 +78,9 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json(templatesByTier)
+    return successResponse(templatesByTier)
   } catch (error) {
     console.error('[Templates] Failed to fetch templates:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch templates'
-    }, { status: 500 })
+    return errorResponse('Failed to fetch templates', 500)
   }
 }

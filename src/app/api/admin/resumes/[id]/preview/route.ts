@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { ResumeData, PersonalInfo, WorkExperience, Education, Skill, Language, Project, Certification } from '@/types/resume';
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse } from '@/lib/api-helpers';
 
 export async function GET(
   req: NextRequest,
@@ -11,7 +12,7 @@ export async function GET(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     // Check if user is admin
@@ -19,7 +20,7 @@ export async function GET(
       where: { clerkId: userId }});
 
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return forbiddenResponse();
     }
 
     // Fetch resume with all related data
@@ -31,7 +32,7 @@ export async function GET(
         user: true}});
 
     if (!resume) {
-      return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
+      return notFoundResponse('Resume not found');
     }
 
     // Parse personalInfo as JSON if it's stored as JSON
@@ -181,14 +182,11 @@ export async function GET(
       console.warn(`Resume ${id} has incomplete personal information`);
     }
 
-    // NextResponse.json() automatically handles UTF-8 encoding for Unicode characters (Kurdish, Arabic, etc.)
-    return NextResponse.json(transformedData);
+    // successResponse() automatically handles UTF-8 encoding for Unicode characters (Kurdish, Arabic, etc.)
+    return successResponse(transformedData);
   } catch (error) {
     console.error(`Error fetching resume ${id}:`, error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { error: `Internal Server Error: ${errorMessage}` },
-      { status: 500 }
-    );
+    return errorResponse(`Internal Server Error: ${errorMessage}`, 500);
   }
 }

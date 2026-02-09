@@ -3,7 +3,7 @@ import { View, Text, Link } from '@react-pdf/renderer'
 import { sectionStyles } from '../styles/creativeSectionStyles'
 import { sidebarStyles } from '../styles/creativeSidebarStyles'
 import { ResumeData } from '../../../types/resume'
-import { formatDateRange } from '../utils/dateUtils'
+import { formatDate, formatDateRange } from '../utils/dateUtils'
 import { parseHtmlToPdf } from '../utils/htmlToPdfParser'
 
 interface CreativeMainSectionProps {
@@ -158,10 +158,7 @@ export const CreativeMainSection: React.FC<CreativeMainSectionProps> = ({ data }
                     <Text style={sidebarStyles.certificationIssuer}>{cert.issuer}</Text>
                     {cert.date && (
                       <Text style={sidebarStyles.certificationDate}>
-                        {new Date(cert.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          year: 'numeric' 
-                        })}
+                        {formatDate(cert.date)}
                       </Text>
                     )}
                   </View>
@@ -174,10 +171,7 @@ export const CreativeMainSection: React.FC<CreativeMainSectionProps> = ({ data }
                   <Text style={sidebarStyles.certificationIssuer}>{cert.issuer}</Text>
                   {cert.date && (
                     <Text style={sidebarStyles.certificationDate}>
-                      {new Date(cert.date).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        year: 'numeric' 
-                      })}
+                      {formatDate(cert.date)}
                     </Text>
                   )}
                 </View>

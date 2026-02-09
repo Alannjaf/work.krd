@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AIService } from '@/lib/ai'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { detectLanguage } from '@/lib/languageDetection'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function POST(req: NextRequest) {
   const { success, resetIn } = rateLimit(req, {
@@ -17,26 +18,22 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth()
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     // Check AI usage limits using Clerk ID
     const limits = await checkUserLimits(userId)
     if (!limits.canUseAI) {
-      return NextResponse.json({ 
-        error: 'AI usage limit reached. Please upgrade your plan.' 
-      }, { status: 403 })
+      return forbiddenResponse('AI usage limit reached. Please upgrade your plan.')
     }
 
     if (!limits.subscription) {
-      return NextResponse.json({ 
-        error: 'User subscription not found.' 
-      }, { status: 404 })
+      return notFoundResponse('User subscription not found.')
     }
 
     const body = await req.json()
@@ -48,11 +45,11 @@ export async function POST(req: NextRequest) {
     } = body
 
     if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+      return validationErrorResponse('Content is required')
     }
 
     if (!contentType) {
-      return NextResponse.json({ error: 'Content type is required' }, { status: 400 })
+      return validationErrorResponse('Content type is required')
     }
 
     // Detect source language if not provided
@@ -65,9 +62,7 @@ export async function POST(req: NextRequest) {
     // Validate content type
     const validContentTypes = ['personal', 'summary', 'description', 'achievement', 'project']
     if (!validContentTypes.includes(contentType)) {
-      return NextResponse.json({ 
-        error: 'Invalid content type. Must be one of: ' + validContentTypes.join(', ') 
-      }, { status: 400 })
+      return validationErrorResponse('Invalid content type. Must be one of: ' + validContentTypes.join(', '))
     }
 
     const enhancedContent = await AIService.translateAndEnhance(
@@ -84,13 +79,11 @@ export async function POST(req: NextRequest) {
       data: { aiUsageCount: { increment: 1 } }
     })
 
-    return NextResponse.json({ 
+    return successResponse({
       enhancedContent,
       detectedLanguage: detectedLanguage === 'auto' ? 'unknown' : detectedLanguage
     })
   } catch (error) {
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Failed to translate and enhance content' 
-    }, { status: 500 })
+    return errorResponse(error instanceof Error ? error.message : 'Failed to translate and enhance content', 500)
   }
 }

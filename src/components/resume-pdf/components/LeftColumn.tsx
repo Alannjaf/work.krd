@@ -4,7 +4,7 @@ import { styles } from '../styles/pdfStyles'
 import { skillsStyles } from '../styles/skillsStyles'
 import { experienceStyles } from '../styles/experienceStyles'
 import { ResumeData } from '../../../types/resume'
-import { formatDateRange } from '../utils/dateUtils'
+import { formatDate, formatDateRange } from '../utils/dateUtils'
 import { parseHtmlToPdf } from '../utils/htmlToPdfParser'
 
 interface LeftColumnProps {
@@ -79,7 +79,7 @@ export const LeftColumn: React.FC<LeftColumnProps> = ({ data }) => {
               <Text style={skillsStyles.certificationIssuer}>{cert.issuer}</Text>
               {cert.date && (
                 <Text style={skillsStyles.certificationDate}>
-                  {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  {formatDate(cert.date)}
                 </Text>
               )}
             </View>

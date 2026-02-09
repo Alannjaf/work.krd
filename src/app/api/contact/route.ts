@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { Resend } from 'resend'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 // Lazy initialization to avoid build-time errors when API key is not set
 const getResend = () => new Resend(process.env.RESEND_API_KEY)
@@ -19,19 +20,13 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!firstName || !lastName || !email || !subject || !message) {
-      return NextResponse.json(
-        { error: 'All fields are required' },
-        { status: 400 }
-      )
+      return validationErrorResponse('All fields are required')
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
-      )
+      return validationErrorResponse('Please enter a valid email address')
     }
 
     // Send email using Resend
@@ -104,15 +99,9 @@ Sent from Work.krd contact form
       replyTo: email})
 
 
-    return NextResponse.json(
-      { message: 'Message sent successfully' },
-      { status: 200 }
-    )
+    return successResponse({ message: 'Message sent successfully' })
   } catch (error) {
     console.error('[Contact] Failed to send contact email:', error);
-    return NextResponse.json(
-      { error: 'Failed to send message. Please try again.' },
-      { status: 500 }
-    )
+    return errorResponse('Failed to send message. Please try again.', 500)
   }
 }

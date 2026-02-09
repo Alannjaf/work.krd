@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma';
 import { ResumeData } from '@/types/resume';
 import { initializePDFFonts, areFontsRegistered } from '@/lib/pdfFonts';
 import React from 'react';
+import { errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
 
 /**
  * Normalize Arabic-Indic numerals (٠-٩) to Western numerals (0-9)
@@ -54,25 +55,25 @@ export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authErrorResponse();
     }
 
     const body: RequestBody = await request.json();
     const { resumeData, template, action = 'preview' } = body;
 
     if (!resumeData || !template) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return validationErrorResponse('Missing required fields');
     }
 
     if (!['preview', 'download'].includes(action)) {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+      return validationErrorResponse('Invalid action');
     }
 
     // Get user limits and available templates
     const limits = await checkUserLimits(userId);
     
     if (!limits.subscription) {
-      return NextResponse.json({ error: 'User subscription not found' }, { status: 404 });
+      return notFoundResponse('User subscription not found');
     }
 
     // Check if user has access to the template
@@ -85,16 +86,12 @@ export async function POST(request: NextRequest) {
     if (action === 'download') {
       // Block download for restricted templates - user must upgrade
       if (!hasAccess) {
-        return NextResponse.json({ 
-          error: 'Upgrade required to download this template. Please upgrade your plan.' 
-        }, { status: 403 });
+        return forbiddenResponse('Upgrade required to download this template. Please upgrade your plan.');
       }
 
       // Check export limits
       if (!limits.canExport) {
-        return NextResponse.json({ 
-          error: 'Export limit reached. Please upgrade your plan to download more resumes.' 
-        }, { status: 403 });
+        return forbiddenResponse('Export limit reached. Please upgrade your plan to download more resumes.');
       }
 
       // Increment export count for downloads
@@ -168,7 +165,7 @@ export async function POST(request: NextRequest) {
 
         if (!templateComponent) {
           console.error('Template component not found for template:', template);
-          return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+          return notFoundResponse('Template not found');
         }
 
         const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
@@ -186,17 +183,18 @@ export async function POST(request: NextRequest) {
       throw pdfError; // Re-throw to be caught by outer try-catch
     }
     
-    // Convert buffer to base64 for secure transmission
-    const base64 = Buffer.from(buffer).toString('base64');
-
-    // Return base64 encoded PDF with access information
-    return NextResponse.json({
-      pdf: base64,
-      hasAccess,
-      template,
-      action,
-      watermarked: shouldWatermark,
-      mimeType: 'application/pdf'
+    // Return raw PDF binary with metadata in headers
+    const pdfBuffer = Buffer.from(buffer);
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': action === 'download' ? `attachment; filename="resume.pdf"` : 'inline',
+        'X-Has-Access': String(hasAccess),
+        'X-Template': template,
+        'X-Watermarked': String(shouldWatermark),
+        'Content-Length': String(pdfBuffer.length),
+      },
     });
   } catch (error) {
     console.error('PDF generation error (top level):', error);
@@ -224,10 +222,7 @@ export async function POST(request: NextRequest) {
     // Log error as string for additional context
     console.error('Error string representation:', String(error));
     
-    return NextResponse.json(
-      { error: `Failed to generate PDF: ${errorMessage}` },
-      { status: 500 }
-    );
+    return errorResponse(`Failed to generate PDF: ${errorMessage}`, 500);
   }
 }
 

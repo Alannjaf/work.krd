@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { DatabaseQueryResult } from '@/types/api'
+import { successResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
     const { userId } = await auth()
     if (!userId) {
-      return NextResponse.json({ isAdmin: false })
+      return successResponse({ isAdmin: false })
     }
 
     // Try to get user with role, fallback to checking if column exists
@@ -18,16 +18,16 @@ export async function GET() {
         LIMIT 1
       ` as DatabaseQueryResult[]
 
-      return NextResponse.json({ 
-        isAdmin: user?.[0]?.role === 'ADMIN' 
+      return successResponse({
+        isAdmin: user?.[0]?.role === 'ADMIN'
       })
     } catch (error) {
       console.error('[AdminStatus] Failed to query user role:', error);
       // Role column might not exist yet
-      return NextResponse.json({ isAdmin: false })
+      return successResponse({ isAdmin: false })
     }
   } catch (error) {
     console.error('[AdminStatus] Failed to check admin status:', error);
-    return NextResponse.json({ isAdmin: false })
+    return successResponse({ isAdmin: false })
   }
 }

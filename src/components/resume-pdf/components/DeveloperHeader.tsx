@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, Image } from '@react-pdf/renderer'
 import { styles } from '../styles/developerStyles'
 import { PersonalInfo } from '../../../types/resume'
+import { hasDemographics, buildDemographicsString } from '@/lib/pdf-helpers'
 
 interface DeveloperHeaderProps {
   personal: PersonalInfo
@@ -52,16 +53,10 @@ export const DeveloperHeader: React.FC<DeveloperHeaderProps> = ({ personal }) =>
       </View>
 
       {/* Optional Demographics - Compact Code Comment Style */}
-      {(personal.dateOfBirth || personal.gender || personal.nationality || personal.maritalStatus || personal.country) && (
+      {hasDemographics(personal) && (
         <View style={styles.demographicsCompact}>
           <Text style={styles.demographicsText}>
-            {`// ${[
-              personal.dateOfBirth && `Born: ${personal.dateOfBirth}`,
-              personal.gender && `Gender: ${personal.gender}`,
-              personal.nationality && `Nationality: ${personal.nationality}`,
-              personal.maritalStatus && `Marital: ${personal.maritalStatus}`,
-              personal.country && `Country: ${personal.country}`
-            ].filter(Boolean).join(' | ')}`}
+            {`// ${buildDemographicsString(personal, ' | ')}`}
           </Text>
         </View>
       )}

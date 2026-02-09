@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
 import { getSystemSettings, updateSystemSettings } from '@/lib/system-settings'
+import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
@@ -8,7 +8,7 @@ export async function GET() {
     const settings = await getSystemSettings()
     
     // Return only the fields we need
-    return NextResponse.json({
+    return successResponse({
       maxFreeResumes: settings.maxFreeResumes,
       maxFreeAIUsage: settings.maxFreeAIUsage,
       maxFreeExports: settings.maxFreeExports,
@@ -34,9 +34,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('[AdminSettings] Failed to get settings:', error);
-    return NextResponse.json({
-      error: 'Unauthorized'
-    }, { status: 403 })
+    return forbiddenResponse('Unauthorized')
   }
 }
 
@@ -47,14 +45,12 @@ export async function POST(req: Request) {
     const newSettings = await req.json()
     const savedSettings = await updateSystemSettings(newSettings)
     
-    return NextResponse.json({ 
-      success: true, 
-      settings: savedSettings 
+    return successResponse({
+      success: true,
+      settings: savedSettings
     })
   } catch (error) {
     console.error('[AdminSettings] Failed to update settings:', error);
-    return NextResponse.json({
-      error: 'Failed to update settings'
-    }, { status: 500 })
+    return errorResponse('Failed to update settings', 500)
   }
 }

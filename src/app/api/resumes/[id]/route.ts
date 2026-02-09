@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, getResumeById, updateResume, deleteResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse } from '@/lib/api-helpers'
 
 // GET - Get a specific resume
 export async function GET(
@@ -13,17 +13,17 @@ export async function GET(
     const { id } = await params
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     const resume = await getResumeById(id, user.id)
     if (!resume) {
-      return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
+      return notFoundResponse('Resume not found')
     }
 
     // Transform sections data for frontend
@@ -41,12 +41,10 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ resume: transformedResume })
+    return successResponse({ resume: transformedResume })
   } catch (error) {
     console.error('[Resumes] Failed to fetch resume:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch resume'
-    }, { status: 500 })
+    return errorResponse('Failed to fetch resume', 500)
   }
 }
 
@@ -60,12 +58,12 @@ export async function PUT(
     const { id } = await params
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     const body = await req.json()
@@ -74,7 +72,7 @@ export async function PUT(
     // Check if resume exists and belongs to user
     const existingResume = await getResumeById(id, user.id)
     if (!existingResume) {
-      return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
+      return notFoundResponse('Resume not found')
     }
 
     // Validate template access if template is being changed
@@ -82,9 +80,7 @@ export async function PUT(
       const limits = await checkUserLimits(userId)
       const availableTemplates = limits.availableTemplates || ['modern']
       if (!availableTemplates.includes(template)) {
-        return NextResponse.json({ 
-          error: 'Template not available for your subscription plan. Please upgrade to access this template.' 
-        }, { status: 403 })
+        return forbiddenResponse('Template not available for your subscription plan. Please upgrade to access this template.')
       }
     }
 
@@ -176,15 +172,13 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json({ 
+    return successResponse({
       resume: updatedResume,
-      message: 'Resume updated successfully' 
+      message: 'Resume updated successfully'
     })
   } catch (error) {
     console.error('[Resumes] Failed to update resume:', error);
-    return NextResponse.json({
-      error: 'Failed to update resume'
-    }, { status: 500 })
+    return errorResponse('Failed to update resume', 500)
   }
 }
 
@@ -198,29 +192,27 @@ export async function DELETE(
     const { id } = await params
     
     if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authErrorResponse()
     }
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return notFoundResponse('User not found')
     }
 
     // Check if resume exists and belongs to user
     const existingResume = await getResumeById(id, user.id)
     if (!existingResume) {
-      return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
+      return notFoundResponse('Resume not found')
     }
 
     await deleteResume(id, user.id)
 
-    return NextResponse.json({ 
-      message: 'Resume deleted successfully' 
+    return successResponse({
+      message: 'Resume deleted successfully'
     })
   } catch (error) {
     console.error('[Resumes] Failed to delete resume:', error);
-    return NextResponse.json({
-      error: 'Failed to delete resume'
-    }, { status: 500 })
+    return errorResponse('Failed to delete resume', 500)
   }
 }

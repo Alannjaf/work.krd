@@ -27,15 +27,8 @@ export const generateResumePDF = async (
       throw new Error(error.error || 'Failed to generate PDF')
     }
 
-    const { pdf: base64Pdf, mimeType } = await response.json()
-    
-    // Convert base64 to blob
-    const binaryString = atob(base64Pdf)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
-    const blob = new Blob([bytes], { type: mimeType })
+    // Get binary PDF data directly
+    const blob = await response.blob()
 
     const defaultFileName = `${resumeData.personal.fullName.replace(/\s+/g, '_')}_Resume.pdf`
     const finalFileName = fileName || defaultFileName
@@ -69,16 +62,8 @@ export const getResumePDFBlob = async (
       throw new Error(error.error || 'Failed to generate PDF')
     }
 
-    const { pdf: base64Pdf, mimeType } = await response.json()
-    
-    // Convert base64 to blob
-    const binaryString = atob(base64Pdf)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
-    
-    return new Blob([bytes], { type: mimeType })
+    // Get binary PDF data directly
+    return await response.blob()
   } catch (error) {
     console.error('[PDFGenerator] Failed to generate PDF blob:', error);
     throw new Error('Failed to generate PDF blob')

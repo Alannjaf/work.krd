@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { successResponse } from '@/lib/api-helpers'
 
 export async function GET() {
   // Test API endpoint hit
-  return NextResponse.json({ 
-    message: 'API is working!', 
+  return successResponse({
+    message: 'API is working!',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV
   })
@@ -11,8 +11,8 @@ export async function GET() {
 
 export async function POST() {
   // Test POST endpoint hit
-  return NextResponse.json({ 
-    message: 'POST API is working!', 
+  return successResponse({
+    message: 'POST API is working!',
     timestamp: new Date().toISOString()
   })
 }
