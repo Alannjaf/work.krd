@@ -3,7 +3,6 @@ import { auth } from '@clerk/nextjs/server';
 import { checkUserLimits } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { getTemplate } from '@/lib/getTemplate';
-import { generateWatermarkedPDF } from '@/lib/watermarkedTemplate';
 import { pdf } from '@react-pdf/renderer';
 import { prisma } from '@/lib/prisma';
 import { ResumeData } from '@/types/resume';
@@ -153,26 +152,17 @@ export async function POST(request: NextRequest) {
 
     // Generate PDF with detailed error handling for each step
     try {
-      if (shouldWatermark) {
-        // Generate watermarked PDF for restricted templates
-        const watermarkedPDFBytes = await generateWatermarkedPDF(template, resumeData);
-        buffer = watermarkedPDFBytes.buffer.slice(
-          watermarkedPDFBytes.byteOffset,
-          watermarkedPDFBytes.byteOffset + watermarkedPDFBytes.byteLength
-        ) as ArrayBuffer;
-      } else {
-        // Generate clean PDF for accessible templates
-        const templateComponent = await getTemplate(template, resumeData);
+      // Generate PDF — watermark is baked into the React-PDF render tree when shouldWatermark is true
+      const templateComponent = await getTemplate(template, resumeData, shouldWatermark || undefined);
 
-        if (!templateComponent) {
-          console.error('Template component not found for template:', template);
-          return notFoundResponse('Template not found');
-        }
-
-        const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
-        const blob = await pdfDoc.toBlob();
-        buffer = await blob.arrayBuffer();
+      if (!templateComponent) {
+        console.error('Template component not found for template:', template);
+        return notFoundResponse('Template not found');
       }
+
+      const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
+      const blob = await pdfDoc.toBlob();
+      buffer = await blob.arrayBuffer();
     } catch (pdfError) {
       console.error('Error during PDF generation step:', pdfError);
       const pdfErrorMessage = pdfError instanceof Error ? pdfError.message : 'Unknown PDF generation error';

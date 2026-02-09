@@ -1,7 +1,7 @@
 import React from 'react';
 import { ResumeData } from '../types/resume';
 
-const templateImports: Record<string, () => Promise<{ default: React.ComponentType<{ data: ResumeData }> }>> = {
+const templateImports: Record<string, () => Promise<{ default: React.ComponentType<{ data: ResumeData; watermark?: boolean }> }>> = {
   'modern': () => import('../components/resume-pdf/EnhancedModernTemplate'),
   'creative': () => import('../components/resume-pdf/CreativeTemplate').then(m => ({ default: m.CreativeTemplate })),
   'executive': () => import('../components/resume-pdf/ExecutiveProfessionalTemplate').then(m => ({ default: m.ExecutiveProfessionalTemplate })),
@@ -14,8 +14,8 @@ const templateImports: Record<string, () => Promise<{ default: React.ComponentTy
   'classic': () => import('../components/resume-pdf/ClassicTraditionalTemplate').then(m => ({ default: m.ClassicTraditionalTemplate })),
 };
 
-export const getTemplate = async (template: string, data: ResumeData) => {
+export const getTemplate = async (template: string, data: ResumeData, watermark?: boolean) => {
   const importFn = templateImports[template] || templateImports['modern'];
   const { default: TemplateComponent } = await importFn();
-  return <TemplateComponent data={data} />;
+  return <TemplateComponent data={data} watermark={watermark} />;
 };

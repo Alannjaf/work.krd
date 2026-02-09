@@ -5,22 +5,24 @@ import { styles } from './styles/pdfStyles'
 import { PDFHeader } from './components/PDFHeader'
 import { LeftColumn } from './components/LeftColumn'
 import { RightColumn } from './components/RightColumn'
+import { Watermark } from './components/Watermark'
 
 interface EnhancedModernTemplateProps {
   data: ResumeData
+  watermark?: boolean
 }
 
-const EnhancedModernTemplate: React.FC<EnhancedModernTemplateProps> = ({ data }) => {
+const EnhancedModernTemplate: React.FC<EnhancedModernTemplateProps> = ({ data, watermark }) => {
   return (
     <Document>
-      <Page 
-        size="A4" 
+      <Page
+        size="A4"
         style={styles.page}
         wrap={true} // Enable automatic pagination
       >
         {/* Fixed background for left column on all pages */}
         <View style={styles.leftBgOverlay} fixed />
-        
+
         {/* Header Section - Only on first page */}
         <PDFHeader personal={data.personal} />
 
@@ -29,6 +31,8 @@ const EnhancedModernTemplate: React.FC<EnhancedModernTemplateProps> = ({ data })
           <LeftColumn data={data} />
           <RightColumn data={data} experiences={data.experience || []} />
         </View>
+
+        {watermark && <Watermark />}
       </Page>
     </Document>
   )

@@ -3,18 +3,20 @@ import { ResumeData } from '@/types/resume'
 import { ExecutiveHeader } from './components/ExecutiveHeader'
 import { ExecutiveContent } from './components/ExecutiveContent'
 import { executiveStyles } from './styles/executiveStyles'
+import { Watermark } from './components/Watermark'
 
 interface ExecutiveProfessionalTemplateProps {
   data: ResumeData
+  watermark?: boolean
 }
 
-export const ExecutiveProfessionalTemplate = ({ data }: ExecutiveProfessionalTemplateProps) => {
+export const ExecutiveProfessionalTemplate = ({ data, watermark }: ExecutiveProfessionalTemplateProps) => {
   return (
     <Document>
       <Page size="A4" style={executiveStyles.page} wrap={true} break={true}>
         {/* Executive header with contact info */}
         <ExecutiveHeader personal={data.personal} />
-        
+
         {/* Professional summary section */}
         {data.summary && (
           <View style={executiveStyles.summarySection}>
@@ -25,6 +27,8 @@ export const ExecutiveProfessionalTemplate = ({ data }: ExecutiveProfessionalTem
 
         {/* Main content area */}
         <ExecutiveContent data={data} />
+
+        {watermark && <Watermark />}
       </Page>
     </Document>
   )

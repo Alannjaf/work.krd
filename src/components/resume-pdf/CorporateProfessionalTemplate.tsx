@@ -3,18 +3,20 @@ import { ResumeData } from '@/types/resume'
 import { CorporateHeader } from './components/CorporateHeader'
 import { CorporateContent } from './components/CorporateContent'
 import { corporateStyles } from './styles/corporateStyles'
+import { Watermark } from './components/Watermark'
 
 interface CorporateProfessionalTemplateProps {
   data: ResumeData
+  watermark?: boolean
 }
 
-export const CorporateProfessionalTemplate = ({ data }: CorporateProfessionalTemplateProps) => {
+export const CorporateProfessionalTemplate = ({ data, watermark }: CorporateProfessionalTemplateProps) => {
   return (
     <Document>
       <Page size="A4" style={corporateStyles.page} wrap={true}>
         {/* Corporate header with contact info */}
         <CorporateHeader personal={data.personal} />
-        
+
         {/* Professional summary section */}
         {data.summary && (
           <View style={corporateStyles.summarySection} wrap={false}>
@@ -25,6 +27,8 @@ export const CorporateProfessionalTemplate = ({ data }: CorporateProfessionalTem
 
         {/* Main content area */}
         <CorporateContent data={data} />
+
+        {watermark && <Watermark />}
       </Page>
     </Document>
   )
