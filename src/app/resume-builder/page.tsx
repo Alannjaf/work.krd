@@ -553,12 +553,13 @@ function ResumeBuilderContent() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2 sm:pb-0 sm:overflow-x-visible w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowKeyboardHelp(true)}
                 title="Keyboard Shortcuts (F1)"
+                className="shrink-0"
               >
                 <Keyboard className="h-4 w-4" />
               </Button>
@@ -567,6 +568,7 @@ function ResumeBuilderContent() {
                 size="sm"
                 onClick={() => setShowATS(true)}
                 title={t("pages.resumeBuilder.actions.atsOptimization")}
+                className="shrink-0 whitespace-nowrap"
               >
                 <Target className="h-4 w-4 mr-2" />
                 {t("pages.resumeBuilder.actions.ats")}
@@ -577,6 +579,7 @@ function ResumeBuilderContent() {
                   size="sm"
                   onClick={handleManualTranslate}
                   disabled={isAutoTranslating}
+                  className="shrink-0 whitespace-nowrap"
                 >
                   {isAutoTranslating ? (
                     <>
@@ -595,6 +598,7 @@ function ResumeBuilderContent() {
                 variant="outline"
                 size="sm"
                 onClick={handlePreview}
+                className="shrink-0 whitespace-nowrap"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 {t("pages.resumeBuilder.actions.preview")}
@@ -603,6 +607,7 @@ function ResumeBuilderContent() {
                 onClick={() => handleSave()}
                 size="sm"
                 disabled={isSaving || isAutoSaving}
+                className="shrink-0 whitespace-nowrap"
               >
                 {isSaving ? (
                   <>
