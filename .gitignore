@@ -63,3 +63,6 @@ coverage/
 
 # nyc test coverage
 .nyc_output
+.netlify/
+undefined:*
+deno.lock
