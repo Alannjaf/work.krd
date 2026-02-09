@@ -553,24 +553,24 @@ function ResumeBuilderContent() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2 sm:pb-0 sm:overflow-x-visible w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowKeyboardHelp(true)}
                 title="Keyboard Shortcuts (F1)"
-                className="shrink-0"
+                className="h-8 px-2 sm:px-3"
               >
-                <Keyboard className="h-4 w-4" />
+                <Keyboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowATS(true)}
                 title={t("pages.resumeBuilder.actions.atsOptimization")}
-                className="shrink-0 whitespace-nowrap"
+                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
               >
-                <Target className="h-4 w-4 mr-2" />
+                <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t("pages.resumeBuilder.actions.ats")}
               </Button>
               {hasNonEnglishContent(formData) && (
@@ -579,16 +579,16 @@ function ResumeBuilderContent() {
                   size="sm"
                   onClick={handleManualTranslate}
                   disabled={isAutoTranslating}
-                  className="shrink-0 whitespace-nowrap"
+                  className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
                 >
                   {isAutoTranslating ? (
                     <>
-                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-gray-500 border-t-transparent rounded-full" />
+                      <div className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 border-2 border-gray-500 border-t-transparent rounded-full" />
                       {t("pages.resumeBuilder.actions.translating")}
                     </>
                   ) : (
                     <>
-                      <Languages className="h-4 w-4 mr-2" />
+                      <Languages className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       {t("pages.resumeBuilder.actions.translateToEnglish")}
                     </>
                   )}
@@ -598,25 +598,25 @@ function ResumeBuilderContent() {
                 variant="outline"
                 size="sm"
                 onClick={handlePreview}
-                className="shrink-0 whitespace-nowrap"
+                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
               >
-                <Eye className="h-4 w-4 mr-2" />
+                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t("pages.resumeBuilder.actions.preview")}
               </Button>
               <Button
                 onClick={() => handleSave()}
                 size="sm"
                 disabled={isSaving || isAutoSaving}
-                className="shrink-0 whitespace-nowrap"
+                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
               >
                 {isSaving ? (
                   <>
-                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    <div className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 border-2 border-white border-t-transparent rounded-full" />
                     {t("pages.resumeBuilder.actions.saving")}
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     {t("pages.resumeBuilder.actions.save")}
                   </>
                 )}
