@@ -5,6 +5,7 @@ import { CreativeHeader } from './components/CreativeHeader'
 import { CreativeContent } from './components/CreativeContent'
 import { ResumeData } from '../../types/resume'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '../../lib/pdfFonts'
 
 interface CreativeTemplateProps {
   data: ResumeData
@@ -14,7 +15,7 @@ interface CreativeTemplateProps {
 export const CreativeTemplate: React.FC<CreativeTemplateProps> = ({ data, watermark }) => {
   return (
     <Document>
-      <Page size="A4" style={styles.page} wrap={true}>
+      <Page size="A4" style={[styles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Artistic background elements */}
         <View style={styles.backgroundCircle1} fixed />
         <View style={styles.backgroundCircle2} fixed />

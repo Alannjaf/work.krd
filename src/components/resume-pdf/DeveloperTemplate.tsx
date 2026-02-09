@@ -5,6 +5,7 @@ import { DeveloperHeader } from './components/DeveloperHeader'
 import { DeveloperContent } from './components/DeveloperContent'
 import { ResumeData } from '../../types/resume'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '../../lib/pdfFonts'
 
 interface DeveloperTemplateProps {
   data: ResumeData
@@ -14,7 +15,7 @@ interface DeveloperTemplateProps {
 export const DeveloperTemplate: React.FC<DeveloperTemplateProps> = ({ data, watermark }) => {
   return (
     <Document>
-      <Page size="A4" style={styles.page} wrap={true}>
+      <Page size="A4" style={[styles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Tech-inspired background elements */}
         <View style={styles.codeBackground} fixed />
         <View style={styles.accentBorder} fixed />

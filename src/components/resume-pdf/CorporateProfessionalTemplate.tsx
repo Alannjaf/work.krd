@@ -4,6 +4,7 @@ import { CorporateHeader } from './components/CorporateHeader'
 import { CorporateContent } from './components/CorporateContent'
 import { corporateStyles } from './styles/corporateStyles'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '@/lib/pdfFonts'
 
 interface CorporateProfessionalTemplateProps {
   data: ResumeData
@@ -13,7 +14,7 @@ interface CorporateProfessionalTemplateProps {
 export const CorporateProfessionalTemplate = ({ data, watermark }: CorporateProfessionalTemplateProps) => {
   return (
     <Document>
-      <Page size="A4" style={corporateStyles.page} wrap={true}>
+      <Page size="A4" style={[corporateStyles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Corporate header with contact info */}
         <CorporateHeader personal={data.personal} />
 

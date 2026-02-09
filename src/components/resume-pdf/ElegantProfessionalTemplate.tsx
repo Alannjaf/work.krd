@@ -4,6 +4,7 @@ import { ElegantHeader } from './components/ElegantHeader'
 import { ElegantContent } from './components/ElegantContent'
 import { elegantStyles } from './styles/elegantStyles'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '@/lib/pdfFonts'
 
 interface ElegantProfessionalTemplateProps {
   data: ResumeData
@@ -13,7 +14,7 @@ interface ElegantProfessionalTemplateProps {
 export const ElegantProfessionalTemplate = ({ data, watermark }: ElegantProfessionalTemplateProps) => {
   return (
     <Document>
-      <Page size="A4" style={elegantStyles.page} wrap={true}>
+      <Page size="A4" style={[elegantStyles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Elegant header with contact info */}
         <ElegantHeader personal={data.personal} />
 

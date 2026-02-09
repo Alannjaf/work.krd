@@ -4,6 +4,7 @@ import { CreativeModernHeader } from './components/CreativeModernHeader'
 import { CreativeModernContent } from './components/CreativeModernContent'
 import { creativeModernStyles } from './styles/creativeModernStyles'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '@/lib/pdfFonts'
 
 interface CreativeModernTemplateProps {
   data: ResumeData
@@ -13,7 +14,7 @@ interface CreativeModernTemplateProps {
 export const CreativeModernTemplate = ({ data, watermark }: CreativeModernTemplateProps) => {
   return (
     <Document>
-      <Page size="A4" style={creativeModernStyles.page} wrap={true}>
+      <Page size="A4" style={[creativeModernStyles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Creative modern header with contact info */}
         <CreativeModernHeader personal={data.personal} />
 

@@ -4,6 +4,7 @@ import { ExecutiveHeader } from './components/ExecutiveHeader'
 import { ExecutiveContent } from './components/ExecutiveContent'
 import { executiveStyles } from './styles/executiveStyles'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '@/lib/pdfFonts'
 
 interface ExecutiveProfessionalTemplateProps {
   data: ResumeData
@@ -13,7 +14,7 @@ interface ExecutiveProfessionalTemplateProps {
 export const ExecutiveProfessionalTemplate = ({ data, watermark }: ExecutiveProfessionalTemplateProps) => {
   return (
     <Document>
-      <Page size="A4" style={executiveStyles.page} wrap={true} break={true}>
+      <Page size="A4" style={[executiveStyles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true} break={true}>
         {/* Executive header with contact info */}
         <ExecutiveHeader personal={data.personal} />
 

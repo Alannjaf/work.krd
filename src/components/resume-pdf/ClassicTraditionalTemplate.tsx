@@ -4,6 +4,7 @@ import { ClassicHeader } from './components/ClassicHeader'
 import { ClassicContent } from './components/ClassicContent'
 import { classicStyles } from './styles/classicStyles'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '@/lib/pdfFonts'
 
 interface ClassicTraditionalTemplateProps {
   data: ResumeData
@@ -13,7 +14,7 @@ interface ClassicTraditionalTemplateProps {
 export const ClassicTraditionalTemplate = ({ data, watermark }: ClassicTraditionalTemplateProps) => {
   return (
     <Document>
-      <Page size="A4" style={classicStyles.page} wrap={true}>
+      <Page size="A4" style={[classicStyles.page, getPageFontStyle(data.personal?.fullName)]} wrap={true}>
         {/* Classic header with contact info */}
         <ClassicHeader personal={data.personal} />
 

@@ -6,6 +6,7 @@ import { PDFHeader } from './components/PDFHeader'
 import { LeftColumn } from './components/LeftColumn'
 import { RightColumn } from './components/RightColumn'
 import { Watermark } from './components/Watermark'
+import { getPageFontStyle } from '../../lib/pdfFonts'
 
 interface EnhancedModernTemplateProps {
   data: ResumeData
@@ -17,7 +18,7 @@ const EnhancedModernTemplate: React.FC<EnhancedModernTemplateProps> = ({ data, w
     <Document>
       <Page
         size="A4"
-        style={styles.page}
+        style={[styles.page, getPageFontStyle(data.personal?.fullName)]}
         wrap={true} // Enable automatic pagination
       >
         {/* Fixed background for left column on all pages */}
