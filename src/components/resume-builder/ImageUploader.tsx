@@ -64,6 +64,10 @@ export default function ImageUploader({
       reader.onload = (e) => {
         const result = e.target?.result as string
         onImageUpload(result, result) // Store as both current and original
+        // Auto-open crop modal after upload
+        if (onCropUpdate) {
+          setShowCropModal(true)
+        }
       }
       reader.readAsDataURL(file)
     }

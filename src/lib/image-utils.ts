@@ -120,14 +120,37 @@ export function validateCropBounds(
 ): CropData {
   const scaledImageWidth = imageWidth * crop.scale
   const scaledImageHeight = imageHeight * crop.scale
-  
+
   // Only constrain position, never modify crop size
   const constrainedX = Math.max(0, Math.min(crop.x, scaledImageWidth - crop.width))
   const constrainedY = Math.max(0, Math.min(crop.y, scaledImageHeight - crop.height))
-  
+
   return {
     ...crop,
     x: constrainedX,
     y: constrainedY
   }
+}
+
+// Get cropped image from react-easy-crop pixel output
+export async function getCroppedImage(
+  imageSrc: string,
+  pixelCrop: { x: number; y: number; width: number; height: number }
+): Promise<string> {
+  const img = await loadImage(imageSrc)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) throw new Error('Could not get canvas context')
+
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+
+  ctx.drawImage(
+    img,
+    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
+    0, 0, pixelCrop.width, pixelCrop.height
+  )
+
+  return canvas.toDataURL('image/jpeg', 0.9)
 }
