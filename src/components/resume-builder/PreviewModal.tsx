@@ -42,18 +42,6 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const getPDFPageCount = async (blob: Blob): Promise<number> => {
-    try {
-      const arrayBuffer = await blob.arrayBuffer()
-      const { PDFDocument } = await import('pdf-lib')
-      const pdfDoc = await PDFDocument.load(arrayBuffer)
-      return pdfDoc.getPageCount()
-    } catch (error) {
-      console.error('[PreviewModal] Failed to get PDF page count:', error);
-      return 1
-    }
-  }
-
   const updatePdfUrl = useCallback((baseUrl: string, page: number) => {
     const browser = detectBrowser()
     let urlWithPage: string
@@ -114,11 +102,12 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
       const hasAccess = response.headers.get('X-Has-Access') === 'true'
       setTemplateAccess(hasAccess ? 'granted' : 'restricted')
 
+      // Read page count from server-side header
+      const totalPages = parseInt(response.headers.get('X-Total-Pages') || '1', 10)
+      setTotalPdfPages(totalPages)
+
       // Get binary PDF data directly
       const blob = await response.blob()
-
-      const pageCount = await getPDFPageCount(blob)
-      setTotalPdfPages(pageCount)
       setCurrentPdfPage(1)
 
       if (usePDFJS) {

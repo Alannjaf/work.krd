@@ -10,6 +10,7 @@ import { ResumeData } from '@/types/resume';
 import { initializePDFFonts, areFontsRegistered } from '@/lib/pdfFonts';
 import React from 'react';
 import { errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
+import { PDFDocument } from 'pdf-lib';
 
 /**
  * Normalize Arabic-Indic numerals (٠-٩) to Western numerals (0-9)
@@ -183,8 +184,17 @@ export async function POST(request: NextRequest) {
       throw pdfError; // Re-throw to be caught by outer try-catch
     }
     
-    // Return raw PDF binary with metadata in headers
+    // Count pages server-side using pdf-lib
     const pdfBuffer = Buffer.from(buffer);
+    let totalPages = 1;
+    try {
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      totalPages = pdfDoc.getPageCount();
+    } catch (pageCountError) {
+      console.warn('Failed to count PDF pages:', pageCountError);
+    }
+
+    // Return raw PDF binary with metadata in headers
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
@@ -193,6 +203,7 @@ export async function POST(request: NextRequest) {
         'X-Has-Access': String(hasAccess),
         'X-Template': template,
         'X-Watermarked': String(shouldWatermark),
+        'X-Total-Pages': String(totalPages),
         'Content-Length': String(pdfBuffer.length),
       },
     });
