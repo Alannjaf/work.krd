@@ -48,7 +48,6 @@ export function AIProfessionalSummary({
           industry: formData.industry,
           experience: formData.experienceLevel,
           skills: skills.map(s => s.name),
-          language: 'en'
         })
       })
 

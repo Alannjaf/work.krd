@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AIService } from '@/lib/ai'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
+import { detectLanguage } from '@/lib/languageDetection'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
@@ -42,11 +43,15 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('Job title and company are required')
     }
 
+    // Auto-detect language from input fields
+    const detectedLang = detectLanguage(`${jobTitle} ${company}`)
+    const resolvedLanguage = (detectedLang === 'ar' || detectedLang === 'ku') ? detectedLang : (language || 'en')
+
     const bulletPoints = await AIService.generateBulletPoints(
       jobTitle,
       company,
       industry || '',
-      { language: language || 'en' }
+      { language: resolvedLanguage }
     )
 
     // Update AI usage count using subscription ID

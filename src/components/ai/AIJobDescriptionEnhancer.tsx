@@ -39,7 +39,6 @@ export function AIJobDescriptionEnhancer({
         body: JSON.stringify({
           description: currentDescription,
           jobTitle: jobTitle,
-          language: 'en'
         })
       })
 

@@ -42,7 +42,6 @@ export function AISkillsSuggester({
         body: JSON.stringify({
           jobTitle: formData.jobTitle,
           industry: formData.industry,
-          language: 'en'
         })
       })
 
