@@ -12,6 +12,7 @@ import {
   Keyboard,
   ArrowRight,
   Target,
+  Languages,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { NavigationIndicator } from "@/components/ui/navigation-indicator";
@@ -25,10 +26,7 @@ import {
 import { useResumeData } from "@/hooks/useResumeData";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useAutoTranslation } from "@/hooks/useAutoTranslation";
-import {
-  scrollToTopForSectionChange,
-  scrollToTopAfterAsync,
-} from "@/lib/scrollUtils";
+import { scrollToTopForSectionChange } from "@/lib/scrollUtils";
 import toast from "react-hot-toast";
 
 // Dynamic imports for heavy components
@@ -179,42 +177,38 @@ function ResumeBuilderContent() {
     [setSelectedTemplate, queueSave]
   );
 
-  // Preview handler - triggers translation before opening preview
-  const handlePreview = useCallback(async () => {
-    // Check if there's non-English content that needs translation
-    if (hasNonEnglishContent(formData)) {
-      setIsAutoTranslating(true);
-
-      try {
-        const translatedData = await autoTranslateToEnglish(formData);
-        setFormData(translatedData);
-
-        // Force save the translated data immediately before preview
-        if (resumeId) {
-          await fetch(`/api/resumes/${resumeId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title: resumeTitle,
-              template: selectedTemplate,
-              formData: translatedData,
-            }),
-          });
-        }
-      } catch (error) {
-        console.error('[ResumeBuilder] Failed to translate before preview:', error);
-        toast.error(t("pages.resumeBuilder.messages.translationError"));
-      } finally {
-        setIsAutoTranslating(false);
-      }
-    }
-
-    // Open preview modal after translation
+  // Preview handler - opens preview directly (manual translate button available separately)
+  const handlePreview = useCallback(() => {
     setShowPreview(true);
+  }, []);
+
+  // Manual translate handler
+  const handleManualTranslate = useCallback(async () => {
+    setIsAutoTranslating(true);
+    try {
+      const translatedData = await autoTranslateToEnglish(formData);
+      setFormData(translatedData);
+
+      // Force save the translated data immediately
+      if (resumeId) {
+        await fetch(`/api/resumes/${resumeId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: resumeTitle,
+            template: selectedTemplate,
+            formData: translatedData,
+          }),
+        });
+      }
+    } catch {
+      toast.error(t("pages.resumeBuilder.messages.translationError"));
+    } finally {
+      setIsAutoTranslating(false);
+    }
   }, [
-    hasNonEnglishContent,
-    formData,
     autoTranslateToEnglish,
+    formData,
     setFormData,
     resumeId,
     resumeTitle,
@@ -236,63 +230,16 @@ function ResumeBuilderContent() {
       // Also trigger a direct save to ensure current state is captured
       queueSave(`section_${currentSection}`);
 
-      // Progressive auto-translation: only translate if there's non-English content
-      // Skip translation for template section (index 8) as there's no content to translate
-      if (currentSection < 8 && hasNonEnglishContent(formData)) {
-        setIsAutoTranslating(true);
-
-        try {
-          const translatedData = await autoTranslateToEnglish(formData);
-          setFormData(translatedData);
-
-          // Force save the translated data immediately
-          if (resumeId) {
-            await fetch(`/api/resumes/${resumeId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                title: resumeTitle,
-                template: selectedTemplate,
-                formData: translatedData,
-              }),
-            });
-          }
-        } catch (error) {
-          console.error('[ResumeBuilder] Failed to translate on next:', error);
-          toast.error(t("pages.resumeBuilder.messages.translationError"));
-        } finally {
-          setIsAutoTranslating(false);
-        }
-      }
 
       setCurrentSection(nextSection);
 
-      // Improved scroll to top with proper timing
-      if (currentSection < 8 && hasNonEnglishContent(formData)) {
-        // After async operations, use special scroll function
-        await scrollToTopAfterAsync();
-      } else {
-        // Regular section change scroll
-        await scrollToTopForSectionChange();
-      }
+      // Regular section change scroll
+      await scrollToTopForSectionChange();
 
       // Additional save after navigation to ensure state is persisted
       queueSave();
     }
-  }, [
-    currentSection,
-    formSections.length,
-    queueSave,
-    autoTranslateToEnglish,
-    hasNonEnglishContent,
-    formData,
-    setFormData,
-    resumeId,
-    resumeTitle,
-    selectedTemplate,
-    setIsAutoTranslating,
-    t,
-  ]);
+  }, [currentSection, formSections.length, queueSave]);
 
   const handlePrevious = useCallback(async () => {
     if (currentSection > 0) {
@@ -624,11 +571,30 @@ function ResumeBuilderContent() {
                 <Target className="h-4 w-4 mr-2" />
                 {t("pages.resumeBuilder.actions.ats")}
               </Button>
+              {hasNonEnglishContent(formData) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualTranslate}
+                  disabled={isAutoTranslating}
+                >
+                  {isAutoTranslating ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-gray-500 border-t-transparent rounded-full" />
+                      {t("pages.resumeBuilder.actions.translating")}
+                    </>
+                  ) : (
+                    <>
+                      <Languages className="h-4 w-4 mr-2" />
+                      {t("pages.resumeBuilder.actions.translateToEnglish")}
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePreview}
-                disabled={isAutoTranslating}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 {t("pages.resumeBuilder.actions.preview")}
@@ -738,23 +704,14 @@ function ResumeBuilderContent() {
                   {t("pages.resumeBuilder.actions.previous")}
                 </Button>
                 {currentSection === formSections.length - 1 ? (
-                  <Button onClick={handlePreview} disabled={isAutoTranslating}>
+                  <Button onClick={handlePreview}>
                     <Eye className="h-4 w-4 mr-2" />
                     {t("pages.resumeBuilder.actions.viewResume")}
                   </Button>
                 ) : (
-                  <Button onClick={handleNext} disabled={isAutoTranslating}>
-                    {isAutoTranslating ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-                        {t("pages.resumeBuilder.actions.translating")}
-                      </>
-                    ) : (
-                      <>
-                        {t("pages.resumeBuilder.actions.next")}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
+                  <Button onClick={handleNext}>
+                    {t("pages.resumeBuilder.actions.next")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 )}
               </div>
