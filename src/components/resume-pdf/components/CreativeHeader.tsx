@@ -3,6 +3,7 @@ import { View, Text, Image, Link } from '@react-pdf/renderer'
 import { styles } from '../styles/creativeStyles'
 import { PersonalInfo } from '../../../types/resume'
 import { hasDemographics } from '@/lib/pdf-helpers'
+import { formatFullDate } from '../utils/dateUtils'
 
 interface CreativeHeaderProps {
   personal: PersonalInfo
@@ -55,7 +56,7 @@ export const CreativeHeader: React.FC<CreativeHeaderProps> = ({ personal }) => {
       {hasDemographics(personal) && (
         <View style={styles.demographicsGrid}>
           {personal.dateOfBirth && (
-            <Text style={styles.demographicItem}>Born: {personal.dateOfBirth}</Text>
+            <Text style={styles.demographicItem}>Born: {formatFullDate(personal.dateOfBirth)}</Text>
           )}
           {personal.gender && (
             <Text style={styles.demographicItem}>Gender: {personal.gender}</Text>

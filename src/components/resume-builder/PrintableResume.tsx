@@ -51,7 +51,9 @@ export function PrintableResume({ data }: PrintableResumeProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return ''
     const date = new Date(dateString + '-01')
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    return `${month}/${year}`
   }
 
   return (
