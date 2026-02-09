@@ -47,8 +47,8 @@ export async function POST(req: Request) {
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature}) as WebhookEvent
     // Webhook signature verified
-  } catch {
-    // Webhook verification failed
+  } catch (error) {
+    console.error('[Webhook] Clerk webhook verification failed:', error);
     return new Response('Error occured', {
       status: 400
     })

@@ -32,9 +32,10 @@ export async function GET() {
       proPlanPrice: settings.proPlanPrice,
       maintenanceMode: settings.maintenanceMode
     })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Unauthorized' 
+  } catch (error) {
+    console.error('[AdminSettings] Failed to get settings:', error);
+    return NextResponse.json({
+      error: 'Unauthorized'
     }, { status: 403 })
   }
 }
@@ -50,9 +51,10 @@ export async function POST(req: Request) {
       success: true, 
       settings: savedSettings 
     })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Failed to update settings' 
+  } catch (error) {
+    console.error('[AdminSettings] Failed to update settings:', error);
+    return NextResponse.json({
+      error: 'Failed to update settings'
     }, { status: 500 })
   }
 }

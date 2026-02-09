@@ -130,7 +130,8 @@ export function ResumeManagement() {
       toast.success(`Deleted ${ids.length} resume(s)`);
       setSelectedIds([]);
       fetchResumes();
-    } catch {
+    } catch (error) {
+      console.error('[ResumeManagement] Failed to delete resumes:', error);
       toast.error("Failed to delete resumes");
     }
   };

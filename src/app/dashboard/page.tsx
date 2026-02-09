@@ -36,7 +36,8 @@ export default function Dashboard() {
           const data = await response.json()
           setResumes(data.resumes || [])
         }
-      } catch {
+      } catch (error) {
+        console.error('[Dashboard] Failed to fetch resumes:', error);
       } finally {
         setIsLoading(false)
       }
@@ -82,7 +83,8 @@ export default function Dashboard() {
                         } else {
                           toast.error(t('pages.dashboard.resumes.messages.deleteError'))
                         }
-                      } catch {
+                      } catch (error) {
+                        console.error('[Dashboard] Failed to delete resume:', error);
                         toast.error(t('pages.dashboard.resumes.messages.deleteErrorGeneric'))
                       } finally {
                         setDeletingId(null)
@@ -179,6 +181,7 @@ export default function Dashboard() {
                         onClick={() => router.push(`/resume-builder?id=${resume.id}`)}
                         className="h-8 w-8 p-0"
                         title={t('pages.dashboard.resumes.actions.editResume')}
+                        aria-label={t('pages.dashboard.resumes.actions.editResume')}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -189,6 +192,7 @@ export default function Dashboard() {
                         disabled={deletingId === resume.id}
                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                         title={t('pages.dashboard.resumes.actions.deleteResume')}
+                        aria-label={t('pages.dashboard.resumes.actions.deleteResume')}
                       >
                         {deletingId === resume.id ? (
                           <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full" />

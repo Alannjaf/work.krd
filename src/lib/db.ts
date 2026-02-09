@@ -199,7 +199,8 @@ async function getSystemSettings() {
         photoUploadPlans: parseJsonArray(settings.photoUploadPlans, ['BASIC', 'PRO']),
       }
     }
-  } catch {
+  } catch (error) {
+    console.error('[DB] Failed to get system settings:', error);
     // Table might not exist, use defaults
   }
   

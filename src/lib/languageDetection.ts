@@ -304,7 +304,8 @@ export function isValidWebsite(website: string): boolean {
   try {
     const url = new URL(website);
     return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
+  } catch (error) {
+    console.error('[LanguageDetection] Failed to validate website URL:', error);
     return false;
   }
 }

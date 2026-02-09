@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate PDF without watermark for admin users
-    const templateComponent = getTemplate(template, resumeData);
+    const templateComponent = await getTemplate(template, resumeData);
     
     if (!templateComponent) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });

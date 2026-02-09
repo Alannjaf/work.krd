@@ -12,8 +12,8 @@ export function useAdmin() {
           const data = await response.json()
           setIsAdmin(data.isAdmin)
         }
-      } catch {
-        // Error checking admin status
+      } catch (error) {
+        console.error('[useAdmin] Failed to check admin status:', error);
       } finally {
         setLoading(false)
       }

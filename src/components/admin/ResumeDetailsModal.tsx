@@ -55,7 +55,8 @@ export function ResumeDetailsModal({ resume, onClose }: ResumeDetailsModalProps)
       const data = await response.json();
       setResumeData(data);
       setShowPreview(true);
-    } catch {
+    } catch (error) {
+      console.error('[ResumeDetailsModal] Failed to fetch resume preview:', error);
       // Fallback to opening in new tab
       window.open(`/resumes/${resume.id}`, '_blank');
     } finally {
@@ -75,6 +76,7 @@ export function ResumeDetailsModal({ resume, onClose }: ResumeDetailsModalProps)
               size="sm"
               onClick={onClose}
               className="h-8 w-8 p-0"
+              aria-label="Close"
             >
               <X className="h-5 w-5" />
             </Button>

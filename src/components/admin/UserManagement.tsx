@@ -55,8 +55,8 @@ export function UserManagement() {
         const data = await response.json()
         setUsers(data.users)
       }
-    } catch {
-      // Silent error handling
+    } catch (error) {
+      console.error('[UserManagement] Failed to fetch users:', error);
     } finally {
       setLoading(false)
     }
@@ -79,7 +79,8 @@ export function UserManagement() {
       } else {
         toast.error('Failed to upgrade user plan')
       }
-    } catch {
+    } catch (error) {
+      console.error('[UserManagement] Failed to upgrade user plan:', error);
       toast.error('Error upgrading user plan')
     } finally {
       setUpgrading(false)

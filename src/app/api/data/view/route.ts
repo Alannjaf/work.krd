@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     let resumeData;
     try {
       resumeData = JSON.parse(decodeURIComponent(resumeDataStr));
-    } catch {
+    } catch (error) {
+      console.error('[DataView] Failed to parse resume data:', error);
       return NextResponse.json({ error: 'Invalid resume data' }, { status: 400 });
     }
 
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     initializePDFFonts();
     
     // Generate PDF (watermark will be handled via CSS overlay on client)
-    const templateComponent = getTemplate(template, resumeData);
+    const templateComponent = await getTemplate(template, resumeData);
     
     if (!templateComponent) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
@@ -69,7 +70,8 @@ export async function GET(request: NextRequest) {
         'X-Template-Access': hasAccess ? 'granted' : 'restricted',
       },
     });
-  } catch {
+  } catch (error) {
+    console.error('[DataView] Failed to generate preview PDF:', error);
     return NextResponse.json(
       { error: 'Failed to generate preview PDF' },
       { status: 500 }

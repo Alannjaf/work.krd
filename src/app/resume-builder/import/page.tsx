@@ -62,7 +62,8 @@ export default function ImportResumePage() {
         const permissionsResponse = await fetch('/api/user/permissions')
         const permissionsData = await permissionsResponse.json()
         setCanImport(permissionsData.canImport)
-      } catch {
+      } catch (error) {
+        console.error('[ImportResume] Failed to check import access:', error);
         setCanImport(false)
       }
     }
@@ -113,7 +114,8 @@ export default function ImportResumePage() {
       
       // Redirect to edit the new resume
       router.push(`/resume-builder?id=${result.resume.id}`)
-    } catch {
+    } catch (error) {
+      console.error('[ImportResume] Failed to save imported resume:', error);
       toast.error(t('import.messages.importError'))
     } finally {
       setIsSaving(false)

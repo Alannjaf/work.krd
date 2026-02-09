@@ -79,9 +79,10 @@ export async function GET() {
     })
 
     return NextResponse.json(templatesByTier)
-  } catch {
-    return NextResponse.json({ 
-      error: 'Failed to fetch templates' 
+  } catch (error) {
+    console.error('[Templates] Failed to fetch templates:', error);
+    return NextResponse.json({
+      error: 'Failed to fetch templates'
     }, { status: 500 })
   }
 }

@@ -490,7 +490,8 @@ Return valid JSON only, no explanations.`
           data: mergedData,
           extractedText: extractedText.slice(0, 500)})
 
-      } catch {
+      } catch (error) {
+        console.error('[ResumeUpload] AI extraction failed, falling back to basic:', error);
         // Return basic extraction if AI fails
         const basicData = ResumeParser.basicExtraction(await ResumeParser.extractText(buffer, file.type))
         
@@ -508,7 +509,8 @@ Return valid JSON only, no explanations.`
       }
     }
 
-  } catch {
+  } catch (error) {
+    console.error('[ResumeUpload] Failed to process resume:', error);
     return NextResponse.json(
       { error: 'Failed to process resume. Please try again.' },
       { status: 500 }

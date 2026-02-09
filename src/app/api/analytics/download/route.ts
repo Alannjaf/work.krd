@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     // Log download event (removed console.log)
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
+    console.error('[AnalyticsDownload] Failed to track download:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }

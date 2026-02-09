@@ -40,8 +40,8 @@ function PaymentInstructionsContent() {
           const data = await response.json()
           setPlans(data.plans)
         }
-      } catch {
-        // Pricing fetch failed
+      } catch (error) {
+        console.error('[PaymentInstructions] Failed to fetch pricing:', error);
       } finally {
         setLoading(false)
       }

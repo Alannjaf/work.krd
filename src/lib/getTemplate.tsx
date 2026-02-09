@@ -1,41 +1,21 @@
 import React from 'react';
 import { ResumeData } from '../types/resume';
-import EnhancedModernTemplate from '../components/resume-pdf/EnhancedModernTemplate';
-import { CreativeTemplate } from '../components/resume-pdf/CreativeTemplate';
-import { ExecutiveProfessionalTemplate } from '../components/resume-pdf/ExecutiveProfessionalTemplate';
-import { ElegantProfessionalTemplate } from '../components/resume-pdf/ElegantProfessionalTemplate';
-import { MinimalistModernTemplate } from '../components/resume-pdf/MinimalistModernTemplate';
-import { CreativeArtisticTemplate } from '../components/resume-pdf/CreativeArtisticTemplate';
-import { DeveloperTemplate } from '../components/resume-pdf/DeveloperTemplate';
-import { CorporateProfessionalTemplate } from '../components/resume-pdf/CorporateProfessionalTemplate';
-import { CreativeModernTemplate } from '../components/resume-pdf/CreativeModernTemplate';
-import { ClassicTraditionalTemplate } from '../components/resume-pdf/ClassicTraditionalTemplate';
 
-export const getTemplate = (template: string, data: ResumeData) => {
-  // Note: watermarking is now handled at the API level using pdf-lib
-  // This function always returns the clean template
-  
-  switch (template) {
-    case 'creative':
-      return <CreativeTemplate data={data} />;
-    case 'executive':
-      return <ExecutiveProfessionalTemplate data={data} />;
-    case 'elegant':
-      return <ElegantProfessionalTemplate data={data} />;
-    case 'minimalist':
-      return <MinimalistModernTemplate data={data} />;
-    case 'creative-artistic':
-      return <CreativeArtisticTemplate data={data} />;
-    case 'developer':
-      return <DeveloperTemplate data={data} />;
-    case 'corporate':
-      return <CorporateProfessionalTemplate data={data} />;
-    case 'creative-modern':
-      return <CreativeModernTemplate data={data} />;
-    case 'classic':
-      return <ClassicTraditionalTemplate data={data} />;
-    case 'modern':
-    default:
-      return <EnhancedModernTemplate data={data} />;
-  }
+const templateImports: Record<string, () => Promise<{ default: React.ComponentType<{ data: ResumeData }> }>> = {
+  'modern': () => import('../components/resume-pdf/EnhancedModernTemplate'),
+  'creative': () => import('../components/resume-pdf/CreativeTemplate').then(m => ({ default: m.CreativeTemplate })),
+  'executive': () => import('../components/resume-pdf/ExecutiveProfessionalTemplate').then(m => ({ default: m.ExecutiveProfessionalTemplate })),
+  'elegant': () => import('../components/resume-pdf/ElegantProfessionalTemplate').then(m => ({ default: m.ElegantProfessionalTemplate })),
+  'minimalist': () => import('../components/resume-pdf/MinimalistModernTemplate').then(m => ({ default: m.MinimalistModernTemplate })),
+  'creative-artistic': () => import('../components/resume-pdf/CreativeArtisticTemplate').then(m => ({ default: m.CreativeArtisticTemplate })),
+  'developer': () => import('../components/resume-pdf/DeveloperTemplate').then(m => ({ default: m.DeveloperTemplate })),
+  'corporate': () => import('../components/resume-pdf/CorporateProfessionalTemplate').then(m => ({ default: m.CorporateProfessionalTemplate })),
+  'creative-modern': () => import('../components/resume-pdf/CreativeModernTemplate').then(m => ({ default: m.CreativeModernTemplate })),
+  'classic': () => import('../components/resume-pdf/ClassicTraditionalTemplate').then(m => ({ default: m.ClassicTraditionalTemplate })),
+};
+
+export const getTemplate = async (template: string, data: ResumeData) => {
+  const importFn = templateImports[template] || templateImports['modern'];
+  const { default: TemplateComponent } = await importFn();
+  return <TemplateComponent data={data} />;
 };

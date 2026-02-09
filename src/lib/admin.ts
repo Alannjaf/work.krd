@@ -14,11 +14,13 @@ export async function isAdmin(): Promise<boolean> {
       ` as { role: string }[]
 
       return user?.[0]?.role === 'ADMIN'
-    } catch {
+    } catch (error) {
+      console.error('[Admin] Failed to query user role:', error);
       // Role column might not exist yet
       return false
     }
-  } catch {
+  } catch (error) {
+    console.error('[Admin] Failed to check admin status:', error);
     // Error checking admin status
     return false
   }

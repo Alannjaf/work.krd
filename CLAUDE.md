@@ -93,7 +93,7 @@ Five models: **User**, **Resume**, **ResumeSection**, **Subscription**, **System
 - `Subscription` — plan (FREE/BASIC/PRO), status, usage counters (resumeCount, aiUsageCount, exportCount, importCount, atsUsageCount).
 - `SystemSettings` — per-plan limits, available templates, feature flags (maintenanceMode, photoUploadPlans).
 
-Run `npx prisma generate` after schema changes. Use `npx prisma db push` or migrations for DB sync.
+Run `npx prisma generate` after schema changes. Use `npx prisma migrate dev` for schema changes (creates migration files). Use `npx prisma migrate deploy` in production.
 
 ## Coding Conventions
 

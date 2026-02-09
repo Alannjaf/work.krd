@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const hasAccess = limits.availableTemplates?.includes(template) || false;
     
     // Generate PDF (watermark will be handled via CSS overlay on client)
-    const templateComponent = getTemplate(template, resumeData);
+    const templateComponent = await getTemplate(template, resumeData);
     
     if (!templateComponent) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
@@ -63,7 +63,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         'X-Template-Access': hasAccess ? 'granted' : 'restricted',
       },
     });
-  } catch {
+  } catch (error) {
+    console.error('[TempPDF] Failed to generate PDF:', error);
     return NextResponse.json(
       { error: 'Failed to generate PDF' },
       { status: 500 }

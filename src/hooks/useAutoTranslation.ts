@@ -387,8 +387,8 @@ export function useAutoTranslation() {
                 hasTranslations = true
               }
             }
-          } catch {
-            // Translation failed for this item, continue with others
+          } catch (error) {
+            console.error('[AutoTranslation] Failed to translate item:', error);
           }
         }))
 
@@ -403,7 +403,8 @@ export function useAutoTranslation() {
       }
 
       return translatedData
-    } catch {
+    } catch (error) {
+      console.error('[AutoTranslation] Failed to auto-translate:', error);
       toast.error(t('pages.resumeBuilder.autoTranslate.error'))
       return formData
     }

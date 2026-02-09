@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { ResumeData } from '@/types/resume'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import toast from 'react-hot-toast'
-import { PDFDocument } from 'pdf-lib'
+
 import { shouldUsePDFJS } from '@/utils/browserDetection'
 import { detectBrowser, downloadBlob } from '@/lib/browser-utils'
 import { PreviewModalHeader } from './PreviewModalHeader'
@@ -45,9 +45,11 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
   const getPDFPageCount = async (blob: Blob): Promise<number> => {
     try {
       const arrayBuffer = await blob.arrayBuffer()
+      const { PDFDocument } = await import('pdf-lib')
       const pdfDoc = await PDFDocument.load(arrayBuffer)
       return pdfDoc.getPageCount()
-    } catch {
+    } catch (error) {
+      console.error('[PreviewModal] Failed to get PDF page count:', error);
       return 1
     }
   }
@@ -135,7 +137,8 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
         currentPdfUrlRef.current = null
         setPdfArrayBuffer(null)
       }
-    } catch {
+    } catch (error) {
+      console.error('[PreviewModal] Failed to generate PDF preview:', error);
       if (retryCount < 2) {
         setTimeout(() => generatePDFPreview(retryCount + 1), 1000 * (retryCount + 1))
         return
@@ -178,7 +181,8 @@ export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: Pre
       
       downloadBlob(blob, `${data.personal.fullName.replace(/\s+/g, '_')}_Resume.pdf`)
       toast.success('Resume downloaded successfully!')
-    } catch {
+    } catch (error) {
+      console.error('[PreviewModal] Failed to download resume:', error);
       toast.error('Failed to download resume')
     } finally {
       setIsGeneratingPDF(false)

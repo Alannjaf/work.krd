@@ -147,8 +147,8 @@ export function Pricing() {
           setPlans(data.plans)
           setVisibleCards(new Array(data.plans.length).fill(false))
         }
-      } catch {
-        // Error fetching pricing
+      } catch (error) {
+        console.error('[Pricing] Failed to fetch pricing:', error);
       } finally {
         setLoading(false)
       }

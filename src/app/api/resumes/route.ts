@@ -217,9 +217,10 @@ export async function POST(req: Request) {
       resume,
       message: 'Resume created successfully' 
     })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Failed to create resume' 
+  } catch (error) {
+    console.error('[Resumes] Failed to create resume:', error);
+    return NextResponse.json({
+      error: 'Failed to create resume'
     }, { status: 500 })
   }
 }

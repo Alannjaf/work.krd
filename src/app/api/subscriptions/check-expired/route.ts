@@ -65,7 +65,7 @@ export async function POST() {
             newPlan: 'FREE'
           }
         } catch (error) {
-          // Failed to downgrade user
+          console.error('[CheckExpired] Failed to downgrade user:', error);
           return {
             success: false,
             userId: subscription.userId,

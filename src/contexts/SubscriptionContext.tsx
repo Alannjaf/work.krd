@@ -38,18 +38,14 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
       setIsLoading(true);
       setError(null);
 
-      // Fetch both subscription data and permissions
-      const [subscriptionResponse, permissionsResponse] = await Promise.all([
-        fetch('/api/user/subscription'),
-        fetch('/api/user/permissions')
-      ]);
-
-      if (!subscriptionResponse.ok || !permissionsResponse.ok) {
+      // Fetch combined subscription data and permissions
+      const response = await fetch('/api/user/subscription-data');
+      if (!response.ok) {
         throw new Error('Failed to fetch subscription data');
       }
-
-      const subscriptionData = await subscriptionResponse.json();
-      const permissionsData = await permissionsResponse.json();
+      const data = await response.json();
+      const subscriptionData = data.subscription;
+      const permissionsData = data.permissions;
 
       const subscription: SubscriptionData = {
         plan: subscriptionData.currentPlan,

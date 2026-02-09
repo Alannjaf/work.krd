@@ -46,7 +46,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const translationLoader = translations[language]
         const loadedMessages = await translationLoader()
         setMessages(loadedMessages)
-      } catch {
+      } catch (error) {
+        console.error('[LanguageContext] Failed to load translations:', error);
         // Fallback to English on error
         setMessages(enTranslations)
       } finally {

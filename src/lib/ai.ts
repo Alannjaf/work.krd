@@ -72,8 +72,8 @@ Please provide only the summary text without any additional formatting or explan
       });
 
       return completion.choices[0]?.message?.content?.trim() || "";
-    } catch {
-      // AI generation error
+    } catch (error) {
+      console.error('[AI] Failed to generate summary:', error);
       throw new Error("Failed to generate professional summary");
     }
   }
@@ -129,8 +129,8 @@ Please provide only the enhanced description without any additional formatting o
       });
 
       return completion.choices[0]?.message?.content?.trim() || "";
-    } catch {
-      // AI generation error
+    } catch (error) {
+      console.error('[AI] Failed to enhance job description:', error);
       throw new Error("Failed to enhance job description");
     }
   }
@@ -185,8 +185,8 @@ Format: Return only skill names separated by newlines.`,
         .split("\n")
         .map((skill) => skill.trim())
         .filter((skill) => skill.length > 0);
-    } catch {
-      // AI generation error
+    } catch (error) {
+      console.error('[AI] Failed to generate skill suggestions:', error);
       throw new Error("Failed to generate skill suggestions");
     }
   }
@@ -252,8 +252,8 @@ Example format:
         .split("\n")
         .map((bullet) => bullet.replace(/^[•\-\*]\s*/, "").trim())
         .filter((bullet) => bullet.length > 0);
-    } catch {
-      // AI generation error
+    } catch (error) {
+      console.error('[AI] Failed to generate bullets:', error);
       throw new Error("Failed to generate bullet points");
     }
   }
@@ -312,8 +312,8 @@ IMPORTANT: Do NOT use any markdown formatting like **bold**, *italic*, or other 
       });
 
       return completion.choices[0]?.message?.content?.trim() || "";
-    } catch {
-      // AI generation error
+    } catch (error) {
+      console.error('[AI] Failed to improve content:', error);
       throw new Error("Failed to improve content");
     }
   }
@@ -362,8 +362,8 @@ IMPORTANT: Do NOT use any markdown formatting like **bold**, *italic*, or other 
       });
 
       return completion.choices[0]?.message?.content?.trim() || "";
-    } catch {
-      // AI translation error
+    } catch (error) {
+      console.error('[AI] Failed to translate content:', error);
       throw new Error("Failed to translate content");
     }
   }
@@ -460,8 +460,8 @@ IMPORTANT: Do NOT use any markdown formatting like **bold**, *italic*, or other 
       });
 
       return completion.choices[0]?.message?.content?.trim() || "";
-    } catch {
-      // AI translate & enhance error
+    } catch (error) {
+      console.error('[AI] Failed to translate and enhance content:', error);
       throw new Error("Failed to translate and enhance content");
     }
   }
@@ -675,7 +675,8 @@ IMPORTANT RULES:
         strengths: result.strengths || [],
         suggestions: result.suggestions || [],
       };
-    } catch {
+    } catch (error) {
+      console.error('[AI] Failed to analyze ATS score:', error);
       throw new Error("Failed to analyze ATS score");
     }
   }
@@ -812,7 +813,8 @@ IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, 
         missingKeywords: result.missingKeywords || [],
         suggestions: result.suggestions || [],
       };
-    } catch {
+    } catch (error) {
+      console.error('[AI] Failed to match keywords:', error);
       throw new Error("Failed to match keywords");
     }
   }

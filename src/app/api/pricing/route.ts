@@ -62,8 +62,8 @@ export async function GET() {
     ]
 
     return NextResponse.json({ plans })
-  } catch {
-    
+  } catch (error) {
+    console.error('[Pricing] Failed to fetch pricing plans:', error);
     // Return default pricing on error
     const defaultPlans = [
       {

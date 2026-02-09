@@ -134,6 +134,7 @@ export function ResumeTable({
                       onClick={() => onViewResume(resume)}
                       className="text-blue-600 hover:text-blue-900"
                       title="View Resume"
+                      aria-label="View Resume"
                     >
                       <Eye className="h-5 w-5" />
                     </button>
@@ -141,6 +142,7 @@ export function ResumeTable({
                       onClick={() => onDeleteResume(resume.id)}
                       className="text-red-600 hover:text-red-900"
                       title="Delete Resume"
+                      aria-label="Delete Resume"
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>

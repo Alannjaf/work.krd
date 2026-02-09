@@ -36,7 +36,7 @@ export function AppHeader({
   const _router = useRouter()
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { language, setLanguage } = useLanguage()
+  const { language, setLanguage, t } = useLanguage()
   const { isAdmin } = useAdmin()
 
   const toggleLangMenu = () => setIsLangMenuOpen(!isLangMenuOpen)
@@ -141,7 +141,7 @@ export function AppHeader({
                 className="flex items-center gap-2"
               >
                 <Shield className="h-4 w-4" />
-                Admin
+                {t('common.admin')}
               </Button>
             )}
 
@@ -155,6 +155,7 @@ export function AppHeader({
             size="sm"
             className="md:hidden"
             onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -167,7 +168,7 @@ export function AppHeader({
           <div className="px-4 py-4 space-y-4">
             {/* Mobile Language Selector */}
             <div>
-              <p className="text-sm font-medium mb-2">Language</p>
+              <p className="text-sm font-medium mb-2">{t('common.language')}</p>
               <div className="space-y-2">
                 {languages.map((lang) => (
                   <button
@@ -196,10 +197,10 @@ export function AppHeader({
                 className="w-full justify-start gap-2"
               >
                 <Shield className="h-4 w-4" />
-                Admin
+                {t('common.admin')}
               </Button>
             )}
-            
+
             {/* Mobile User Button */}
             <div className="flex justify-center pt-2">
               <UserButton />

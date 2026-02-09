@@ -21,11 +21,13 @@ export async function GET() {
       return NextResponse.json({ 
         isAdmin: user?.[0]?.role === 'ADMIN' 
       })
-    } catch {
+    } catch (error) {
+      console.error('[AdminStatus] Failed to query user role:', error);
       // Role column might not exist yet
       return NextResponse.json({ isAdmin: false })
     }
-  } catch {
+  } catch (error) {
+    console.error('[AdminStatus] Failed to check admin status:', error);
     return NextResponse.json({ isAdmin: false })
   }
 }

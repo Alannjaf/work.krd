@@ -186,6 +186,7 @@
       },
       "soon": "قريباً"
     },
+    "paymentNote": "نعمل بنشاط على دمج وسائل الدفع هذه. بمجرد توفرها، ستتمكن من ترقية خطتك بسلاسة. سنخبرك بمجرد جاهزية الدفع!",
     "paymentInstructions": {
       "pageTitle": "أكمل ترقية حسابك",
       "mobileBanking": "الخدمات المصرفية عبر الهاتف",
@@ -925,7 +926,17 @@
     "admin": "المدير",
     "tip": "نصيحة",
     "remove": "إزالة",
-    "add": "إضافة"
+    "add": "إضافة",
+    "premiumPreview": "معاينة القالب المميز",
+    "premiumRequired": "يتطلب هذا القالب خطة مميزة للتنزيل",
+    "upgradeNow": "ترقية الآن",
+    "resumePreview": "معاينة السيرة الذاتية",
+    "premium": "مميز",
+    "refresh": "تحديث",
+    "upgradeToDownload": "ترقية للتنزيل",
+    "downloading": "جاري التنزيل...",
+    "downloadPdf": "تنزيل PDF",
+    "mostPopular": "الأكثر شعبية"
   },
   "preview": {
     "sections": {

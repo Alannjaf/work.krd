@@ -37,9 +37,10 @@ export async function GET() {
         freeUsers: totalUsers - activeSubscriptions
       }
     })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Unauthorized or failed to fetch stats' 
+  } catch (error) {
+    console.error('[AdminStats] Failed to fetch stats:', error);
+    return NextResponse.json({
+      error: 'Unauthorized or failed to fetch stats'
     }, { status: 403 })
   }
 }

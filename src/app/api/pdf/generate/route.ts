@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { checkUserLimits } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { getTemplate } from '@/lib/getTemplate';
 import { generateWatermarkedPDF } from '@/lib/watermarkedTemplate';
 import { pdf } from '@react-pdf/renderer';
@@ -43,6 +44,13 @@ interface RequestBody {
 }
 
 export async function POST(request: NextRequest) {
+  const { success, resetIn } = rateLimit(request, {
+    maxRequests: 20,
+    windowSeconds: 60,
+    identifier: 'pdf',
+  });
+  if (!success) return rateLimitResponse(resetIn);
+
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -136,17 +144,6 @@ export async function POST(request: NextRequest) {
     // Sanitize summary
     resumeData.summary = sanitizeStringField(resumeData.summary);
 
-    // Log resume data structure for debugging (sanitized - no sensitive data)
-    console.log('PDF generation started:', {
-      template,
-      action,
-      hasPersonalInfo: !!resumeData.personal?.fullName,
-      personalInfoFields: resumeData.personal ? Object.keys(resumeData.personal) : [],
-      summaryLength: resumeData.summary?.length || 0,
-      experienceCount: resumeData.experience?.length || 0,
-      educationCount: resumeData.education?.length || 0,
-    });
-
     // Initialize fonts for Unicode support (Kurdish Sorani, Arabic, English)
     initializePDFFonts();
     
@@ -160,31 +157,23 @@ export async function POST(request: NextRequest) {
     try {
       if (shouldWatermark) {
         // Generate watermarked PDF for restricted templates
-        console.log('Generating watermarked PDF...');
         const watermarkedPDFBytes = await generateWatermarkedPDF(template, resumeData);
         buffer = watermarkedPDFBytes.buffer.slice(
           watermarkedPDFBytes.byteOffset,
           watermarkedPDFBytes.byteOffset + watermarkedPDFBytes.byteLength
         ) as ArrayBuffer;
-        console.log('Watermarked PDF generated successfully');
       } else {
         // Generate clean PDF for accessible templates
-        console.log('Getting template component...');
-        const templateComponent = getTemplate(template, resumeData);
-        
+        const templateComponent = await getTemplate(template, resumeData);
+
         if (!templateComponent) {
           console.error('Template component not found for template:', template);
           return NextResponse.json({ error: 'Template not found' }, { status: 404 });
         }
 
-        console.log('Creating PDF document...');
         const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
-        
-        console.log('Generating PDF blob...');
         const blob = await pdfDoc.toBlob();
-        console.log('Converting PDF blob to buffer...');
         buffer = await blob.arrayBuffer();
-        console.log('PDF generation completed successfully');
       }
     } catch (pdfError) {
       console.error('Error during PDF generation step:', pdfError);

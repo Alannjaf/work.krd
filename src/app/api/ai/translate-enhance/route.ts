@@ -1,10 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AIService } from '@/lib/ai'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { detectLanguage } from '@/lib/languageDetection'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const { success, resetIn } = rateLimit(req, {
+    maxRequests: 30,
+    windowSeconds: 60,
+    identifier: 'ai',
+  });
+  if (!success) return rateLimitResponse(resetIn);
+
   try {
     const { userId } = await auth()
     

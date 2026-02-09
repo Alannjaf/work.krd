@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { X, Download, RefreshCw, ArrowUp, Crown } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface PreviewModalHeaderProps {
   template: string
@@ -38,6 +39,7 @@ export function PreviewModalHeader({
   onPrevPage,
   onNextPage
 }: PreviewModalHeaderProps) {
+  const { t } = useLanguage()
   return (
     <>
       {isTemplateRestricted && (
@@ -46,8 +48,8 @@ export function PreviewModalHeader({
             <div className="flex items-center space-x-3">
               <Crown className="h-5 w-5" />
               <div>
-                <p className="font-semibold">Premium Template Preview</p>
-                <p className="text-sm opacity-90">This template requires a premium plan to download</p>
+                <p className="font-semibold">{t('common.premiumPreview')}</p>
+                <p className="text-sm opacity-90">{t('common.premiumRequired')}</p>
               </div>
             </div>
             <Button
@@ -57,7 +59,7 @@ export function PreviewModalHeader({
               onClick={() => window.open('/billing', '_blank')}
             >
               <ArrowUp className="h-4 w-4 mr-1" />
-              Upgrade Now
+              {t('common.upgradeNow')}
             </Button>
           </div>
         </div>
@@ -66,10 +68,10 @@ export function PreviewModalHeader({
       <div className="p-4 sm:p-6 border-b">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="flex-1">
-            <h2 className="text-lg sm:text-xl font-semibold">Resume Preview</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">{t('common.resumePreview')}</h2>
             {isTemplateRestricted && (
               <p className="text-sm text-orange-600 mt-1">
-                Template: {template.charAt(0).toUpperCase() + template.slice(1)} (Premium)
+                Template: {template.charAt(0).toUpperCase() + template.slice(1)} ({t('common.premium')})
               </p>
             )}
           </div>
@@ -90,7 +92,7 @@ export function PreviewModalHeader({
               className="text-xs sm:text-sm"
             >
               <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${isLoadingPreview ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('common.refresh')}
             </Button>
             {isTemplateRestricted ? (
               <Button
@@ -99,7 +101,7 @@ export function PreviewModalHeader({
                 className="text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
               >
                 <Crown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                Upgrade to Download
+                {t('common.upgradeToDownload')}
               </Button>
             ) : (
               <Button
@@ -111,17 +113,17 @@ export function PreviewModalHeader({
                 {isGeneratingPDF ? (
                   <>
                     <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
-                    Downloading...
+                    {t('common.downloading')}
                   </>
                 ) : (
                   <>
                     <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    Download PDF
+                    {t('common.downloadPdf')}
                   </>
                 )}
               </Button>
             )}
-            <Button variant="outline" onClick={onClose} size="sm" className="text-xs sm:text-sm">
+            <Button variant="outline" onClick={onClose} size="sm" className="text-xs sm:text-sm" aria-label={t('common.close')}>
               <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
@@ -145,6 +147,7 @@ function PageNavigationControls({ currentPage, totalPages, onPrevPage, onNextPag
         onClick={onPrevPage}
         disabled={currentPage <= 1}
         className="flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-md transition-colors text-blue-600 disabled:text-gray-400 font-semibold"
+        aria-label="Previous page"
       >
         ←
       </button>
@@ -155,6 +158,7 @@ function PageNavigationControls({ currentPage, totalPages, onPrevPage, onNextPag
         onClick={onNextPage}
         disabled={currentPage >= totalPages}
         className="flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-md transition-colors text-blue-600 disabled:text-gray-400 font-semibold"
+        aria-label="Next page"
       >
         →
       </button>

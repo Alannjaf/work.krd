@@ -158,6 +158,7 @@
       },
       "soon": "Soon"
     },
+    "paymentNote": "We're actively working on integrating these payment methods. Once available, you'll be able to upgrade your plan seamlessly. We'll notify you as soon as payments are ready!",
     "paymentInstructions": {
       "pageTitle": "Complete Your Upgrade",
       "mobileBanking": "Mobile Banking",
@@ -979,7 +980,17 @@
     "admin": "Admin",
     "tip": "Tip",
     "remove": "Remove",
-    "add": "Add"
+    "add": "Add",
+    "premiumPreview": "Premium Template Preview",
+    "premiumRequired": "This template requires a premium plan to download",
+    "upgradeNow": "Upgrade Now",
+    "resumePreview": "Resume Preview",
+    "premium": "Premium",
+    "refresh": "Refresh",
+    "upgradeToDownload": "Upgrade to Download",
+    "downloading": "Downloading...",
+    "downloadPdf": "Download PDF",
+    "mostPopular": "Most Popular"
   },
   "terms": {
     "title": "Terms of Service",

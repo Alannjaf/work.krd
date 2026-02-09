@@ -42,9 +42,10 @@ export async function GET() {
     }))
 
     return NextResponse.json({ users: usersWithRole })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Unauthorized or failed to fetch users' 
+  } catch (error) {
+    console.error('[AdminUsers] Failed to fetch users:', error);
+    return NextResponse.json({
+      error: 'Unauthorized or failed to fetch users'
     }, { status: 403 })
   }
 }

@@ -61,8 +61,8 @@ export default function BillingPage() {
             current: plan.name === subscription.plan
           })))
         }
-      } catch {
-        // Data fetch failed
+      } catch (error) {
+        console.error('[Billing] Failed to fetch billing data:', error);
       } finally {
         setLoading(false)
       }
@@ -191,7 +191,7 @@ export default function BillingPage() {
                 {plan.popular && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <Star className="h-3 w-3 mr-1" />
-                    Most Popular
+                    {t('common.mostPopular')}
                   </Badge>
                 )}
                 
@@ -278,8 +278,7 @@ export default function BillingPage() {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> We&apos;re actively working on integrating these payment methods. 
-              Once available, you&apos;ll be able to upgrade your plan seamlessly. We&apos;ll notify you as soon as payments are ready!
+              {t('billing.paymentNote')}
             </p>
           </div>
         </div>

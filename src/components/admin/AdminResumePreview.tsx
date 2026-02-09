@@ -61,7 +61,8 @@ export function AdminResumePreview({
       const url = URL.createObjectURL(blob);
       pdfUrlRef.current = url;
       setPdfUrl(url);
-    } catch {
+    } catch (error) {
+      console.error('[AdminResumePreview] Failed to generate PDF preview:', error);
       toast.error('Failed to generate PDF preview');
     } finally {
       setLoading(false);
@@ -83,7 +84,8 @@ export function AdminResumePreview({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success('Resume downloaded successfully!');
-    } catch {
+    } catch (error) {
+      console.error('[AdminResumePreview] Failed to download resume:', error);
       toast.error('Failed to download resume');
     }
   };
@@ -152,6 +154,7 @@ export function AdminResumePreview({
                   onClick={handleZoomOut}
                   className="p-1 hover:bg-gray-100 rounded"
                   disabled={zoom <= 0.5}
+                  aria-label="Zoom out"
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
@@ -162,12 +165,14 @@ export function AdminResumePreview({
                   onClick={handleZoomIn}
                   className="p-1 hover:bg-gray-100 rounded"
                   disabled={zoom >= 3}
+                  aria-label="Zoom in"
                 >
                   <ZoomIn className="h-4 w-4" />
                 </button>
                 <button
                   onClick={handleResetZoom}
                   className="p-1 hover:bg-gray-100 rounded ml-1"
+                  aria-label="Reset zoom"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>
@@ -200,6 +205,7 @@ export function AdminResumePreview({
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-200 rounded-lg"
+              aria-label="Close"
             >
               <X className="h-5 w-5" />
             </button>

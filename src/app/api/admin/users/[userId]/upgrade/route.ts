@@ -55,9 +55,10 @@ export async function POST(
       success: true,
       message: `User upgraded to ${plan} plan`
     })
-  } catch {
-    return NextResponse.json({ 
-      error: 'Failed to upgrade user' 
+  } catch (error) {
+    console.error('[AdminUpgrade] Failed to upgrade user:', error);
+    return NextResponse.json({
+      error: 'Failed to upgrade user'
     }, { status: 500 })
   }
 }

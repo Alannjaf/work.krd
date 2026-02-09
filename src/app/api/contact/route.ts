@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 // Lazy initialization to avoid build-time errors when API key is not set
 const getResend = () => new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
+  const { success, resetIn } = rateLimit(request, {
+    maxRequests: 5,
+    windowSeconds: 900,
+    identifier: 'contact',
+  });
+  if (!success) return rateLimitResponse(resetIn);
+
   try {
     const body = await request.json()
     const { firstName, lastName, email, subject, message } = body
@@ -100,7 +108,8 @@ Sent from Work.krd contact form
       { message: 'Message sent successfully' },
       { status: 200 }
     )
-  } catch {
+  } catch (error) {
+    console.error('[Contact] Failed to send contact email:', error);
     return NextResponse.json(
       { error: 'Failed to send message. Please try again.' },
       { status: 500 }

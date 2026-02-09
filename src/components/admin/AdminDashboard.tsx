@@ -60,8 +60,8 @@ export function AdminDashboard() {
       const response = await fetch('/api/admin/stats')
       const data = await response.json()
       setStats(data)
-    } catch {
-      // Silent error handling
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to fetch stats:', error);
     }
   }
 
@@ -102,8 +102,8 @@ export function AdminDashboard() {
         proPlanPrice: data.proPlanPrice ?? 10000,
         maintenanceMode: data.maintenanceMode ?? false
       })
-    } catch {
-      // Silent error handling
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to fetch settings:', error);
     } finally {
       setLoading(false)
     }
@@ -114,8 +114,8 @@ export function AdminDashboard() {
       const response = await fetch('/api/subscriptions/check-expired')
       const data = await response.json()
       setSubscriptionStatus(data)
-    } catch {
-      // Silent error handling
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to fetch subscription status:', error);
     }
   }
 
@@ -136,7 +136,8 @@ export function AdminDashboard() {
       } else {
         toast.error('Failed to check subscriptions')
       }
-    } catch {
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to check expired subscriptions:', error);
       toast.error('Failed to check subscriptions')
     } finally {
       setCheckingSubscriptions(false)
@@ -156,7 +157,8 @@ export function AdminDashboard() {
       } else {
         toast.error('Failed to save settings')
       }
-    } catch {
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to save settings:', error);
       toast.error('Failed to save settings')
     } finally {
       setSaving(false)

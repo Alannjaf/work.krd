@@ -36,8 +36,8 @@ export function CropModal({ isOpen, onClose, imageDataURL, templateId, onSave }:
           { width: cropConfig.defaultSize, height: cropConfig.defaultSize * (1 / cropConfig.aspectRatio) }
         )
         setPreviewImage(preview)
-      } catch {
-        // Preview generation failed
+      } catch (error) {
+        console.error('[CropModal] Failed to generate preview:', error);
       }
     }
 
@@ -56,8 +56,8 @@ export function CropModal({ isOpen, onClose, imageDataURL, templateId, onSave }:
       )
       onSave(croppedImage, currentCrop)
       onClose()
-    } catch {
-      // Crop save failed
+    } catch (error) {
+      console.error('[CropModal] Failed to save crop:', error);
     } finally {
       setIsProcessing(false)
     }
@@ -106,6 +106,7 @@ export function CropModal({ isOpen, onClose, imageDataURL, templateId, onSave }:
             <button
               onClick={handleCancel}
               className="text-gray-400 hover:text-gray-600 transition-colors ml-2"
+              aria-label="Close"
             >
               <X className="h-6 w-6" />
             </button>

@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ id });
-  } catch {
+  } catch (error) {
+    console.error('[TempCreate] Failed to store temporary data:', error);
     return NextResponse.json(
       { error: 'Failed to store data' },
       { status: 500 }

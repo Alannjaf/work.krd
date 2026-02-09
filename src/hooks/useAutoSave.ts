@@ -47,7 +47,8 @@ export function useAutoSave({
         setResumeId(data.resume.id)
         setLastSavedData({ ...formData })
         return true
-      } catch {
+      } catch (error) {
+        console.error('[AutoSave] Failed to create resume:', error);
         return false
       }
     }
@@ -71,7 +72,8 @@ export function useAutoSave({
       // Update last saved data
       setLastSavedData({ ...formData })
       return true
-    } catch {
+    } catch (error) {
+      console.error('[AutoSave] Failed to quick save:', error);
       return false
     }
   }, [resumeId, formData, selectedTemplate, resumeTitle, t, setResumeId])

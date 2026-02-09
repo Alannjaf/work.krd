@@ -60,7 +60,8 @@ export function Contact() {
         setSubmitStatus('error')
         setErrorMessage(data.error || 'Failed to send message')
       }
-    } catch {
+    } catch (error) {
+      console.error('[Contact] Failed to submit contact form:', error);
       setSubmitStatus('error')
       setErrorMessage('Network error. Please try again.')
     } finally {

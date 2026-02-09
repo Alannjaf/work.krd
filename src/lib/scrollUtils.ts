@@ -36,8 +36,8 @@ export async function scrollToTop(options: ScrollOptions = {}): Promise<void> {
         document.body.scrollIntoView({ behavior, block: 'start' })
         
         resolve(true)
-      } catch {
-        // Scroll attempt failed
+      } catch (error) {
+        console.error('[ScrollUtils] Scroll attempt failed:', error);
         resolve(false)
       }
     })

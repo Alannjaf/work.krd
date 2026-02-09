@@ -32,8 +32,8 @@ async function getSystemSettings() {
     if (settingsRecord && settingsRecord.length > 0) {
       return settingsRecord[0]
     }
-  } catch {
-    // Silent error handling
+  } catch (error) {
+    console.error('[Subscription] Failed to fetch system settings:', error);
   }
   
   const defaults: SystemSettings = {
@@ -117,7 +117,8 @@ export async function GET() {
       atsUsageCount: user.subscription.atsUsageCount || 0,
       atsUsageLimit
     })
-  } catch {
+  } catch (error) {
+    console.error('[Subscription] Failed to get subscription info:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

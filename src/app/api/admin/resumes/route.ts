@@ -29,7 +29,8 @@ export async function GET(req: NextRequest) {
       if (!user || user.role !== 'ADMIN') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
-    } catch {
+    } catch (error) {
+      console.error('[AdminResumes] Failed to check user role:', error);
       // If role column doesn't exist, just check if user exists
       const userExists = await prisma.user.findUnique({
         where: { clerkId: userId }});
@@ -45,8 +46,13 @@ export async function GET(req: NextRequest) {
     const template = searchParams.get('template') || '';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const ALLOWED_SORT_FIELDS = ['createdAt', 'updatedAt', 'title', 'template', 'status'] as const;
+    const ALLOWED_SORT_ORDERS = ['asc', 'desc'] as const;
+
+    const rawSortBy = searchParams.get('sortBy') || 'createdAt';
+    const rawSortOrder = searchParams.get('sortOrder') || 'desc';
+    const sortBy = ALLOWED_SORT_FIELDS.includes(rawSortBy as typeof ALLOWED_SORT_FIELDS[number]) ? rawSortBy : 'createdAt';
+    const sortOrder = ALLOWED_SORT_ORDERS.includes(rawSortOrder as typeof ALLOWED_SORT_ORDERS[number]) ? rawSortOrder : 'desc';
 
     const where = {
       AND: [
@@ -82,7 +88,8 @@ export async function GET(req: NextRequest) {
           orderBy: { [sortBy]: sortOrder }}),
         prisma.resume.count({ where }),
       ]);
-    } catch {
+    } catch (error) {
+      console.error('[AdminResumes] Failed to fetch resumes from database:', error);
       // Return empty array if tables don't exist yet
     }
 
@@ -93,7 +100,8 @@ export async function GET(req: NextRequest) {
         page,
         limit,
         totalPages: Math.ceil(total / limit)}});
-  } catch {
+  } catch (error) {
+    console.error('[AdminResumes] Failed to get resumes:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
@@ -124,7 +132,8 @@ export async function DELETE(req: NextRequest) {
       where: { id: { in: ids } }});
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('[AdminResumes] Failed to delete resumes:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

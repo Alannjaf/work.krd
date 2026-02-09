@@ -201,7 +201,8 @@ function ResumeBuilderContent() {
             }),
           });
         }
-      } catch {
+      } catch (error) {
+        console.error('[ResumeBuilder] Failed to translate before preview:', error);
         toast.error(t("pages.resumeBuilder.messages.translationError"));
       } finally {
         setIsAutoTranslating(false);
@@ -256,7 +257,8 @@ function ResumeBuilderContent() {
               }),
             });
           }
-        } catch {
+        } catch (error) {
+          console.error('[ResumeBuilder] Failed to translate on next:', error);
           toast.error(t("pages.resumeBuilder.messages.translationError"));
         } finally {
           setIsAutoTranslating(false);
@@ -424,8 +426,8 @@ function ResumeBuilderContent() {
 
           toast.success(t("pages.resumeBuilder.messages.importSuccess"));
           return;
-        } catch {
-          // Error parsing imported data
+        } catch (error) {
+          console.error('[ResumeBuilder] Failed to parse imported data:', error);
         }
       }
 
@@ -499,7 +501,8 @@ function ResumeBuilderContent() {
         if (shouldPreview === "true") {
           setShowPreview(true);
         }
-      } catch {
+      } catch (error) {
+        console.error('[ResumeBuilder] Failed to load resume:', error);
         toast.error(t("pages.resumeBuilder.messages.loadError"));
         router.push("/dashboard");
       } finally {

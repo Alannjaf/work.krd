@@ -48,7 +48,8 @@ export function ResumeFilters({
           );
           setTemplates(uniqueTemplates.length > 0 ? uniqueTemplates : getAllTemplates());
         }
-      } catch {
+      } catch (error) {
+        console.error('[ResumeFilters] Failed to fetch templates:', error);
         // Fallback to hardcoded templates if API fails
         setTemplates(getAllTemplates());
       }

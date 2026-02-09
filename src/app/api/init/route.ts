@@ -5,10 +5,11 @@ export async function GET() {
   try {
     await initializeDatabase()
     return NextResponse.json({ success: true, message: 'Database initialized' })
-  } catch {
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to initialize database' 
+  } catch (error) {
+    console.error('[Init] Failed to initialize database:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to initialize database'
     }, { status: 500 })
   }
 }

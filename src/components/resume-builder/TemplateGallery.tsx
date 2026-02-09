@@ -54,8 +54,8 @@ export function TemplateGallery({
           const data = await response.json()
           setTemplatesByTier(data)
         }
-      } catch {
-        // Template fetch failed, will use defaults
+      } catch (error) {
+        console.error('[TemplateGallery] Failed to fetch templates:', error);
       } finally {
         setIsLoading(false)
       }

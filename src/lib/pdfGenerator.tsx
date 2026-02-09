@@ -42,7 +42,8 @@ export const generateResumePDF = async (
 
     downloadBlob(blob, finalFileName)
     return true
-  } catch {
+  } catch (error) {
+    console.error('[PDFGenerator] Failed to generate PDF:', error);
     throw new Error('Failed to generate PDF')
   }
 }
@@ -78,7 +79,8 @@ export const getResumePDFBlob = async (
     }
     
     return new Blob([bytes], { type: mimeType })
-  } catch {
+  } catch (error) {
+    console.error('[PDFGenerator] Failed to generate PDF blob:', error);
     throw new Error('Failed to generate PDF blob')
   }
 }

@@ -10,7 +10,8 @@ export async function GET() {
     let resumeCount = 0;
     try {
       resumeCount = await prisma.resume.count();
-    } catch {
+    } catch (error) {
+      console.error('[TestDB] Failed to count resumes:', error);
       // Resume table might not exist yet
     }
     

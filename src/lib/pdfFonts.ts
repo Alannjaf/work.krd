@@ -34,9 +34,6 @@ export function initializePDFFonts(): void {
   // Custom font registration is disabled
   // fontkit cannot reliably parse font files in serverless environments
   // This causes "Unknown font format" errors even with valid TTF files
-  console.log(
-    "PDF fonts: Using system fonts (Helvetica) - custom fonts disabled for serverless compatibility"
-  );
 }
 
 /**
@@ -44,9 +41,6 @@ export function initializePDFFonts(): void {
  */
 export async function registerPDFFonts(): Promise<void> {
   // Custom font registration is disabled
-  console.log(
-    "PDF fonts: Using system fonts (Helvetica) - custom fonts disabled for serverless compatibility"
-  );
 }
 
 /**
