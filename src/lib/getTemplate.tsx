@@ -12,6 +12,7 @@ const templateImports: Record<string, () => Promise<{ default: React.ComponentTy
   'corporate': () => import('../components/resume-pdf/CorporateProfessionalTemplate').then(m => ({ default: m.CorporateProfessionalTemplate })),
   'creative-modern': () => import('../components/resume-pdf/CreativeModernTemplate').then(m => ({ default: m.CreativeModernTemplate })),
   'classic': () => import('../components/resume-pdf/ClassicTraditionalTemplate').then(m => ({ default: m.ClassicTraditionalTemplate })),
+  'kurdish-modern': () => import('../components/resume-pdf/KurdishModernTemplate'),
 };
 
 export const getTemplate = async (template: string, data: ResumeData, watermark?: boolean) => {

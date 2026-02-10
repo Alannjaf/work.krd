@@ -68,6 +68,12 @@ export const getAllTemplates = (): TemplateInfo[] => {
       name: 'Classic Traditional',
       description: 'Traditional, conservative professional template with timeless design elements',
       category: 'professional'
+    },
+    {
+      id: 'kurdish-modern',
+      name: 'کوردی مۆدێرن',
+      description: 'Full RTL layout for Kurdish (Sorani) with NotoSansArabic typography and mirrored design',
+      category: 'professional'
     }
   ]
 }
