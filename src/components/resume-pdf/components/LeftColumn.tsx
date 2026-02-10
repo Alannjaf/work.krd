@@ -93,9 +93,9 @@ export const LeftColumn: React.FC<LeftColumnProps> = ({ data, isRTL = false }) =
                 <View style={{ marginTop: 4 }}>
                   {parseHtmlToPdf(edu.achievements, {
                     text: {
-                      fontSize: 9,
+                      fontSize: isRTL ? 8 : 9,
                       color: '#4b5563',
-                      lineHeight: 1.4,
+                      lineHeight: isRTL ? 1.8 : 1.4,
                       ...(isRTL ? { textAlign: 'right' as const } : {}),
                     },
                   }).elements}

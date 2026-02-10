@@ -28,7 +28,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
     <View style={isRTL ? kurdishStyles.mainColumn : styles.rightColumn}>
       {/* Summary Section */}
       {data.summary && (
-        <View style={styles.section}>
+        <View style={isRTL ? kurdishStyles.section : styles.section}>
           <Text style={isRTL ? kurdishStyles.sectionTitle : styles.sectionTitle}>
             {isRTL ? 'پوختەی پیشەیی' : 'Professional Summary'}
           </Text>
@@ -38,7 +38,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
 
       {/* Experience Section */}
       {experiences.length > 0 && (
-        <View style={styles.section}>
+        <View style={isRTL ? kurdishStyles.section : styles.section}>
           {experiences.map((exp, index) => {
             if (index === 0) {
               return (
@@ -54,7 +54,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
                       {isRTL ? 'ئەزموونی کار' : 'Professional Experience'}
                     </Text>
                     <View style={ex.experienceHeader}>
-                      <View style={{ flex: 1 }}>
+                      <View style={{ flex: 1, minWidth: 0 }}>
                         <Text style={ex.jobTitle}>{exp.jobTitle}</Text>
                         <Text style={ex.company}>{exp.company}</Text>
                         <Text style={ex.jobLocation}>{exp.location}</Text>
@@ -65,7 +65,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
                     </View>
                   </View>
                   {exp.description && (
-                    <View style={{ marginTop: 4 }}>
+                    <View style={{ marginTop: 6 }}>
                       {parseHtmlToPdf(exp.description, ex).elements}
                     </View>
                   )}
@@ -82,7 +82,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
                   wrap={false}
                 >
                   <View style={ex.experienceHeader}>
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={ex.jobTitle}>{exp.jobTitle}</Text>
                       <Text style={ex.company}>{exp.company}</Text>
                       <Text style={ex.jobLocation}>{exp.location}</Text>
@@ -92,7 +92,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
                     </Text>
                   </View>
                   {exp.description && (
-                    <View style={{ marginTop: 4 }}>
+                    <View style={{ marginTop: 6 }}>
                       {parseHtmlToPdf(exp.description, ex).elements}
                     </View>
                   )}
@@ -105,7 +105,7 @@ export const RightColumn: React.FC<RightColumnProps> = ({ data, experiences, isR
 
       {/* Projects Section */}
       {data.projects && data.projects.length > 0 && (
-        <View style={styles.section}>
+        <View style={isRTL ? kurdishStyles.section : styles.section}>
           <Text style={isRTL ? kurdishStyles.sectionTitle : styles.sectionTitle}>
             {isRTL ? 'پرۆژەکان' : 'Notable Projects'}
           </Text>
