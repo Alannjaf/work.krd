@@ -4,6 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ['@sparticuz/chromium-min', 'puppeteer-core'],
   reactStrictMode: true,
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -20,27 +21,6 @@ const nextConfig = {
       underscore: require.resolve('underscore'),
     }
     return config
-  },
-  async headers() {
-    return [
-      {
-        source: '/pdf.worker.min.mjs',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'text/javascript',
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-        ],
-      },
-    ];
   },
 }
 

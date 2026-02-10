@@ -23,30 +23,14 @@ import {
   FormSectionRenderer,
   FormSectionRendererRef,
 } from "@/components/resume-builder/sections/FormSectionRenderer";
+import { SectionTabs } from "@/components/resume-builder/SectionTabs";
+import { LivePreviewPanel } from "@/components/resume-builder/LivePreviewPanel";
+import { MobilePreviewSheet } from "@/components/resume-builder/MobilePreviewSheet";
 import { useResumeData } from "@/hooks/useResumeData";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useAutoTranslation } from "@/hooks/useAutoTranslation";
 import { scrollToTopForSectionChange } from "@/lib/scrollUtils";
 import toast from "react-hot-toast";
-
-// Dynamic imports for heavy components
-const PreviewModal = dynamic(
-  () =>
-    import("@/components/resume-builder/PreviewModal").then((mod) => ({
-      default: mod.PreviewModal,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 flex flex-col items-center">
-          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mb-4" />
-          <p className="text-gray-600">Loading PDF preview...</p>
-        </div>
-      </div>
-    ),
-  }
-);
 
 const ATSOptimization = dynamic(
   () =>
@@ -111,7 +95,6 @@ function ResumeBuilderContent() {
 
   // State management
   const [currentSection, setCurrentSection] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
   const [showATS, setShowATS] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [isSaving, setIsSaving] = useState(false);
@@ -125,7 +108,8 @@ function ResumeBuilderContent() {
 
   // Refs
   const summaryTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const formSectionRef = useRef<FormSectionRendererRef>(null); // Reference to current form section for forced updates
+  const formSectionRef = useRef<FormSectionRendererRef>(null);
+  const formScrollRef = useRef<HTMLDivElement>(null);
 
   // Custom hooks
   const {
@@ -177,11 +161,6 @@ function ResumeBuilderContent() {
     [setSelectedTemplate, queueSave]
   );
 
-  // Preview handler - opens preview directly (manual translate button available separately)
-  const handlePreview = useCallback(() => {
-    setShowPreview(true);
-  }, []);
-
   // Manual translate handler
   const handleManualTranslate = useCallback(async () => {
     setIsAutoTranslating(true);
@@ -222,36 +201,34 @@ function ResumeBuilderContent() {
     if (currentSection < formSections.length - 1) {
       const nextSection = currentSection + 1;
 
-      // Force save current section data before navigation using section renderer ref
       if (formSectionRef.current) {
         formSectionRef.current.triggerSectionSave();
       }
 
-      // Also trigger a direct save to ensure current state is captured
       queueSave(`section_${currentSection}`);
-
-
       setCurrentSection(nextSection);
 
-      // Regular section change scroll
+      // Scroll form panel to top
+      if (formScrollRef.current) {
+        formScrollRef.current.scrollTop = 0;
+      }
       await scrollToTopForSectionChange();
-
-      // Additional save after navigation to ensure state is persisted
       queueSave();
     }
   }, [currentSection, formSections.length, queueSave]);
 
   const handlePrevious = useCallback(async () => {
     if (currentSection > 0) {
-      // Force save current section data before navigation using section renderer ref
       if (formSectionRef.current) {
         formSectionRef.current.triggerSectionSave();
       }
 
-      // Also trigger a direct save to ensure current state is captured
       queueSave(`section_${currentSection}`);
-
       setCurrentSection(currentSection - 1);
+
+      if (formScrollRef.current) {
+        formScrollRef.current.scrollTop = 0;
+      }
       await scrollToTopForSectionChange();
     }
   }, [currentSection, queueSave]);
@@ -260,15 +237,16 @@ function ResumeBuilderContent() {
     async (newSection: number) => {
       if (newSection === currentSection) return;
 
-      // Force save current section data before navigation using section renderer ref
       if (formSectionRef.current) {
         formSectionRef.current.triggerSectionSave();
       }
 
-      // Also trigger a direct save to ensure current state is captured
       queueSave(`section_${currentSection}`);
-
       setCurrentSection(newSection);
+
+      if (formScrollRef.current) {
+        formScrollRef.current.scrollTop = 0;
+      }
       await scrollToTopForSectionChange();
       queueSave();
     },
@@ -279,7 +257,6 @@ function ResumeBuilderContent() {
   const handleSave = useCallback(async () => {
     if (isSaving) return;
 
-    // Validate title
     if (!resumeTitle || resumeTitle.trim() === "") {
       setTitleError(true);
       toast.error(t("pages.resumeBuilder.errors.titleRequired"));
@@ -289,7 +266,6 @@ function ResumeBuilderContent() {
     setIsSaving(true);
     try {
       if (!resumeId) {
-        // Create new resume
         const response = await fetch("/api/resumes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -309,7 +285,6 @@ function ResumeBuilderContent() {
         setLastSavedData({ ...formData });
         toast.success(t("pages.resumeBuilder.messages.resumeCreated"));
       } else {
-        // Update existing resume
         const response = await fetch(`/api/resumes/${resumeId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -350,7 +325,6 @@ function ResumeBuilderContent() {
   // Load existing resume on mount
   useEffect(() => {
     const loadResume = async () => {
-      // Check for imported resume data first
       const importedData = sessionStorage.getItem("importedResumeData");
       const importedTitle = sessionStorage.getItem("importedResumeTitle");
 
@@ -367,7 +341,6 @@ function ResumeBuilderContent() {
           setLastSavedData({ ...parsedData });
           setResumeTitle(title);
 
-          // Clear session storage
           sessionStorage.removeItem("importedResumeData");
           sessionStorage.removeItem("importedResumeTitle");
 
@@ -396,7 +369,6 @@ function ResumeBuilderContent() {
         setResumeTitle(resume.title || "");
         setSelectedTemplate(resume.template || "modern");
 
-        // Ensure all items have IDs
         let idCounter = 0;
         const generateId = () => `${Date.now()}_${++idCounter}`;
 
@@ -442,12 +414,6 @@ function ResumeBuilderContent() {
 
         setFormData(formDataWithIds);
         setLastSavedData({ ...formDataWithIds });
-
-        // Check for preview parameter
-        const shouldPreview = searchParams.get("preview");
-        if (shouldPreview === "true") {
-          setShowPreview(true);
-        }
       } catch (error) {
         console.error('[ResumeBuilder] Failed to load resume:', error);
         toast.error(t("pages.resumeBuilder.messages.loadError"));
@@ -468,10 +434,6 @@ function ResumeBuilderContent() {
           case "s":
             event.preventDefault();
             handleSave();
-            break;
-          case "p":
-            event.preventDefault();
-            handlePreview();
             break;
         }
       } else {
@@ -498,7 +460,7 @@ function ResumeBuilderContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleSave, handlePrevious, handleNext, handlePreview]);
+  }, [handleSave, handlePrevious, handleNext]);
 
   if (isLoading) {
     return (
@@ -512,7 +474,7 @@ function ResumeBuilderContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <AppHeader
         title={t("pages.resumeBuilder.title")}
         showBackButton={true}
@@ -522,8 +484,8 @@ function ResumeBuilderContent() {
 
       {/* Resume Controls Section */}
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="max-w-full mx-auto px-4 sm:px-6 py-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             {/* Resume Title */}
             <div className="flex flex-col">
               <label
@@ -594,11 +556,16 @@ function ResumeBuilderContent() {
                   )}
                 </Button>
               )}
+              {/* Preview button - mobile only since desktop has inline preview */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handlePreview}
-                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                className="lg:hidden h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                onClick={() => {
+                  // The MobilePreviewSheet FAB handles this, but this is an additional entry point
+                  const fab = document.querySelector('[aria-label="Preview resume"]') as HTMLButtonElement;
+                  fab?.click();
+                }}
               >
                 <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t("pages.resumeBuilder.actions.preview")}
@@ -626,38 +593,17 @@ function ResumeBuilderContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Progress Sidebar - Hidden on mobile, shown on desktop */}
-          <div className="hidden lg:block lg:col-span-1">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("pages.resumeBuilder.progress")}
-              </h2>
-              <div className="space-y-3">
-                {formSections.map((section, index) => (
-                  <button
-                    key={section.id}
-                    onClick={() => handleSectionChange(index)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center space-x-3 ${
-                      index === currentSection
-                        ? "bg-primary text-primary-foreground"
-                        : index < currentSection
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <span className="text-xl">{section.icon}</span>
-                    <span className="font-medium">{section.title}</span>
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Form Content */}
-          <div className="lg:col-span-2">
-            <Card className="p-8">
+      {/* Main content area - side by side */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden" style={{ height: 'calc(100vh - 140px)' }}>
+        {/* Left panel - Form */}
+        <div className="w-full lg:w-1/2 flex flex-col overflow-hidden">
+          <SectionTabs
+            sections={formSections}
+            currentSection={currentSection}
+            onSectionChange={handleSectionChange}
+          />
+          <div ref={formScrollRef} className="flex-1 overflow-auto p-4 sm:p-6">
+            <Card className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold">
@@ -689,7 +635,6 @@ function ResumeBuilderContent() {
                 setSelectedTemplate={setSelectedTemplateWithSave}
                 onPreviewTemplate={(templateId) => {
                   setSelectedTemplateWithSave(templateId);
-                  handlePreview();
                 }}
                 summaryTextareaRef={summaryTextareaRef}
                 formSections={formSections}
@@ -709,9 +654,9 @@ function ResumeBuilderContent() {
                   {t("pages.resumeBuilder.actions.previous")}
                 </Button>
                 {currentSection === formSections.length - 1 ? (
-                  <Button onClick={handlePreview}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    {t("pages.resumeBuilder.actions.viewResume")}
+                  <Button onClick={handleSave} disabled={isSaving}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {t("pages.resumeBuilder.actions.save")}
                   </Button>
                 ) : (
                   <Button onClick={handleNext}>
@@ -724,42 +669,16 @@ function ResumeBuilderContent() {
           </div>
         </div>
 
-        {/* Progress Section for Mobile - Shown only on mobile */}
-        <div className="lg:hidden mt-8">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">
-              {t("pages.resumeBuilder.progress")}
-            </h2>
-            <div className="space-y-3">
-              {formSections.map((section, index) => (
-                <button
-                  key={section.id}
-                  onClick={() => handleSectionChange(index)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors flex items-center space-x-3 ${
-                    index === currentSection
-                      ? "bg-primary text-primary-foreground"
-                      : index < currentSection
-                        ? "bg-green-50 text-green-700"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <span className="text-xl">{section.icon}</span>
-                  <span className="font-medium">{section.title}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
+        {/* Right panel - Live Preview (desktop only) */}
+        <div className="hidden lg:block lg:w-1/2 border-l">
+          <LivePreviewPanel data={formData} templateId={selectedTemplate} />
         </div>
       </div>
 
-      {/* Modals */}
-      <PreviewModal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        data={formData}
-        template={selectedTemplate}
-      />
+      {/* Mobile preview sheet */}
+      <MobilePreviewSheet data={formData} templateId={selectedTemplate} />
 
+      {/* Modals */}
       <ATSOptimization
         isOpen={showATS}
         onClose={() => setShowATS(false)}

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { checkUserLimits } from '@/lib/db';
-import { getTemplate } from '@/lib/getTemplate';
-import { pdf } from '@react-pdf/renderer';
+import { getHtmlTemplate } from '@/components/html-templates/registry';
+import { renderResumeToHtml } from '@/lib/pdf/renderHtml';
+import { generatePdfFromHtml } from '@/lib/pdf/generatePdf';
+import { isResumeRTL } from '@/lib/rtl';
 import React from 'react';
 import { tempStore } from '@/lib/tempStore';
 import { errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers';
@@ -28,28 +30,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Get user limits and available templates
     const limits = await checkUserLimits(userId);
-    
+
     if (!limits.subscription) {
       return notFoundResponse('User subscription not found');
     }
 
     // Check if user has access to the template
     const hasAccess = limits.availableTemplates?.includes(template) || false;
-    
-    // Generate PDF (watermark will be handled via CSS overlay on client)
-    const templateComponent = await getTemplate(template, resumeData);
-    
-    if (!templateComponent) {
+
+    // Generate PDF via HTML + Puppeteer pipeline
+    const entry = getHtmlTemplate(template);
+    if (!entry) {
       return notFoundResponse('Template not found');
     }
 
-    // Generate PDF blob
-    const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
-    const blob = await pdfDoc.toBlob();
-    
-    // Convert blob to buffer
-    const buffer = await blob.arrayBuffer();
-
+    const Component = entry.component;
+    const element = React.createElement(Component, { data: resumeData });
+    const isRTL = isResumeRTL(resumeData);
+    const html = await renderResumeToHtml(element, isRTL);
+    const buffer = await generatePdfFromHtml(html);
 
     // Return PDF as response with appropriate headers
     return new NextResponse(buffer, {

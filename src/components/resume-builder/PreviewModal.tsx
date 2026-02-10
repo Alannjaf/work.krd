@@ -1,255 +1,57 @@
-'use client'
-
-import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { ResumeData } from '@/types/resume'
-import { useSubscription } from '@/contexts/SubscriptionContext'
-import toast from 'react-hot-toast'
-
-import { shouldUsePDFJS } from '@/utils/browserDetection'
-import { detectBrowser, downloadBlob } from '@/lib/browser-utils'
-import { PreviewModalHeader } from './PreviewModalHeader'
-import { PreviewModalContent } from './PreviewModalContent'
+'use client';
+import React from 'react';
+import { ResumeData } from '@/types/resume';
+import { ResumePageScaler } from '@/components/html-templates/ResumePageScaler';
+import { TemplateRenderer } from '@/components/html-templates/TemplateRenderer';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useDownloadPDF } from '@/hooks/useDownloadPDF';
+import { X, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PreviewModalProps {
-  isOpen: boolean
-  onClose: () => void
-  data: ResumeData
-  template?: string
+  isOpen: boolean;
+  onClose: () => void;
+  data: ResumeData;
+  template?: string;
 }
 
 export function PreviewModal({ isOpen, onClose, data, template = 'modern' }: PreviewModalProps) {
-  const { availableTemplates } = useSubscription()
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
-  const [pdfArrayBuffer, setPdfArrayBuffer] = useState<ArrayBuffer | null>(null)
-  const [usePDFJS, setUsePDFJS] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [currentPdfPage, setCurrentPdfPage] = useState(1)
-  const [totalPdfPages, setTotalPdfPages] = useState(1)
-  const [currentPdfUrl, setCurrentPdfUrl] = useState<string | null>(null)
-  const [templateAccess, setTemplateAccess] = useState<string>('granted')
-  const currentPdfUrlRef = useRef<string | null>(null)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const { availableTemplates } = useSubscription();
+  const { downloadPDF, isDownloading } = useDownloadPDF();
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
-    }
-    checkMobile()
-    setUsePDFJS(shouldUsePDFJS())
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  if (!isOpen) return null;
 
-  const updatePdfUrl = useCallback((baseUrl: string, page: number) => {
-    const browser = detectBrowser()
-    let urlWithPage: string
-
-    if (baseUrl.startsWith('blob:')) {
-      urlWithPage = baseUrl
-    } else {
-      switch (browser) {
-        case 'edge':
-          urlWithPage = `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&view=Fit&zoom=65&page=${page}`
-          break
-        case 'firefox':
-          urlWithPage = `${baseUrl}#page=${page}&zoom=page-fit&view=Fit`
-          break
-        case 'safari':
-          urlWithPage = `${baseUrl}#page=${page}&view=Fit`
-          break
-        default:
-          urlWithPage = `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&view=Fit&zoom=page-fit&page=${page}`
-      }
-    }
-    setCurrentPdfUrl(urlWithPage)
-  }, [])
-
-  const goToNextPage = () => {
-    if (currentPdfPage < totalPdfPages && pdfUrl) {
-      const newPage = currentPdfPage + 1
-      setCurrentPdfPage(newPage)
-      updatePdfUrl(pdfUrl, newPage)
-    }
-  }
-
-  const goToPrevPage = () => {
-    if (currentPdfPage > 1 && pdfUrl) {
-      const newPage = currentPdfPage - 1
-      setCurrentPdfPage(newPage)
-      updatePdfUrl(pdfUrl, newPage)
-    }
-  }
-
-  const generatePDFPreview = useCallback(async (retryCount = 0) => {
-    if (!data.personal.fullName) {
-      toast.error('Please fill in your name before generating preview')
-      return
-    }
-
-    setIsLoadingPreview(true)
-    try {
-      const response = await fetch('/api/pdf/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeData: data, template, action: 'preview' }),
-      })
-
-      if (!response.ok) throw new Error('Failed to generate secure preview')
-
-      // Read metadata from response headers
-      const hasAccess = response.headers.get('X-Has-Access') === 'true'
-      setTemplateAccess(hasAccess ? 'granted' : 'restricted')
-
-      // Read page count from server-side header
-      const totalPages = parseInt(response.headers.get('X-Total-Pages') || '1', 10)
-      setTotalPdfPages(totalPages)
-
-      // Get binary PDF data directly
-      const blob = await response.blob()
-      setCurrentPdfPage(1)
-
-      if (usePDFJS) {
-        const arrayBuffer = await blob.arrayBuffer()
-        await new Promise(resolve => setTimeout(resolve, 100))
-        setPdfArrayBuffer(arrayBuffer.slice(0))
-        setPdfUrl(null)
-      } else {
-        if (currentPdfUrlRef.current) URL.revokeObjectURL(currentPdfUrlRef.current)
-        // Convert blob to base64 data URL for iframe rendering
-        const base64DataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onloadend = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(blob)
-        })
-        setPdfUrl(base64DataUrl)
-        updatePdfUrl(base64DataUrl, 1)
-        currentPdfUrlRef.current = null
-        setPdfArrayBuffer(null)
-      }
-    } catch (error) {
-      console.error('[PreviewModal] Failed to generate PDF preview:', error);
-      if (retryCount < 2) {
-        setTimeout(() => generatePDFPreview(retryCount + 1), 1000 * (retryCount + 1))
-        return
-      }
-      toast.error('Failed to generate PDF preview')
-    } finally {
-      setIsLoadingPreview(false)
-    }
-  }, [data, template, usePDFJS, updatePdfUrl])
-
-  const handleDownloadPDF = async () => {
-    setIsGeneratingPDF(true)
-    try {
-      // Use server-side PDF generation for security
-      const response = await fetch('/api/pdf/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeData: data, template, action: 'download' }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Failed' }))
-        if (response.status === 403) {
-          toast.error(error.error || 'Export limit reached')
-          window.open('/billing', '_blank')
-          return
-        }
-        throw new Error(error.error || 'Failed to download')
-      }
-
-      // Get binary PDF data directly
-      const blob = await response.blob()
-
-      downloadBlob(blob, `${data.personal.fullName.replace(/\s+/g, '_')}_Resume.pdf`)
-      toast.success('Resume downloaded successfully!')
-    } catch (error) {
-      console.error('[PreviewModal] Failed to download resume:', error);
-      toast.error('Failed to download resume')
-    } finally {
-      setIsGeneratingPDF(false)
-    }
-  }
-
-  useEffect(() => {
-    if (isOpen && data.personal.fullName) {
-      setIsLoadingPreview(true)
-      setPdfArrayBuffer(null)
-      setPdfUrl(null)
-      setCurrentPdfUrl(null)
-      const timer = setTimeout(() => generatePDFPreview(), 200)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen, data, template, generatePDFPreview])
-
-  useEffect(() => {
-    if (!isOpen) {
-      setPdfArrayBuffer(null)
-      setPdfUrl(null)
-      setCurrentPdfUrl(null)
-      setCurrentPdfPage(1)
-      setTotalPdfPages(1)
-      setIsLoadingPreview(false)
-      if (currentPdfUrlRef.current) {
-        URL.revokeObjectURL(currentPdfUrlRef.current)
-        currentPdfUrlRef.current = null
-      }
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    return () => {
-      if (currentPdfUrlRef.current) {
-        URL.revokeObjectURL(currentPdfUrlRef.current)
-        currentPdfUrlRef.current = null
-      }
-    }
-  }, [])
-
-  if (!isOpen) return null
-
-  const isTemplateRestricted = !availableTemplates.includes(template)
+  const isRestricted = !availableTemplates.includes(template);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden pdf-preview-modal">
-        <PreviewModalHeader
-          template={template}
-          isTemplateRestricted={isTemplateRestricted}
-          isLoadingPreview={isLoadingPreview}
-          isGeneratingPDF={isGeneratingPDF}
-          hasName={!!data.personal.fullName}
-          pdfUrl={pdfUrl}
-          isMobile={isMobile}
-          usePDFJS={usePDFJS}
-          currentPdfPage={currentPdfPage}
-          totalPdfPages={totalPdfPages}
-          onRefresh={() => generatePDFPreview()}
-          onDownload={handleDownloadPDF}
-          onClose={onClose}
-          onPrevPage={goToPrevPage}
-          onNextPage={goToNextPage}
-        />
-
-        <div className="h-[calc(90vh-120px)]">
-          <PreviewModalContent
-            isLoadingPreview={isLoadingPreview}
-            usePDFJS={usePDFJS}
-            pdfArrayBuffer={pdfArrayBuffer}
-            pdfUrl={pdfUrl}
-            currentPdfUrl={currentPdfUrl}
-            isMobile={isMobile}
-            templateAccess={templateAccess}
-            currentPdfPage={currentPdfPage}
-            hasName={!!data.personal.fullName}
-            iframeRef={iframeRef}
-            onGeneratePreview={() => generatePDFPreview()}
-          />
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold">Resume Preview</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => downloadPDF(data, template)}
+              disabled={isDownloading || isRestricted}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isDownloading ? 'Downloading...' : 'Download PDF'}
+            </Button>
+            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto bg-gray-200 p-4">
+          <ResumePageScaler className="w-full">
+            <TemplateRenderer
+              templateId={template}
+              data={data}
+              watermark={isRestricted}
+            />
+          </ResumePageScaler>
         </div>
       </div>
     </div>
-  )
+  );
 }

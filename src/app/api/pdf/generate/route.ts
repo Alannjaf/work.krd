@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { checkUserLimits } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { getTemplate } from '@/lib/getTemplate';
-import { pdf } from '@react-pdf/renderer';
 import { prisma } from '@/lib/prisma';
 import { ResumeData } from '@/types/resume';
-import { initializePDFFonts, areFontsRegistered } from '@/lib/pdfFonts';
 import React from 'react';
 import { errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
 import { PDFDocument } from 'pdf-lib';
+import { getHtmlTemplate } from '@/components/html-templates/registry';
+import { renderResumeToHtml } from '@/lib/pdf/renderHtml';
+import { generatePdfFromHtml } from '@/lib/pdf/generatePdf';
+import { isResumeRTL } from '@/lib/rtl';
 
 /**
  * Normalize Arabic-Indic numerals (٠-٩) to Western numerals (0-9)
@@ -17,13 +18,13 @@ import { PDFDocument } from 'pdf-lib';
  */
 function normalizePhoneNumber(phone: string | undefined | null): string {
   if (!phone || typeof phone !== 'string') return '';
-  
+
   // Map Arabic-Indic numerals to Western numerals
   const arabicIndicMap: Record<string, string> = {
     '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
     '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
   };
-  
+
   return phone.replace(/[٠-٩]/g, (char) => arabicIndicMap[char] || char);
 }
 
@@ -71,15 +72,15 @@ export async function POST(request: NextRequest) {
 
     // Get user limits and available templates
     const limits = await checkUserLimits(userId);
-    
+
     if (!limits.subscription) {
       return notFoundResponse('User subscription not found');
     }
 
     // Check if user has access to the template
     const hasAccess = limits.availableTemplates?.includes(template) || false;
-    
-    let buffer: ArrayBuffer;
+
+    let pdfBuffer: Buffer;
     const shouldWatermark = !hasAccess;
 
     // For downloads, we need additional validation
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
       ...resumeData.personal,
       fullName: sanitizeStringField(resumeData.personal.fullName),
       email: sanitizeStringField(resumeData.personal.email),
-      phone: normalizePhoneNumber(resumeData.personal.phone), // Normalize Arabic-Indic numerals
+      phone: normalizePhoneNumber(resumeData.personal.phone),
       location: sanitizeStringField(resumeData.personal.location),
       linkedin: sanitizeStringField(resumeData.personal.linkedin),
       website: sanitizeStringField(resumeData.personal.website),
@@ -141,28 +142,18 @@ export async function POST(request: NextRequest) {
     // Sanitize summary
     resumeData.summary = sanitizeStringField(resumeData.summary);
 
-    // Initialize fonts for Unicode support (Kurdish Sorani, Arabic, English)
-    initializePDFFonts();
-    
-    // Log font registration status for debugging
-    const fontsRegistered = areFontsRegistered();
-    if (!fontsRegistered) {
-      console.warn('Fonts not registered - PDF generation may fail for Kurdish/Arabic text');
-    }
-
-    // Generate PDF with detailed error handling for each step
+    // Generate PDF with Puppeteer pipeline
     try {
-      // Generate PDF — watermark is baked into the React-PDF render tree when shouldWatermark is true
-      const templateComponent = await getTemplate(template, resumeData, shouldWatermark || undefined);
-
-      if (!templateComponent) {
-        console.error('Template component not found for template:', template);
+      const entry = getHtmlTemplate(template);
+      if (!entry) {
         return notFoundResponse('Template not found');
       }
 
-      const pdfDoc = pdf(React.createElement(templateComponent.type, templateComponent.props));
-      const blob = await pdfDoc.toBlob();
-      buffer = await blob.arrayBuffer();
+      const Component = entry.component;
+      const element = React.createElement(Component, { data: resumeData, watermark: shouldWatermark || undefined });
+      const isRTL = isResumeRTL(resumeData);
+      const html = await renderResumeToHtml(element, isRTL);
+      pdfBuffer = await generatePdfFromHtml(html);
     } catch (pdfError) {
       console.error('Error during PDF generation step:', pdfError);
       const pdfErrorMessage = pdfError instanceof Error ? pdfError.message : 'Unknown PDF generation error';
@@ -171,11 +162,10 @@ export async function POST(request: NextRequest) {
       if (pdfErrorStack) {
         console.error('PDF generation error stack:', pdfErrorStack);
       }
-      throw pdfError; // Re-throw to be caught by outer try-catch
+      throw pdfError;
     }
-    
+
     // Count pages server-side using pdf-lib
-    const pdfBuffer = Buffer.from(buffer);
     let totalPages = 1;
     try {
       const pdfDoc = await PDFDocument.load(pdfBuffer);
@@ -202,28 +192,19 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     const errorName = error instanceof Error ? error.name : 'Error';
-    
-    // Log detailed error information
+
     console.error('Error details:', {
       name: errorName,
       message: errorMessage,
       hasStack: !!errorStack,
     });
-    
-    // Log additional context for font-related errors
-    if (errorMessage.includes('font') || errorMessage.includes('Font') || errorName.includes('Font')) {
-      console.error('Font-related error detected. Font registration status:', areFontsRegistered());
-    }
-    
-    // Log full error stack
+
     if (errorStack) {
       console.error('Full error stack:', errorStack);
     }
-    
-    // Log error as string for additional context
+
     console.error('Error string representation:', String(error));
-    
+
     return errorResponse(`Failed to generate PDF: ${errorMessage}`, 500);
   }
 }
-
