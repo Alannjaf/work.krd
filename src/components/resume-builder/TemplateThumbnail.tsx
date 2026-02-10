@@ -1,80 +1,56 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Image from 'next/image'
+import React from 'react';
+import { TemplateRenderer } from '@/components/html-templates/TemplateRenderer';
+import { ResumeData } from '@/types/resume';
+
+const SAMPLE_DATA: ResumeData = {
+  personal: {
+    fullName: 'John Smith',
+    email: 'john@example.com',
+    phone: '+1 555-0123',
+    title: 'Senior Software Engineer',
+    location: 'San Francisco, CA',
+  },
+  summary: 'Experienced software engineer with 8+ years building scalable web applications.',
+  experience: [
+    {
+      id: '1',
+      jobTitle: 'Senior Software Engineer',
+      company: 'Tech Corp',
+      startDate: '2020-01',
+      current: true,
+      description: 'Led development of microservices architecture.',
+    },
+  ],
+  education: [
+    {
+      id: '1',
+      degree: 'B.S. Computer Science',
+      school: 'Stanford University',
+      startDate: '2012-09',
+      endDate: '2016-06',
+    },
+  ],
+  skills: [
+    { id: '1', name: 'React', level: 'Expert' },
+    { id: '2', name: 'TypeScript', level: 'Advanced' },
+    { id: '3', name: 'Node.js', level: 'Advanced' },
+  ],
+  languages: [
+    { id: '1', name: 'English', proficiency: 'Native' },
+  ],
+};
 
 interface TemplateThumbnailProps {
-  templateId: string
-  className?: string
-  priority?: boolean
+  templateId: string;
+  className?: string;
 }
 
-export function TemplateThumbnail({ templateId, className = '', priority = false }: TemplateThumbnailProps) {
-  const getThumbnailSrc = () => {
-    switch (templateId) {
-      case 'modern':
-        return '/thumbnails/modern.svg'
-      case 'creative':
-        return '/thumbnails/creative.svg'
-      case 'executive':
-        return '/thumbnails/executive.svg'
-      case 'elegant':
-        return '/thumbnails/elegant.svg'
-      case 'minimalist':
-        return '/thumbnails/minimalist.svg'
-      case 'creative-artistic':
-        return '/thumbnails/creative-artistic.svg'
-      case 'developer':
-        return '/thumbnails/developer.svg'
-      case 'corporate':
-        return '/thumbnails/corporate.svg'
-      case 'creative-modern':
-        return '/thumbnails/creative-modern.svg'
-      case 'classic':
-        return '/thumbnails/classic.svg'
-      default:
-        return '/thumbnails/modern.svg'
-    }
-  }
-
-  const getAltText = () => {
-    switch (templateId) {
-      case 'modern':
-        return 'Modern Professional Resume Template Preview'
-      case 'creative':
-        return 'Creative Resume Template Preview'
-      case 'executive':
-        return 'Executive Professional Resume Template Preview'
-      case 'elegant':
-        return 'Elegant Professional Resume Template Preview'
-      case 'minimalist':
-        return 'Minimalist Modern Resume Template Preview'
-      case 'creative-artistic':
-        return 'Creative Artistic Resume Template Preview'
-      case 'developer':
-        return 'Developer Resume Template Preview'
-      case 'corporate':
-        return 'Corporate Professional Resume Template Preview'
-      case 'creative-modern':
-        return 'Creative Modern Resume Template Preview'
-      case 'classic':
-        return 'Classic Traditional Resume Template Preview'
-      default:
-        return 'Resume Template Preview'
-    }
-  }
-
+export function TemplateThumbnail({ templateId, className = '' }: TemplateThumbnailProps) {
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <Image
-        src={getThumbnailSrc()}
-        alt={getAltText()}
-        width={300}
-        height={400}
-        className="w-full h-full object-cover"
-        priority={priority}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
+    <div className={`overflow-hidden ${className}`} style={{ transform: 'scale(0.3)', transformOrigin: 'top left', width: '794px' }}>
+      <TemplateRenderer templateId={templateId} data={SAMPLE_DATA} />
     </div>
-  )
+  );
 }

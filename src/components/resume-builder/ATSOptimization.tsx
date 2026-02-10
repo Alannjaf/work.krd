@@ -15,9 +15,9 @@ const SECTION_INDEX_MAP: Record<SectionType, number> = {
   experience: 2,
   education: 3,
   skills: 4,
-  languages: 5,
-  projects: 6,
-  certifications: 7,
+  languages: 4,
+  projects: 5,
+  certifications: 5,
   general: 0 // Default to personal for general issues
 }
 

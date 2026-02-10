@@ -1,13 +1,10 @@
 import { RefObject, forwardRef, useImperativeHandle } from 'react'
 import { PersonalInfoSection } from './PersonalInfoSection'
-import { ProfessionalSummarySection } from './ProfessionalSummarySection'
-import { WorkExperienceForm } from '@/components/resume-builder/WorkExperienceForm'
-import { EducationForm } from '@/components/resume-builder/EducationForm'
-import { SkillsForm } from '@/components/resume-builder/SkillsForm'
-import { LanguagesForm } from '@/components/resume-builder/LanguagesForm'
-import { ProjectsForm } from '@/components/resume-builder/ProjectsForm'
-import { CertificationsForm } from '@/components/resume-builder/CertificationsForm'
-import { TemplateGallery } from '@/components/resume-builder/TemplateGallery'
+import { SummarySection } from './SummarySection'
+import { ExperienceSection } from '@/components/resume-builder/sections/ExperienceSection'
+import { EducationSection } from '@/components/resume-builder/sections/EducationSection'
+import { SkillsLanguagesSection } from '@/components/resume-builder/sections/SkillsLanguagesSection'
+import { AdditionalSection } from '@/components/resume-builder/sections/AdditionalSection'
 import { ResumeData } from '@/types/resume'
 import { SubscriptionPermissions } from '@/types/subscription'
 
@@ -18,11 +15,7 @@ interface FormSectionRendererProps {
   updateSummary: (summary: string) => void
   updateSection: (section: keyof ResumeData, data: unknown) => void
   setFormData: (data: ResumeData) => void
-  selectedTemplate: string
-  setSelectedTemplate: (template: string) => void
-  onPreviewTemplate?: (templateId: string) => void
   summaryTextareaRef: RefObject<HTMLTextAreaElement | null>
-  formSections: Array<{ id: string; title: string; icon: string }>
   isAutoSaving: boolean
   queueSave: (sectionType?: string) => void
   checkPermission?: (permission: keyof SubscriptionPermissions) => boolean
@@ -39,23 +32,20 @@ export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectio
   updateSummary,
   updateSection,
   setFormData,
-  selectedTemplate,
-  setSelectedTemplate,
-  onPreviewTemplate,
   summaryTextareaRef,
   queueSave,
   checkPermission
 }, ref) {
-  
+
   useImperativeHandle(ref, () => ({
     triggerSectionSave: () => {
-      // Force trigger save for the current section
       queueSave(`section_exit_${currentSection}`)
     }
   }), [currentSection, queueSave])
+
   const renderSectionContent = () => {
     switch (currentSection) {
-      case 0: // Personal Information
+      case 0: // About You
         return (
           <PersonalInfoSection
             formData={formData}
@@ -65,18 +55,18 @@ export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectio
           />
         )
 
-      case 1: // Professional Summary
+      case 1: // Summary
         return (
-          <ProfessionalSummarySection
+          <SummarySection
             formData={formData}
             updateSummary={updateSummary}
             summaryTextareaRef={summaryTextareaRef}
           />
         )
 
-      case 2: // Work Experience
+      case 2: // Experience
         return (
-          <WorkExperienceForm
+          <ExperienceSection
             experiences={formData.experience || []}
             onChange={(experiences) => {
               updateSection('experience', experiences)
@@ -87,7 +77,7 @@ export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectio
 
       case 3: // Education
         return (
-          <EducationForm
+          <EducationSection
             education={formData.education || []}
             onChange={(education) => {
               updateSection('education', education)
@@ -96,56 +86,39 @@ export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectio
           />
         )
 
-      case 4: // Skills
+      case 4: // Skills & Languages (MERGED)
         return (
-          <SkillsForm
+          <SkillsLanguagesSection
             skills={formData.skills || []}
-            onChange={(skills) => {
+            languages={formData.languages || []}
+            onSkillsChange={(skills) => {
               updateSection('skills', skills)
               queueSave('skills')
             }}
-          />
-        )
-
-      case 5: // Languages
-        return (
-          <LanguagesForm
-            languages={formData.languages || []}
-            onChange={(languages) => {
+            onLanguagesChange={(languages) => {
               updateSection('languages', languages)
               queueSave('languages')
             }}
+            experience={formData.experience?.map(e => ({
+              jobTitle: e.jobTitle,
+              company: e.company
+            }))}
           />
         )
 
-      case 6: // Projects
+      case 5: // Additional (Projects + Certifications MERGED)
         return (
-          <ProjectsForm
+          <AdditionalSection
             projects={formData.projects || []}
-            onChange={(projects) => {
+            certifications={formData.certifications || []}
+            onProjectsChange={(projects) => {
               updateSection('projects', projects)
               queueSave('projects')
             }}
-          />
-        )
-
-      case 7: // Certifications
-        return (
-          <CertificationsForm
-            certifications={formData.certifications || []}
-            onChange={(certifications) => {
+            onCertificationsChange={(certifications) => {
               updateSection('certifications', certifications)
               queueSave('certifications')
             }}
-          />
-        )
-
-      case 8: // Template Selection
-        return (
-          <TemplateGallery
-            selectedTemplate={selectedTemplate}
-            onTemplateSelect={setSelectedTemplate}
-            onPreview={onPreviewTemplate}
           />
         )
 
