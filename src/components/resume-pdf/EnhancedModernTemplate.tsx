@@ -2,11 +2,12 @@ import React from 'react'
 import { Document, Page, View } from '@react-pdf/renderer'
 import { ResumeData } from '../../types/resume'
 import { styles } from './styles/pdfStyles'
+import { kurdishStyles } from './styles/kurdishModernStyles'
 import { PDFHeader } from './components/PDFHeader'
 import { LeftColumn } from './components/LeftColumn'
 import { RightColumn } from './components/RightColumn'
 import { Watermark } from './components/Watermark'
-import { getPageFontStyle } from '../../lib/pdfFonts'
+import { getPageFontStyle, isResumeRTL } from '../../lib/pdfFonts'
 
 interface EnhancedModernTemplateProps {
   data: ResumeData
@@ -14,23 +15,37 @@ interface EnhancedModernTemplateProps {
 }
 
 const EnhancedModernTemplate: React.FC<EnhancedModernTemplateProps> = ({ data, watermark }) => {
+  const isRTL = isResumeRTL(data)
+
   return (
     <Document>
       <Page
         size="A4"
-        style={[styles.page, getPageFontStyle(data.personal?.fullName)]}
-        wrap={true} // Enable automatic pagination
+        style={[
+          isRTL ? kurdishStyles.page : styles.page,
+          getPageFontStyle(data.personal?.fullName),
+        ]}
+        wrap={true}
       >
-        {/* Fixed background for left column on all pages */}
-        <View style={styles.leftBgOverlay} fixed />
+        {/* Fixed background overlay — left side for LTR, right side for RTL */}
+        <View style={isRTL ? kurdishStyles.sidebarBgOverlay : styles.leftBgOverlay} fixed />
 
-        {/* Header Section - Only on first page */}
-        <PDFHeader personal={data.personal} />
+        {/* Header Section */}
+        <PDFHeader personal={data.personal} isRTL={isRTL} />
 
-        {/* Body Section */}
-        <View style={styles.body}>
-          <LeftColumn data={data} />
-          <RightColumn data={data} experiences={data.experience || []} />
+        {/* Body Section — column order flips for RTL */}
+        <View style={isRTL ? kurdishStyles.body : styles.body}>
+          {isRTL ? (
+            <>
+              <RightColumn data={data} experiences={data.experience || []} isRTL />
+              <LeftColumn data={data} isRTL />
+            </>
+          ) : (
+            <>
+              <LeftColumn data={data} />
+              <RightColumn data={data} experiences={data.experience || []} />
+            </>
+          )}
         </View>
 
         {watermark && <Watermark />}

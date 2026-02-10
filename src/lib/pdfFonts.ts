@@ -102,3 +102,27 @@ export function getPageFontStyle(
   }
   return {};
 }
+
+/**
+ * Detect whether resume data is predominantly RTL (Arabic/Kurdish).
+ *
+ * Samples the fullName, title, summary and first job title.
+ * Returns true if the majority of sampled fields contain Arabic script.
+ */
+export function isResumeRTL(data: {
+  personal?: { fullName?: string; title?: string } | null;
+  summary?: string | null;
+  experience?: { jobTitle?: string }[] | null;
+}): boolean {
+  const samples = [
+    data.personal?.fullName,
+    data.personal?.title,
+    data.summary,
+    data.experience?.[0]?.jobTitle,
+  ].filter(Boolean) as string[];
+
+  if (samples.length === 0) return false;
+
+  const rtlCount = samples.filter((s) => ARABIC_REGEX.test(s)).length;
+  return rtlCount > samples.length / 2;
+}

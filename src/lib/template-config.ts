@@ -93,23 +93,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
         color: '#dc2626'
       }
     }
-  },
-  'kurdish-modern': {
-    id: 'kurdish-modern',
-    name: 'کوردی مۆدێرن',
-    crop: {
-      shape: 'circle',
-      aspectRatio: 1,
-      minSize: 120,
-      maxSize: 200,
-      defaultSize: 150,
-      position: { x: 0.5, y: 0.5 },
-      safeArea: {
-        padding: 10,
-        showGuide: true,
-        color: '#3b82f6'
-      }
-    }
   }
 }
 
