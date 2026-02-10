@@ -37,7 +37,7 @@ export function BuilderShell({
         </div>
 
         {/* Preview panel - desktop */}
-        <div className="hidden lg:flex flex-1 bg-gray-100 relative overflow-hidden">
+        <div className="hidden lg:block flex-1 bg-gray-100 relative overflow-hidden">
           {preview}
         </div>
       </div>

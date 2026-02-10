@@ -107,9 +107,9 @@ export async function POST(req: Request) {
     }
 
     // Validate template access
-    if (template && template !== 'modern') {
+    if (template && template !== 'modern' && template !== 'placeholder') {
       const limits = await checkUserLimits(clerkId)
-      const availableTemplates = limits.availableTemplates || ['modern']
+      const availableTemplates = limits.availableTemplates || ['modern', 'placeholder']
       if (!availableTemplates.includes(template)) {
         return forbiddenResponse('Template not available for your subscription plan. Please upgrade to access this template.')
       }

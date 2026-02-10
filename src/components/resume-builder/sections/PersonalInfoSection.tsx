@@ -32,90 +32,82 @@ export function PersonalInfoSection({
         description="Basic information that appears at the top of your resume"
       />
 
-      {/* Name + Photo row */}
-      <div className="flex items-start gap-4">
-        <div className="flex-1 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('forms.personalInfo.fields.fullName')} <span className="text-red-500">*</span>
-            </label>
-            <FormInput
-              value={formData.personal.fullName}
-              onChange={(e) => updatePersonalField('fullName', e.target.value)}
-              placeholder={t('forms.personalInfo.placeholders.fullName')}
-              required
-              className="rounded-lg"
-            />
-            <TranslateAndEnhanceButton
-              content={formData.personal.fullName}
-              contentType="personal"
-              onAccept={(enhancedName) => updatePersonalField('fullName', enhancedName)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('forms.personalInfo.fields.professionalTitle')} <span className="text-red-500">*</span>
-            </label>
-            <FormInput
-              value={formData.personal.title || ''}
-              onChange={(e) => updatePersonalField('title', e.target.value)}
-              placeholder="e.g., Senior Software Engineer"
-              className="rounded-lg"
-            />
-            <TranslateAndEnhanceButton
-              content={formData.personal.title || ''}
-              contentType="personal"
-              onAccept={(enhancedTitle) => updatePersonalField('title', enhancedTitle)}
-            />
-          </div>
-        </div>
-
-        {/* Inline photo - 80x80 circle */}
-        <div className="shrink-0">
-          {checkPermission && checkPermission('canUploadPhoto') ? (
-            <ImageUploader
-              currentImage={formData.personal.profileImage}
-              originalImage={formData.personal.originalProfileImage}
-              cropData={formData.personal.profileImageCrop}
-              onImageUpload={(imageDataUrl, originalImage) => {
-                setFormData({
-                  ...formData,
-                  personal: {
-                    ...formData.personal,
-                    profileImage: imageDataUrl,
-                    originalProfileImage: originalImage || imageDataUrl
-                  }
-                })
-              }}
-              onImageRemove={() => {
-                setFormData({
-                  ...formData,
-                  personal: {
-                    ...formData.personal,
-                    profileImage: undefined,
-                    originalProfileImage: undefined,
-                    profileImageCrop: undefined
-                  }
-                })
-              }}
-              onCropUpdate={(croppedImage, cropData) => {
-                setFormData({
-                  ...formData,
-                  personal: {
-                    ...formData.personal,
-                    profileImage: croppedImage,
-                    profileImageCrop: cropData
-                  }
-                })
-              }}
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-              <span className="text-gray-400 text-2xl">+</span>
-            </div>
-          )}
-        </div>
+      {/* Full Name */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('forms.personalInfo.fields.fullName')} <span className="text-red-500">*</span>
+        </label>
+        <FormInput
+          value={formData.personal.fullName}
+          onChange={(e) => updatePersonalField('fullName', e.target.value)}
+          placeholder={t('forms.personalInfo.placeholders.fullName')}
+          required
+          className="rounded-lg"
+        />
+        <TranslateAndEnhanceButton
+          content={formData.personal.fullName}
+          contentType="personal"
+          onAccept={(enhancedName) => updatePersonalField('fullName', enhancedName)}
+        />
       </div>
+
+      {/* Professional Title */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('forms.personalInfo.fields.professionalTitle')} <span className="text-red-500">*</span>
+        </label>
+        <FormInput
+          value={formData.personal.title || ''}
+          onChange={(e) => updatePersonalField('title', e.target.value)}
+          placeholder="e.g., Senior Software Engineer"
+          className="rounded-lg"
+        />
+        <TranslateAndEnhanceButton
+          content={formData.personal.title || ''}
+          contentType="personal"
+          onAccept={(enhancedTitle) => updatePersonalField('title', enhancedTitle)}
+        />
+      </div>
+
+      {/* Profile Photo */}
+      {checkPermission && checkPermission('canUploadPhoto') && (
+        <ImageUploader
+          currentImage={formData.personal.profileImage}
+          originalImage={formData.personal.originalProfileImage}
+          cropData={formData.personal.profileImageCrop}
+          onImageUpload={(imageDataUrl, originalImage) => {
+            setFormData({
+              ...formData,
+              personal: {
+                ...formData.personal,
+                profileImage: imageDataUrl,
+                originalProfileImage: originalImage || imageDataUrl
+              }
+            })
+          }}
+          onImageRemove={() => {
+            setFormData({
+              ...formData,
+              personal: {
+                ...formData.personal,
+                profileImage: undefined,
+                originalProfileImage: undefined,
+                profileImageCrop: undefined
+              }
+            })
+          }}
+          onCropUpdate={(croppedImage, cropData) => {
+            setFormData({
+              ...formData,
+              personal: {
+                ...formData.personal,
+                profileImage: croppedImage,
+                profileImageCrop: cropData
+              }
+            })
+          }}
+        />
+      )}
 
       {/* Email + Phone - always visible */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

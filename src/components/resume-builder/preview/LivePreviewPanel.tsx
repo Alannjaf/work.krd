@@ -39,7 +39,7 @@ export function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePre
       </div>
 
       {/* Scrollable preview area */}
-      <div className="flex-1 overflow-auto bg-gray-100 p-6">
+      <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
         <ResumePageScaler className="w-full">
           <TemplateRenderer
             templateId={templateId}

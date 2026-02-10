@@ -10,34 +10,49 @@ interface ResumePageScalerProps {
 
 export function ResumePageScaler({ children, className = '' }: ResumePageScalerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const content = contentRef.current;
+    if (!container || !content) return;
 
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width;
-        setScale(Math.min(width / A4_WIDTH_PX, 1));
-      }
+    const observer = new ResizeObserver(() => {
+      const containerWidth = container.clientWidth;
+      const newScale = Math.min(containerWidth / A4_WIDTH_PX, 1);
+      setScale(newScale);
+      setContentHeight(content.scrollHeight * newScale);
     });
 
     observer.observe(container);
+    observer.observe(content);
     return () => observer.disconnect();
   }, []);
 
+  const scaledWidth = A4_WIDTH_PX * scale;
+
   return (
-    <div ref={containerRef} className={className} style={{ overflow: 'auto' }}>
+    <div ref={containerRef} className={className}>
       <div
         style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'top center',
-          width: `${A4_WIDTH_PX}px`,
+          width: `${scaledWidth}px`,
+          height: contentHeight > 0 ? `${contentHeight}px` : 'auto',
           margin: '0 auto',
+          overflow: 'hidden',
         }}
       >
-        {children}
+        <div
+          ref={contentRef}
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            width: `${A4_WIDTH_PX}px`,
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

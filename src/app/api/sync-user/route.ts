@@ -23,15 +23,29 @@ export async function GET() {
     }
 
     // Upsert user in database
-    const user = await prisma.user.upsert({
-      where: { clerkId: userId },
-      update: {
-        email,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null},
-      create: {
-        clerkId: userId,
-        email,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null}})
+    let user
+    try {
+      user = await prisma.user.upsert({
+        where: { clerkId: userId },
+        update: {
+          email,
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null},
+        create: {
+          clerkId: userId,
+          email,
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null}})
+    } catch (e: unknown) {
+      // Handle email unique constraint conflict (e.g. same user, different Clerk env)
+      if (e && typeof e === 'object' && 'code' in e && e.code === 'P2002') {
+        user = await prisma.user.update({
+          where: { email },
+          data: {
+            clerkId: userId,
+            name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null}})
+      } else {
+        throw e
+      }
+    }
 
     // Check if user has a subscription, if not create a free one
     const _subscription = await prisma.subscription.findUnique({
