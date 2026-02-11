@@ -40,6 +40,7 @@ export function AISuggestionButton({
 
   return (
     <Button
+      type="button"
       variant={variant}
       size={size}
       onClick={handleClick}

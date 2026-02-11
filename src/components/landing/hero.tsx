@@ -189,17 +189,28 @@ export function Hero() {
           style={{ animationDelay: "2s", willChange: 'opacity' }}
         ></div>
 
-        {/* Animated particles - reduced count for performance */}
+        {/* Animated particles - deterministic positions to avoid hydration mismatch */}
         <div className="absolute inset-0" style={{ contentVisibility: 'auto' }}>
-          {[...Array(10)].map((_, i) => (
+          {[
+            { l: 12, t: 8, d: 0.2, dur: 3.5 },
+            { l: 85, t: 22, d: 1.1, dur: 4.8 },
+            { l: 34, t: 65, d: 2.4, dur: 5.2 },
+            { l: 67, t: 41, d: 0.7, dur: 3.9 },
+            { l: 91, t: 78, d: 1.8, dur: 6.1 },
+            { l: 23, t: 93, d: 2.9, dur: 4.3 },
+            { l: 56, t: 15, d: 0.4, dur: 5.7 },
+            { l: 78, t: 52, d: 1.5, dur: 3.2 },
+            { l: 45, t: 87, d: 2.1, dur: 6.5 },
+            { l: 8, t: 35, d: 0.9, dur: 4.6 },
+          ].map((p, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30 animate-float"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${3 + Math.random() * 4}s`,
+                left: `${p.l}%`,
+                top: `${p.t}%`,
+                animationDelay: `${p.d}s`,
+                animationDuration: `${p.dur}s`,
                 willChange: 'transform',
               }}
             ></div>

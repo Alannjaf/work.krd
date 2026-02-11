@@ -1,4 +1,5 @@
 import { RefObject, forwardRef, useImperativeHandle } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PersonalInfoSection } from './PersonalInfoSection'
 import { SummarySection } from './SummarySection'
 import { ExperienceSection } from '@/components/resume-builder/sections/ExperienceSection'
@@ -8,8 +9,12 @@ import { AdditionalSection } from '@/components/resume-builder/sections/Addition
 import { ResumeData } from '@/types/resume'
 import { SubscriptionPermissions } from '@/types/subscription'
 
+const TOTAL_SECTIONS = 6
+const SECTION_LABELS = ['About You', 'Summary', 'Experience', 'Education', 'Skills & Languages', 'Additional']
+
 interface FormSectionRendererProps {
   currentSection: number
+  onSectionChange: (section: number) => void
   formData: ResumeData
   updatePersonalField: (field: string, value: string) => void
   updateSummary: (summary: string) => void
@@ -27,6 +32,7 @@ export interface FormSectionRendererRef {
 
 export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectionRendererProps>(function FormSectionRenderer({
   currentSection,
+  onSectionChange,
   formData,
   updatePersonalField,
   updateSummary,
@@ -127,9 +133,34 @@ export const FormSectionRenderer = forwardRef<FormSectionRendererRef, FormSectio
     }
   }
 
+  const isFirst = currentSection === 0
+  const isLast = currentSection === TOTAL_SECTIONS - 1
+
   return (
     <div>
       {renderSectionContent()}
+
+      {/* Section navigation */}
+      <div className={`flex items-center mt-8 pt-6 border-t border-gray-200 ${isFirst ? 'justify-end' : 'justify-between'}`}>
+        {!isFirst && (
+          <button
+            onClick={() => onSectionChange(currentSection - 1)}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            {SECTION_LABELS[currentSection - 1]}
+          </button>
+        )}
+        {!isLast && (
+          <button
+            onClick={() => onSectionChange(currentSection + 1)}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+          >
+            {SECTION_LABELS[currentSection + 1]}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
+      </div>
     </div>
   )
 })

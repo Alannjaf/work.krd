@@ -39,13 +39,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { description, jobTitle, language } = body
 
-    if (!description || !jobTitle) {
-      return validationErrorResponse('Description and job title are required')
+    if (!jobTitle) {
+      return validationErrorResponse('Job title is required')
     }
 
-    // Auto-detect language from the description content
-    const detectedLang = detectLanguage(description)
-    const resolvedLanguage = (detectedLang === 'ar' || detectedLang === 'ku') ? detectedLang : (language || 'en')
+    // Auto-detect language from description or jobTitle
+    const textToDetect = description || jobTitle
+    const detectedLang = detectLanguage(textToDetect)
+    // Also check jobTitle if description detection returned English
+    const jobTitleLang = detectLanguage(jobTitle)
+    const resolvedLanguage = (detectedLang === 'ar' || detectedLang === 'ku') ? detectedLang
+      : (jobTitleLang === 'ar' || jobTitleLang === 'ku') ? jobTitleLang
+      : (language || 'en')
 
     const enhancedDescription = await AIService.enhanceJobDescription(
       description,

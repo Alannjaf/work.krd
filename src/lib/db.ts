@@ -287,16 +287,16 @@ export async function checkUserLimits(clerkUserId: string) {
   
   // Get available templates for user's plan
   // systemSettings already has parsed arrays from getSystemSettings()
-  let availableTemplates: string[] = []
+  let availableTemplates: string[] = ['placeholder']
   switch (subscription.plan) {
     case 'FREE':
-      availableTemplates = systemSettings.freeTemplates
+      availableTemplates = [...new Set(['placeholder', ...systemSettings.freeTemplates])]
       break
     case 'BASIC':
-      availableTemplates = systemSettings.basicTemplates
+      availableTemplates = [...new Set(['placeholder', ...systemSettings.basicTemplates])]
       break
     case 'PRO':
-      availableTemplates = systemSettings.proTemplates
+      availableTemplates = [...new Set(['placeholder', ...systemSettings.proTemplates])]
       break
   }
 

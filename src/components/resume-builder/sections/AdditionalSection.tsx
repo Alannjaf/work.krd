@@ -114,7 +114,7 @@ export function AdditionalSection({
                   defaultOpen={index === projects.length - 1}
                   onRemove={() => removeProject(project.id)}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.projects.fields.name')} *
@@ -142,6 +142,7 @@ export function AdditionalSection({
                         className="rounded-lg"
                       />
                     </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.projects.fields.startDate')}
@@ -164,7 +165,8 @@ export function AdditionalSection({
                         className="rounded-lg"
                       />
                     </div>
-                    <div className="sm:col-span-2">
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.projects.fields.url')}
                       </label>
@@ -175,7 +177,7 @@ export function AdditionalSection({
                         className="rounded-lg"
                       />
                     </div>
-                    <div className="sm:col-span-2">
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.projects.fields.description')}
                       </label>
@@ -226,7 +228,7 @@ export function AdditionalSection({
                   defaultOpen={index === certifications.length - 1}
                   onRemove={() => removeCertification(cert.id)}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.certifications.fields.name')} *
@@ -259,6 +261,7 @@ export function AdditionalSection({
                         onAccept={(issuer) => updateCertification(cert.id, 'issuer', issuer)}
                       />
                     </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t('forms.certifications.fields.date')}
@@ -303,6 +306,7 @@ export function AdditionalSection({
                         className="rounded-lg"
                       />
                     </div>
+                  </div>
                   </div>
                 </CollapsibleEntry>
               ))}

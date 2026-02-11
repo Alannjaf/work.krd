@@ -215,21 +215,19 @@ export function PersonalInfoSection({
             </select>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">
-                {t('forms.personalInfo.demographics.nationality')}
-              </label>
-              <TranslateAndEnhanceButton
-                content={formData.personal.nationality || ''}
-                contentType="personal"
-                onAccept={(result) => updatePersonalField('nationality', result)}
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('forms.personalInfo.demographics.nationality')}
+            </label>
             <Input
               placeholder={t('forms.personalInfo.demographics.nationalityPlaceholder')}
               value={formData.personal.nationality || ''}
               onChange={(e) => updatePersonalField('nationality', e.target.value)}
               className="rounded-lg"
+            />
+            <TranslateAndEnhanceButton
+              content={formData.personal.nationality || ''}
+              contentType="personal"
+              onAccept={(result) => updatePersonalField('nationality', result)}
             />
           </div>
           <div>
@@ -249,21 +247,19 @@ export function PersonalInfoSection({
             </select>
           </div>
           <div className="sm:col-span-2">
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">
-                {t('forms.personalInfo.demographics.country')}
-              </label>
-              <TranslateAndEnhanceButton
-                content={formData.personal.country || ''}
-                contentType="personal"
-                onAccept={(result) => updatePersonalField('country', result)}
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('forms.personalInfo.demographics.country')}
+            </label>
             <Input
               placeholder={t('forms.personalInfo.demographics.countryPlaceholder')}
               value={formData.personal.country || ''}
               onChange={(e) => updatePersonalField('country', e.target.value)}
               className="rounded-lg"
+            />
+            <TranslateAndEnhanceButton
+              content={formData.personal.country || ''}
+              contentType="personal"
+              onAccept={(result) => updatePersonalField('country', result)}
             />
           </div>
         </div>

@@ -117,10 +117,17 @@ export function detectLanguage(text: string): "en" | "ar" | "ku" | "unknown" {
 
   // Check for Arabic/Kurdish script
   if (hasArabicKurdishChars(text)) {
-    // Simple heuristic: if contains common Kurdish words, likely Kurdish
-    const kurdishIndicators =
-      /(?:^|\s)(من|تۆ|ئەو|ئێمە|ئێوە|ئەوان|کە|لە|بۆ|لەگەڵ)(?:\s|$)/i;
-    return kurdishIndicators.test(text) ? "ku" : "ar";
+    // Kurdish Sorani uses characters that Arabic doesn't:
+    // ڤ (ve), ڵ (heavy l), ێ (yeh with tail), ۆ (oe), پ (pe), چ (che), ژ (zhe), گ (gaf), ک (kaf)
+    // The most distinctive are: ڤ ڵ ێ ۆ which don't appear in standard Arabic
+    const kurdishChars = /[ڤڵێۆگچپژ]/;
+    // Common Kurdish Sorani words and patterns
+    const kurdishWords =
+      /(?:^|\s)(من|تۆ|ئەو|ئێمە|ئێوە|ئەوان|کە|لە|بۆ|لەگەڵ|دا|وە|ەکە|ەکان|یەک|هەموو|زۆر|باش|کار|ئەندازیار|بەرنامە|پەروەردە|زانکۆ|کۆمپانیا|تەکنەلۆژیا)(?:\s|$)/i;
+    if (kurdishChars.test(text) || kurdishWords.test(text)) {
+      return "ku";
+    }
+    return "ar";
   }
 
   // Check English ratio

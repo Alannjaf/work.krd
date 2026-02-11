@@ -15,7 +15,7 @@ export interface AIGenerationOptions {
   industry?: string;
   experience?: string;
   skills?: string[];
-  language?: "en" | "ar" | "ku";
+  language?: "en" | "ar" | "ku" | "auto";
 }
 
 export class AIService {
@@ -30,10 +30,11 @@ export class AIService {
       language = "en",
     } = options;
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: "Write in English",
       ar: "Write in Arabic with proper RTL formatting",
-      ku: "Write in Kurdish Sorani",
+      ku: "Write in Kurdish Sorani (کوردی سۆرانی)",
+      auto: "Detect the language of the input fields (job title, industry, experience) and write the summary in that same language. If the input is in Kurdish Sorani, respond in Kurdish Sorani. If Arabic, respond in Arabic. If English or unclear, respond in English.",
     };
 
     const messages = [
@@ -50,7 +51,7 @@ export class AIService {
 - Key Skills: ${skills.join(", ")}
 
 Requirements:
-- ${languageInstructions[language]}
+- ${languageInstructions[language] || languageInstructions['auto']}
 - 3-4 punchy lines (concise, impactful statements)
 - Condense information to avoid redundancy
 - Focus on years of experience and top-tier achievements
@@ -67,7 +68,7 @@ Please provide only the summary text without any additional formatting or explan
       const completion = await openai.chat.completions.create({
         model: "google/gemini-3-flash-preview",
         messages,
-        max_tokens: 200,
+        max_tokens: 500,
         temperature: 0.7,
       });
 
@@ -85,27 +86,30 @@ Please provide only the summary text without any additional formatting or explan
   ): Promise<string> {
     const { language = "en" } = options;
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: "Write in English",
       ar: "Write in Arabic with proper RTL formatting",
-      ku: "Write in Kurdish Sorani",
+      ku: "Write in Kurdish Sorani (کوردی سۆرانی)",
+      auto: "Detect the language of the job title and any existing description, then write in that same language. If Kurdish, write in Kurdish Sorani. If Arabic, write in Arabic. If English or unclear, write in English.",
     };
+
+    const hasDescription = originalDescription && originalDescription.trim();
+    const taskInstruction = hasDescription
+      ? `Enhance the following job description to make it more impactful and ATS-friendly:\n\nOriginal Description: "${originalDescription}"\nJob Title: ${jobTitle}`
+      : `Generate a professional job description for the following role:\n\nJob Title: ${jobTitle}`;
 
     const messages = [
       {
         role: "system" as const,
-        content: `You are a professional resume writer who enhances job descriptions to make them more impactful and ATS-friendly. Always use proper bullet formatting with "• " (bullet + space).`,
+        content: `You are a professional resume writer who creates and enhances job descriptions to make them impactful and ATS-friendly. Always use proper bullet formatting with "• " (bullet + space).`,
       },
       {
         role: "user" as const,
-        content: `Enhance the following job description to make it more impactful and ATS-friendly:
-
-Original Description: "${originalDescription}"
-Job Title: ${jobTitle}
+        content: `${taskInstruction}
 
 Requirements:
-- ${languageInstructions[language]}
-- Use strong action verbs (e.g., "Developed", "Implemented", "Led", "Achieved")
+- ${languageInstructions[language] || languageInstructions['auto']}
+- Use strong action verbs
 - Quantify achievements where possible (e.g., "Increased efficiency by 30%")
 - Add relevant keywords for ATS optimization
 - Format as bullet points using "•" (bullet symbol), NOT asterisks (*)
@@ -113,10 +117,11 @@ Requirements:
 - Focus on accomplishments and results rather than basic duties
 - Make it sound professional and impressive
 - Start each bullet point with "• " followed by the content
+- Generate 3-5 bullet points
 
 IMPORTANT: Use only "• " (bullet + space) to start each point, never use "*" or "-" or numbers.
 
-Please provide only the enhanced description without any additional formatting or explanations.`,
+Please provide only the description without any additional formatting or explanations.`,
       },
     ];
 

@@ -44,6 +44,7 @@ export function BuilderHeader({
     <header className="h-12 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-3 shrink-0 z-20">
       {/* Back button */}
       <button
+        type="button"
         onClick={() => router.push('/dashboard')}
         className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors shrink-0"
       >
@@ -71,6 +72,7 @@ export function BuilderHeader({
       {/* Action buttons */}
       <div className="flex items-center gap-1 shrink-0">
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={onShowKeyboardHelp}
@@ -81,6 +83,7 @@ export function BuilderHeader({
         </Button>
 
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={onShowATS}
@@ -93,6 +96,7 @@ export function BuilderHeader({
 
         {showTranslate && (
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={onTranslate}
@@ -110,6 +114,7 @@ export function BuilderHeader({
 
         {onDownload && (
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={onDownload}
@@ -122,6 +127,7 @@ export function BuilderHeader({
         )}
 
         <Button
+          type="button"
           onClick={onSave}
           size="sm"
           disabled={isSaving || isAutoSaving}

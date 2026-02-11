@@ -131,19 +131,20 @@ export function AISkillsSuggester({
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Button 
-              size="sm" 
-              onClick={handleAddSelected} 
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAddSelected}
               disabled={selectedSkills.size === 0}
               className="bg-green-600 hover:bg-green-700"
             >
               <Plus className="h-4 w-4 mr-1" />
               {t('ai.addSelected') || 'Add Selected'} ({selectedSkills.size})
             </Button>
-            <Button size="sm" variant="outline" onClick={generateSkills}>
+            <Button type="button" size="sm" variant="outline" onClick={generateSkills}>
               {t('ai.generateNew') || 'Generate New'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleDismiss}>
+            <Button type="button" size="sm" variant="outline" onClick={handleDismiss}>
               <X className="h-4 w-4 mr-1" />
               {t('ai.dismiss') || 'Dismiss'}
             </Button>

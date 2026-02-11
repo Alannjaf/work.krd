@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { ResumeData } from '@/types/resume'
-import { useLanguage } from '@/contexts/LanguageContext'
 
 interface UseAutoSaveProps {
   resumeId: string | null
@@ -10,131 +9,110 @@ interface UseAutoSaveProps {
   resumeTitle: string
 }
 
-export function useAutoSave({ 
-  resumeId, 
-  setResumeId, 
-  formData, 
-  selectedTemplate, 
-  resumeTitle 
+export function useAutoSave({
+  resumeId,
+  setResumeId,
+  formData,
+  selectedTemplate,
+  resumeTitle
 }: UseAutoSaveProps) {
-  const { t } = useLanguage()
   const [isAutoSaving, setIsAutoSaving] = useState(false)
   const [lastSavedData, setLastSavedData] = useState<ResumeData | null>(null)
-  const [saveQueue, setSaveQueue] = useState<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Quick save function with debouncing
-  const quickSave = useCallback(async (changes: Record<string, unknown>, sectionType?: string) => {
-    if (!resumeId) {
-      // If no resume exists yet, create it first
+  // Use refs to always have the latest values in the debounced callback
+  const formDataRef = useRef(formData)
+  const resumeIdRef = useRef(resumeId)
+  const resumeTitleRef = useRef(resumeTitle)
+  const selectedTemplateRef = useRef(selectedTemplate)
+
+  useEffect(() => { formDataRef.current = formData }, [formData])
+  useEffect(() => { resumeIdRef.current = resumeId }, [resumeId])
+  useEffect(() => { resumeTitleRef.current = resumeTitle }, [resumeTitle])
+  useEffect(() => { selectedTemplateRef.current = selectedTemplate }, [selectedTemplate])
+
+  const performSave = useCallback(async () => {
+    const currentFormData = formDataRef.current
+    const currentResumeId = resumeIdRef.current
+    const currentTitle = resumeTitleRef.current
+    const currentTemplate = selectedTemplateRef.current
+
+    if (!currentResumeId) {
+      // Create new resume
       try {
         const response = await fetch('/api/resumes', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: resumeTitle,
-            template: selectedTemplate,
-            formData
+            title: currentTitle,
+            template: currentTemplate,
+            formData: currentFormData
           })
         })
 
-        if (!response.ok) {
-          throw new Error(t('pages.resumeBuilder.errors.createFailed'))
-        }
+        if (!response.ok) return false
 
         const data = await response.json()
         setResumeId(data.resume.id)
-        setLastSavedData({ ...formData })
+        setLastSavedData({ ...currentFormData })
         return true
       } catch (error) {
-        console.error('[AutoSave] Failed to create resume:', error);
+        console.error('[AutoSave] Failed to create resume:', error)
         return false
       }
     }
 
+    // Full save — always send complete formData to avoid partial saves
     try {
-      const response = await fetch(`/api/resumes/${resumeId}/quick-save`, {
+      const response = await fetch(`/api/resumes/${currentResumeId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          changes,
-          currentSection: sectionType
+          title: currentTitle,
+          template: currentTemplate,
+          formData: currentFormData
         })
       })
 
-      if (!response.ok) {
-        throw new Error(t('pages.resumeBuilder.errors.saveFailed'))
-      }
+      if (!response.ok) return false
 
-      // Update last saved data
-      setLastSavedData({ ...formData })
+      setLastSavedData({ ...currentFormData })
       return true
     } catch (error) {
-      console.error('[AutoSave] Failed to quick save:', error);
+      console.error('[AutoSave] Failed to save:', error)
       return false
     }
-  }, [resumeId, formData, selectedTemplate, resumeTitle, t, setResumeId])
+  }, [setResumeId])
 
-  // Detect changes and queue save
-  const queueSave = useCallback((sectionType?: string) => {
-    // If no baseline data exists yet, initialize it
-    if (!lastSavedData) {
-      setLastSavedData({ ...formData })
-      return
+  // Queue a save with debouncing
+  const queueSave = useCallback((_sectionType?: string) => {
+    // Clear existing timer
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
     }
 
-    const changes: Record<string, unknown> = {}
-    let hasChanges = false
+    // Queue new save with 1s debounce
+    saveTimeoutRef.current = setTimeout(() => {
+      setIsAutoSaving(true)
+      performSave().finally(() => {
+        setIsAutoSaving(false)
+      })
+    }, 1000)
+  }, [performSave])
 
-    // Always include title in changes for save operations
-    changes.title = resumeTitle
-
-    if (JSON.stringify(formData.personal) !== JSON.stringify(lastSavedData.personal)) {
-      changes.personal = formData.personal
-      hasChanges = true
-    }
-
-    if (formData.summary !== lastSavedData.summary) {
-      changes.summary = formData.summary
-      hasChanges = true
-    }
-
-    // Check section-specific changes
-    if (sectionType) {
-      const currentSectionData = formData[sectionType as keyof ResumeData]
-      const lastSectionData = lastSavedData[sectionType as keyof ResumeData]
-      
-      if (JSON.stringify(currentSectionData) !== JSON.stringify(lastSectionData)) {
-        changes.sectionData = currentSectionData
-        hasChanges = true
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
       }
     }
-
-    if (hasChanges) {
-      // Clear existing save queue
-      if (saveQueue) {
-        clearTimeout(saveQueue)
-      }
-
-      // Queue new save with debounce
-      const timeoutId = setTimeout(() => {
-        setIsAutoSaving(true)
-        quickSave(changes, sectionType).finally(() => {
-          setIsAutoSaving(false)
-        })
-      }, 500) // 500ms debounce
-
-      setSaveQueue(timeoutId)
-    }
-  }, [lastSavedData, formData, resumeTitle, saveQueue, quickSave])
+  }, [])
 
   return {
     isAutoSaving,
     queueSave,
-    quickSave,
+    quickSave: performSave,
     lastSavedData,
     setLastSavedData
   }

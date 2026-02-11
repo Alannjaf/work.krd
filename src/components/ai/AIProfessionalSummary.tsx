@@ -100,15 +100,15 @@ export function AIProfessionalSummary({
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={handleAccept} className="bg-green-600 hover:bg-green-700">
+            <Button type="button" size="sm" onClick={handleAccept} className="bg-green-600 hover:bg-green-700">
               <Check className="h-4 w-4 mr-1" />
               {t('ai.useThis') || 'Use This'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleRegenerate}>
+            <Button type="button" size="sm" variant="outline" onClick={handleRegenerate}>
               <RefreshCw className="h-4 w-4 mr-1" />
               {t('ai.regenerate') || 'Regenerate'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleReject}>
+            <Button type="button" size="sm" variant="outline" onClick={handleReject}>
               <X className="h-4 w-4 mr-1" />
               {t('ai.dismiss') || 'Dismiss'}
             </Button>

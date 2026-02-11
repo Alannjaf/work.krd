@@ -87,7 +87,7 @@ export function EducationSection({ education, onChange }: EducationSectionProps)
                 defaultOpen={index === education.length - 1}
                 onRemove={() => removeEducation(edu.id)}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('forms.education.fields.degree')} *
@@ -142,44 +142,46 @@ export function EducationSection({ education, onChange }: EducationSectionProps)
                       onAccept={(school) => updateEducation(edu.id, 'school', school)}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('forms.education.fields.location')}
-                    </label>
-                    <FormInput
-                      ref={(el) => registerField(`${edu.id}-location`, el)}
-                      placeholder={t('forms.education.placeholders.location')}
-                      value={edu.location}
-                      onChange={(e) => updateEducation(edu.id, 'location', e.target.value)}
-                      onEnterKey={() => focusNext(`${edu.id}-location`, fieldOrders[edu.id])}
-                      className="rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('forms.education.fields.startDate')}
-                    </label>
-                    <FormInput
-                      ref={(el) => registerField(`${edu.id}-startDate`, el)}
-                      type="month"
-                      value={edu.startDate}
-                      onChange={(e) => updateEducation(edu.id, 'startDate', e.target.value)}
-                      onEnterKey={() => focusNext(`${edu.id}-startDate`, fieldOrders[edu.id])}
-                      className="rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('forms.education.fields.endDate')}
-                    </label>
-                    <FormInput
-                      ref={(el) => registerField(`${edu.id}-endDate`, el)}
-                      type="month"
-                      value={edu.endDate}
-                      onChange={(e) => updateEducation(edu.id, 'endDate', e.target.value)}
-                      onEnterKey={() => focusNext(`${edu.id}-endDate`, fieldOrders[edu.id])}
-                      className="rounded-lg"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('forms.education.fields.location')}
+                      </label>
+                      <FormInput
+                        ref={(el) => registerField(`${edu.id}-location`, el)}
+                        placeholder={t('forms.education.placeholders.location')}
+                        value={edu.location}
+                        onChange={(e) => updateEducation(edu.id, 'location', e.target.value)}
+                        onEnterKey={() => focusNext(`${edu.id}-location`, fieldOrders[edu.id])}
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('forms.education.fields.startDate')}
+                      </label>
+                      <FormInput
+                        ref={(el) => registerField(`${edu.id}-startDate`, el)}
+                        type="month"
+                        value={edu.startDate}
+                        onChange={(e) => updateEducation(edu.id, 'startDate', e.target.value)}
+                        onEnterKey={() => focusNext(`${edu.id}-startDate`, fieldOrders[edu.id])}
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('forms.education.fields.endDate')}
+                      </label>
+                      <FormInput
+                        ref={(el) => registerField(`${edu.id}-endDate`, el)}
+                        type="month"
+                        value={edu.endDate}
+                        onChange={(e) => updateEducation(edu.id, 'endDate', e.target.value)}
+                        onEnterKey={() => focusNext(`${edu.id}-endDate`, fieldOrders[edu.id])}
+                        className="rounded-lg"
+                      />
+                    </div>
                   </div>
                 </div>
 

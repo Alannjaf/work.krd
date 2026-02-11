@@ -26,8 +26,8 @@ export function AIJobDescriptionEnhancer({
   const [showSuggestion, setShowSuggestion] = useState(false)
 
   const enhanceDescription = async () => {
-    if (!currentDescription || !currentDescription.trim()) {
-      toast.error(t('ai.enterDescriptionFirst') || 'Please enter a job description first')
+    if ((!currentDescription || !currentDescription.trim()) && (!jobTitle || !jobTitle.trim())) {
+      toast.error(t('ai.enterDescriptionFirst') || 'Please enter a job description or job title first')
       return
     }
 
@@ -126,15 +126,15 @@ export function AIJobDescriptionEnhancer({
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={handleAccept} className="bg-green-600 hover:bg-green-700">
+            <Button type="button" size="sm" onClick={handleAccept} className="bg-green-600 hover:bg-green-700">
               <Check className="h-4 w-4 mr-1" />
               {t('ai.useThis') || 'Use This'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleRegenerate}>
+            <Button type="button" size="sm" variant="outline" onClick={handleRegenerate}>
               <RefreshCw className="h-4 w-4 mr-1" />
               {t('ai.regenerate') || 'Regenerate'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleReject}>
+            <Button type="button" size="sm" variant="outline" onClick={handleReject}>
               <X className="h-4 w-4 mr-1" />
               {t('ai.dismiss') || 'Dismiss'}
             </Button>
@@ -148,7 +148,7 @@ export function AIJobDescriptionEnhancer({
     <div className="mt-2">
       <AISuggestionButton
         onClick={enhanceDescription}
-        disabled={!currentDescription || !currentDescription.trim() || isEnhancing}
+        disabled={(!currentDescription || !currentDescription.trim()) && (!jobTitle || !jobTitle.trim()) || isEnhancing}
         size="sm"
       >
         {t('ai.enhanceButton')}

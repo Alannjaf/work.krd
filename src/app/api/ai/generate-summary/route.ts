@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AIService } from '@/lib/ai'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
-import { detectLanguage } from '@/lib/languageDetection'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
@@ -43,16 +42,12 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('Job title is required')
     }
 
-    // Auto-detect language from input fields
-    const detectedLang = detectLanguage(`${jobTitle} ${industry} ${experience}`)
-    const resolvedLanguage = (detectedLang === 'ar' || detectedLang === 'ku') ? detectedLang : (language || 'en')
-
     const summary = await AIService.generateProfessionalSummary({
       jobTitle,
       industry,
       experience,
       skills,
-      language: resolvedLanguage
+      language: language || 'auto'
     })
 
     // Update AI usage count using subscription ID

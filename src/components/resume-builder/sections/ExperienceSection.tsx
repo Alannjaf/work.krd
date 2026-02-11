@@ -90,7 +90,7 @@ export function ExperienceSection({ experiences, onChange }: ExperienceSectionPr
                 defaultOpen={index === experiences.length - 1}
                 onRemove={() => removeExperience(exp.id)}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('forms.workExperience.fields.jobTitle')} *
@@ -145,20 +145,19 @@ export function ExperienceSection({ experiences, onChange }: ExperienceSectionPr
                       onAccept={(location) => updateExperience(exp.id, 'location', location)}
                     />
                   </div>
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t('forms.workExperience.fields.startDate')}
-                      </label>
-                      <FormInput
-                        ref={(el) => registerField(`${exp.id}-startDate`, el)}
-                        type="month"
-                        value={exp.startDate}
-                        onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
-                        onEnterKey={() => focusNext(`${exp.id}-startDate`, fieldOrders[exp.id])}
-                        className="rounded-lg"
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('forms.workExperience.fields.startDate')}
+                    </label>
+                    <FormInput
+                      ref={(el) => registerField(`${exp.id}-startDate`, el)}
+                      type="month"
+                      value={exp.startDate}
+                      onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
+                      onEnterKey={() => focusNext(`${exp.id}-startDate`, fieldOrders[exp.id])}
+                      className="rounded-lg"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -186,6 +185,7 @@ export function ExperienceSection({ experiences, onChange }: ExperienceSectionPr
                       {t('forms.workExperience.fields.current')}
                     </label>
                   </div>
+                </div>
                 </div>
 
                 <div>

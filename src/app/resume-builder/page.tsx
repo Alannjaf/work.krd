@@ -352,6 +352,7 @@ function ResumeBuilderContent() {
           <FormSectionRenderer
             ref={formSectionRef}
             currentSection={currentSection}
+            onSectionChange={handleSectionChange}
             formData={formData}
             updatePersonalField={updatePersonalFieldWithSave}
             updateSummary={updateSummaryWithSave}
