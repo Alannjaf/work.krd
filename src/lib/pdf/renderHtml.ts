@@ -37,7 +37,7 @@ export async function renderResumeToHtml(templateElement: ReactElement, isRTL: b
       src: url(data:font/woff2;base64,${fonts.bold}) format('woff2');
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    @page { size: A4; margin: 0; }
+    @page { size: A4; margin: 40px 0; }
     body { margin: 0; padding: 0; }
   </style>
 </head>

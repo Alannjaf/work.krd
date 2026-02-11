@@ -39,7 +39,6 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
   return (
     <div style={{
       width: '794px',
-      minHeight: '1123px',
       backgroundColor: '#ffffff',
       padding: '60px',
       fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -52,6 +51,8 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
         .resume-desc ol { list-style: decimal; }
         .resume-desc li { margin-bottom: 2px; }
         [dir="rtl"] .resume-desc ul, [dir="rtl"] .resume-desc ol { padding-left: 0; padding-right: 1.2em; }
+        .resume-entry { break-inside: avoid; page-break-inside: avoid; }
+        .resume-section h2 { break-after: avoid; page-break-after: avoid; }
       `}} />
       {/* Header with optional photo */}
       <div style={{ textAlign: 'center', paddingTop: '40px' }}>
@@ -97,17 +98,17 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       </div>
 
       {data.summary && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Summary</h2>
           <p style={{ fontSize: '13px', lineHeight: 1.6, textAlign }}>{data.summary}</p>
         </div>
       )}
 
       {data.experience && data.experience.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Experience</h2>
           {data.experience.map((exp, i) => (
-            <div key={i} style={{ marginBottom: '16px' }}>
+            <div key={i} className="resume-entry" style={{ marginBottom: '16px' }}>
               <div style={flexRow}>
                 <strong style={{ fontSize: '14px' }}>{exp.jobTitle}</strong>
                 <span style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -124,10 +125,10 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       )}
 
       {data.education && data.education.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Education</h2>
           {data.education.map((edu, i) => (
-            <div key={i} style={{ marginBottom: '12px' }}>
+            <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>
                 <strong style={{ fontSize: '14px' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</strong>
                 <span style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -143,7 +144,7 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       )}
 
       {data.skills && data.skills.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Skills</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', direction: dir }}>
             {data.skills.map((skill, i) => (
@@ -156,7 +157,7 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       )}
 
       {data.languages && data.languages.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Languages</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', direction: dir }}>
             {data.languages.map((lang, i) => (
@@ -169,10 +170,10 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       )}
 
       {data.projects && data.projects.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Projects</h2>
           {data.projects.map((proj, i) => (
-            <div key={i} style={{ marginBottom: '12px' }}>
+            <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>
                 <strong style={{ fontSize: '14px' }}>{proj.name}</strong>
                 {(proj.startDate || proj.endDate) && (
@@ -190,10 +191,10 @@ function PlaceholderTemplate({ data }: HtmlTemplateProps) {
       )}
 
       {data.certifications && data.certifications.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div className="resume-section" style={{ marginBottom: '24px' }}>
           <h2 style={sectionHeading}>Certifications</h2>
           {data.certifications.map((cert, i) => (
-            <div key={i} style={{ marginBottom: '12px' }}>
+            <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>
                 <strong style={{ fontSize: '14px' }}>{cert.name}</strong>
                 {cert.date && <span style={{ fontSize: '12px', color: '#6B7280' }}>{cert.date}{cert.expiryDate ? ` - ${cert.expiryDate}` : ''}</span>}
