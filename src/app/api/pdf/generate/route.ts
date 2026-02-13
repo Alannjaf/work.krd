@@ -87,11 +87,13 @@ export async function POST(request: NextRequest) {
     if (action === 'download') {
       // Block download for restricted templates - user must upgrade
       if (!hasAccess) {
+        console.error(`[PDF] Template access denied: template="${template}", plan="${limits.subscription.plan}", availableTemplates=${JSON.stringify(limits.availableTemplates)}`);
         return forbiddenResponse('Upgrade required to download this template. Please upgrade your plan.');
       }
 
       // Check export limits
       if (!limits.canExport) {
+        console.error(`[PDF] Export limit reached: plan="${limits.subscription.plan}", exportCount=${limits.subscription.exportCount}`);
         return forbiddenResponse('Export limit reached. Please upgrade your plan to download more resumes.');
       }
 

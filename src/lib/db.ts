@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from './prisma'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
+import { getTemplateIds } from './templates'
 
 export async function getCurrentUser() {
   const { userId } = await auth()
@@ -194,8 +195,8 @@ async function getSystemSettings() {
       return {
         ...settings,
         freeTemplates: parseJsonArray(settings.freeTemplates, ['modern']),
-        basicTemplates: parseJsonArray(settings.basicTemplates, ['modern', 'creative']),
-        proTemplates: parseJsonArray(settings.proTemplates, ['modern', 'creative', 'executive', 'elegant', 'minimalist', 'creative-artistic', 'developer']),
+        basicTemplates: parseJsonArray(settings.basicTemplates, ['modern']),
+        proTemplates: parseJsonArray(settings.proTemplates, ['modern']),
         photoUploadPlans: parseJsonArray(settings.photoUploadPlans, ['BASIC', 'PRO']),
       }
     }
@@ -228,8 +229,8 @@ async function getSystemSettings() {
     
     // Template Access Control
     freeTemplates: ['modern'],
-    basicTemplates: ['modern', 'creative'],
-    proTemplates: ['modern', 'creative', 'executive', 'elegant', 'minimalist', 'creative-artistic', 'developer'],
+    basicTemplates: ['modern'],
+    proTemplates: ['modern'],
     
     // Profile Photo Upload Access Control
     photoUploadPlans: ['BASIC', 'PRO']
@@ -279,24 +280,32 @@ export async function checkUserLimits(clerkUserId: string) {
   const userLimits = limits[subscription.plan]
 
 
+  // Helper to safely extract string array from potentially stringified JSON
+  const ensureStringArray = (value: unknown, fallback: string[]): string[] => {
+    if (Array.isArray(value)) return value as string[]
+    if (typeof value === 'string') {
+      try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : fallback } catch { return fallback }
+    }
+    return fallback
+  }
+
   // Check photo upload permission
-  const photoUploadPlans = Array.isArray(systemSettings.photoUploadPlans) 
-    ? systemSettings.photoUploadPlans 
-    : ['BASIC', 'PRO']
+  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, ['BASIC', 'PRO'])
   const canUploadPhoto = photoUploadPlans.includes(subscription.plan)
-  
+
   // Get available templates for user's plan
-  // systemSettings already has parsed arrays from getSystemSettings()
+  const allRegisteredTemplates = getTemplateIds()
   let availableTemplates: string[] = ['placeholder']
   switch (subscription.plan) {
     case 'FREE':
-      availableTemplates = [...new Set(['placeholder', ...systemSettings.freeTemplates])]
+      availableTemplates = [...new Set(['placeholder', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
       break
     case 'BASIC':
-      availableTemplates = [...new Set(['placeholder', ...systemSettings.basicTemplates])]
+      availableTemplates = [...new Set(['placeholder', ...ensureStringArray(systemSettings.basicTemplates, ['modern'])])]
       break
     case 'PRO':
-      availableTemplates = [...new Set(['placeholder', ...systemSettings.proTemplates])]
+      // PRO always gets all registered templates plus any from settings
+      availableTemplates = [...new Set(['placeholder', ...allRegisteredTemplates, ...ensureStringArray(systemSettings.proTemplates, allRegisteredTemplates)])]
       break
   }
 

@@ -24,17 +24,17 @@ export async function getSystemSettings() {
           maxProExports: -1,
           maxProImports: -1,
           maxProATSChecks: -1,
-          freeTemplates: JSON.stringify(['modern']),
-          basicTemplates: JSON.stringify(['modern', 'creative']),
-          proTemplates: JSON.stringify(['modern', 'creative', 'executive']),
-          photoUploadPlans: JSON.stringify(['BASIC', 'PRO']),
+          freeTemplates: ['modern'],
+          basicTemplates: ['modern'],
+          proTemplates: ['modern'],
+          photoUploadPlans: ['BASIC', 'PRO'],
           basicPlanPrice: 5000,
           proPlanPrice: 10000,
           maintenanceMode: false
         }
       })
     }
-    
+
     return settings
   } catch (error) {
     console.error('[SystemSettings] Failed to get system settings:', error);
@@ -56,10 +56,10 @@ export async function getSystemSettings() {
       maxProExports: -1,
       maxProImports: -1,
       maxProATSChecks: -1,
-      freeTemplates: JSON.stringify(['modern']),
-      basicTemplates: JSON.stringify(['modern', 'creative']),
-      proTemplates: JSON.stringify(['modern', 'creative', 'executive']),
-      photoUploadPlans: JSON.stringify(['BASIC', 'PRO']),
+      freeTemplates: ['modern'],
+      basicTemplates: ['modern'],
+      proTemplates: ['modern'],
+      photoUploadPlans: ['BASIC', 'PRO'],
       basicPlanPrice: 5000,
       proPlanPrice: 10000,
       maintenanceMode: false,
@@ -98,62 +98,48 @@ export async function updateSystemSettings(data: SystemSettingsUpdateData) {
     // Get the existing settings
     const existing = await prisma.systemSettings.findFirst()
     
+    // Ensure arrays are proper arrays (not stringified)
+    const ensureArray = (value: unknown, fallback: string[]): string[] => {
+      if (Array.isArray(value)) return value
+      if (typeof value === 'string') {
+        try { return JSON.parse(value) } catch { return fallback }
+      }
+      return fallback
+    }
+
+    const settingsData = {
+      maxFreeResumes: data.maxFreeResumes,
+      maxFreeAIUsage: data.maxFreeAIUsage,
+      maxFreeExports: data.maxFreeExports,
+      maxFreeImports: data.maxFreeImports,
+      maxFreeATSChecks: data.maxFreeATSChecks,
+      maxBasicResumes: data.maxBasicResumes,
+      maxBasicAIUsage: data.maxBasicAIUsage,
+      maxBasicExports: data.maxBasicExports,
+      maxBasicImports: data.maxBasicImports,
+      maxBasicATSChecks: data.maxBasicATSChecks,
+      maxProResumes: data.maxProResumes,
+      maxProAIUsage: data.maxProAIUsage,
+      maxProExports: data.maxProExports,
+      maxProImports: data.maxProImports,
+      maxProATSChecks: data.maxProATSChecks,
+      freeTemplates: ensureArray(data.freeTemplates, ['modern']),
+      basicTemplates: ensureArray(data.basicTemplates, ['modern']),
+      proTemplates: ensureArray(data.proTemplates, ['modern']),
+      photoUploadPlans: ensureArray(data.photoUploadPlans, ['BASIC', 'PRO']),
+      basicPlanPrice: data.basicPlanPrice,
+      proPlanPrice: data.proPlanPrice,
+      maintenanceMode: data.maintenanceMode
+    }
+
     if (existing) {
-      // Update existing settings
       return await prisma.systemSettings.update({
         where: { id: existing.id },
-        data: {
-          maxFreeResumes: data.maxFreeResumes,
-          maxFreeAIUsage: data.maxFreeAIUsage,
-          maxFreeExports: data.maxFreeExports,
-          maxFreeImports: data.maxFreeImports,
-          maxFreeATSChecks: data.maxFreeATSChecks,
-          maxBasicResumes: data.maxBasicResumes,
-          maxBasicAIUsage: data.maxBasicAIUsage,
-          maxBasicExports: data.maxBasicExports,
-          maxBasicImports: data.maxBasicImports,
-          maxBasicATSChecks: data.maxBasicATSChecks,
-          maxProResumes: data.maxProResumes,
-          maxProAIUsage: data.maxProAIUsage,
-          maxProExports: data.maxProExports,
-          maxProImports: data.maxProImports,
-          maxProATSChecks: data.maxProATSChecks,
-          freeTemplates: JSON.stringify(data.freeTemplates),
-          basicTemplates: JSON.stringify(data.basicTemplates),
-          proTemplates: JSON.stringify(data.proTemplates),
-          photoUploadPlans: JSON.stringify(data.photoUploadPlans),
-          basicPlanPrice: data.basicPlanPrice,
-          proPlanPrice: data.proPlanPrice,
-          maintenanceMode: data.maintenanceMode
-        }
+        data: settingsData
       })
     } else {
-      // Create new settings
       return await prisma.systemSettings.create({
-        data: {
-          maxFreeResumes: data.maxFreeResumes,
-          maxFreeAIUsage: data.maxFreeAIUsage,
-          maxFreeExports: data.maxFreeExports,
-          maxFreeImports: data.maxFreeImports,
-          maxFreeATSChecks: data.maxFreeATSChecks,
-          maxBasicResumes: data.maxBasicResumes,
-          maxBasicAIUsage: data.maxBasicAIUsage,
-          maxBasicExports: data.maxBasicExports,
-          maxBasicImports: data.maxBasicImports,
-          maxBasicATSChecks: data.maxBasicATSChecks,
-          maxProResumes: data.maxProResumes,
-          maxProAIUsage: data.maxProAIUsage,
-          maxProExports: data.maxProExports,
-          maxProImports: data.maxProImports,
-          maxProATSChecks: data.maxProATSChecks,
-          freeTemplates: JSON.stringify(data.freeTemplates),
-          basicTemplates: JSON.stringify(data.basicTemplates),
-          proTemplates: JSON.stringify(data.proTemplates),
-          photoUploadPlans: JSON.stringify(data.photoUploadPlans),
-          basicPlanPrice: data.basicPlanPrice,
-          proPlanPrice: data.proPlanPrice,
-          maintenanceMode: data.maintenanceMode
-        }
+        data: settingsData
       })
     }
   } catch (error) {

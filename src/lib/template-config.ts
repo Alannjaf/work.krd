@@ -42,58 +42,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       }
     }
   },
-  professional: {
-    id: 'professional',
-    name: 'Professional',
-    crop: {
-      shape: 'square',
-      aspectRatio: 1,
-      minSize: 140,
-      maxSize: 180,
-      defaultSize: 160,
-      position: { x: 0.5, y: 0.4 },
-      safeArea: {
-        padding: 8,
-        showGuide: true,
-        color: '#059669'
-      }
-    }
-  },
-  creative: {
-    id: 'creative',
-    name: 'Creative',
-    crop: {
-      shape: 'rounded-square',
-      aspectRatio: 1,
-      borderRadius: 16,
-      minSize: 130,
-      maxSize: 190,
-      defaultSize: 160,
-      position: { x: 0.5, y: 0.45 },
-      safeArea: {
-        padding: 12,
-        showGuide: true,
-        color: '#7c3aed'
-      }
-    }
-  },
-  classic: {
-    id: 'classic',
-    name: 'Classic',
-    crop: {
-      shape: 'rectangle',
-      aspectRatio: 0.8,
-      minSize: 120,
-      maxSize: 170,
-      defaultSize: 145,
-      position: { x: 0.5, y: 0.35 },
-      safeArea: {
-        padding: 6,
-        showGuide: true,
-        color: '#dc2626'
-      }
-    }
-  }
 }
 
 // Get template crop configuration

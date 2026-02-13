@@ -15,60 +15,6 @@ export const getAllTemplates = (): TemplateInfo[] => {
       description: 'Clean, professional layout with dual columns',
       category: 'professional'
     },
-    {
-      id: 'creative',
-      name: 'Creative',
-      description: 'Artistic design with visual elements and colors',
-      category: 'creative'
-    },
-    {
-      id: 'executive',
-      name: 'Executive Professional',
-      description: 'Clean executive layout with elegant typography',
-      category: 'professional'
-    },
-    {
-      id: 'elegant',
-      name: 'Elegant Professional',
-      description: 'Sophisticated single-column design with navy accents',
-      category: 'professional'
-    },
-    {
-      id: 'minimalist',
-      name: 'Minimalist Modern',
-      description: 'Clean typography-focused design with minimal visual elements',
-      category: 'minimal'
-    },
-    {
-      id: 'creative-artistic',
-      name: 'Creative Artistic',
-      description: 'Vibrant and artistic design with colorful accents and decorative elements',
-      category: 'creative'
-    },
-    {
-      id: 'developer',
-      name: 'Developer',
-      description: 'Tech-focused design with modern elements perfect for software developers',
-      category: 'professional'
-    },
-    {
-      id: 'corporate',
-      name: 'Corporate Professional',
-      description: 'Structured, grid-based professional template with clear sections and formal layout',
-      category: 'professional'
-    },
-    {
-      id: 'creative-modern',
-      name: 'Creative Modern',
-      description: 'Contemporary creative design with geometric elements and modern typography',
-      category: 'creative'
-    },
-    {
-      id: 'classic',
-      name: 'Classic Traditional',
-      description: 'Traditional, conservative professional template with timeless design elements',
-      category: 'professional'
-    }
   ]
 }
 
