@@ -62,20 +62,34 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
     while (nextPageEnd < contentHeight) {
       let adjustedEnd = nextPageEnd;
 
-      // Check ALL entries (break-inside: avoid) that would be split — handles two-column layouts
-      for (const entry of entryPositions) {
-        if (entry.top < adjustedEnd && entry.bottom > adjustedEnd) {
-          if (entry.height <= CONTENT_PER_PAGE) {
-            adjustedEnd = Math.floor(entry.top);
+      // Iterate until stable — in two-column layouts, adjusting for a main-content entry
+      // may cause a sidebar entry to now straddle the new break point (and vice versa).
+      let settled = false;
+      while (!settled) {
+        settled = true;
+
+        // Check all entries (break-inside: avoid) that would be split
+        for (const entry of entryPositions) {
+          if (entry.top < adjustedEnd && entry.bottom > adjustedEnd) {
+            if (entry.height <= CONTENT_PER_PAGE) {
+              const newEnd = Math.floor(entry.top);
+              if (newEnd < adjustedEnd) {
+                adjustedEnd = newEnd;
+                settled = false;
+              }
+            }
           }
         }
-      }
 
-      // Check ALL section headings that would be orphaned at the bottom (break-after: avoid on h2)
-      for (const heading of headingPositions) {
-        if (heading.top < adjustedEnd && heading.headingBottom >= adjustedEnd - 2) {
-          // Heading is at the very bottom — push it to the next page
-          adjustedEnd = Math.floor(heading.top);
+        // Check all section headings that would be orphaned at the bottom
+        for (const heading of headingPositions) {
+          if (heading.top < adjustedEnd && heading.headingBottom >= adjustedEnd - 2) {
+            const newEnd = Math.floor(heading.top);
+            if (newEnd < adjustedEnd) {
+              adjustedEnd = newEnd;
+              settled = false;
+            }
+          }
         }
       }
 
