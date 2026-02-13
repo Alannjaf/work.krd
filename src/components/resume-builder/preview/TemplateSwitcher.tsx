@@ -58,9 +58,10 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
                       : 'border-transparent hover:border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  {/* Mini thumbnail placeholder */}
-                  <div className="w-[72px] h-[96px] bg-gray-100 rounded border border-gray-200 mb-1.5 flex items-center justify-center">
-                    <Palette className="h-4 w-4 text-gray-300" />
+                  {/* Mini thumbnail */}
+                  <div className="w-[72px] h-[96px] rounded border border-gray-200 mb-1.5 overflow-hidden">
+                    <img src={`/thumbnails/${template.id}.svg`} alt={template.name}
+                         className="w-full h-full object-cover object-top" />
                   </div>
                   <span className="text-[10px] font-medium text-gray-700 truncate w-full text-center">
                     {template.name}

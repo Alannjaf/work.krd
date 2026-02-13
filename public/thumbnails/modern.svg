@@ -1,62 +1,81 @@
 <svg width="300" height="400" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
   <!-- Page background -->
   <rect width="300" height="400" fill="white" stroke="#e5e7eb" stroke-width="1"/>
-  
-  <!-- Left sidebar -->
-  <rect x="0" y="0" width="100" height="400" fill="#475569"/>
-  
-  <!-- Profile image -->
-  <circle cx="50" cy="40" r="20" fill="white"/>
-  
-  <!-- Contact info -->
-  <text x="10" y="85" fill="white" font-family="Arial, sans-serif" font-size="6">john@example.com</text>
-  <text x="10" y="95" fill="white" font-family="Arial, sans-serif" font-size="6">(555) 123-4567</text>
-  <text x="10" y="105" fill="white" font-family="Arial, sans-serif" font-size="6">City, State</text>
-  
-  <!-- Skills section -->
-  <text x="10" y="135" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">SKILLS</text>
-  <text x="10" y="145" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">JavaScript</text>
-  <text x="10" y="153" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">React</text>
-  <text x="10" y="161" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">Node.js</text>
-  <text x="10" y="169" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">Python</text>
-  
-  <!-- Education section -->
-  <text x="10" y="185" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">EDUCATION</text>
-  <text x="10" y="195" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">Computer Science</text>
-  <text x="10" y="203" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">University Name</text>
-  <text x="10" y="211" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="6">2020-2024</text>
-  
-  <!-- Right content area -->
-  <!-- Name/Title -->
-  <text x="120" y="30" fill="#374151" font-family="Arial, sans-serif" font-size="16" font-weight="bold">SARAH JOHNSON</text>
-  <text x="120" y="45" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">Marketing Manager</text>
-  
-  <!-- Summary -->
-  <text x="120" y="65" fill="#9ca3af" font-family="Arial, sans-serif" font-size="7">Experienced marketing professional with 5+ years in digital</text>
-  <text x="120" y="73" fill="#9ca3af" font-family="Arial, sans-serif" font-size="7">marketing and brand management. Proven track record</text>
-  <text x="120" y="81" fill="#9ca3af" font-family="Arial, sans-serif" font-size="7">of increasing brand awareness by 40%.</text>
-  
-  <!-- Experience section -->
-  <text x="120" y="105" fill="#374151" font-family="Arial, sans-serif" font-size="10" font-weight="bold">EXPERIENCE</text>
-  
+
+  <!-- Yellow accent strip -->
+  <rect x="0" y="0" width="6" height="400" fill="#f5c518"/>
+
+  <!-- Dark sidebar -->
+  <rect x="6" y="0" width="94" height="400" fill="#1e1e1e"/>
+
+  <!-- Profile image circle -->
+  <circle cx="53" cy="40" r="20" fill="#333333" stroke="#f5c518" stroke-width="1.5"/>
+
+  <!-- Sidebar: Contact section -->
+  <circle cx="16" cy="79" r="4" fill="#f5c518"/>
+  <text x="24" y="82" fill="white" font-family="Arial, sans-serif" font-size="7" font-weight="bold">CONTACT</text>
+  <line x1="24" y1="85" x2="92" y2="85" stroke="#f5c518" stroke-width="1"/>
+  <text x="12" y="96" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">john@example.com</text>
+  <text x="12" y="105" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">(555) 123-4567</text>
+  <text x="12" y="114" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">New York, NY</text>
+
+  <!-- Sidebar: Skills section -->
+  <circle cx="16" cy="135" r="4" fill="#f5c518"/>
+  <text x="24" y="138" fill="white" font-family="Arial, sans-serif" font-size="7" font-weight="bold">SKILLS</text>
+  <line x1="24" y1="141" x2="92" y2="141" stroke="#f5c518" stroke-width="1"/>
+  <text x="12" y="152" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">JavaScript</text>
+  <text x="12" y="161" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">React</text>
+  <text x="12" y="170" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">Node.js</text>
+  <text x="12" y="179" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">Python</text>
+
+  <!-- Sidebar: Education section -->
+  <circle cx="16" cy="198" r="4" fill="#f5c518"/>
+  <text x="24" y="201" fill="white" font-family="Arial, sans-serif" font-size="7" font-weight="bold">EDUCATION</text>
+  <line x1="24" y1="204" x2="92" y2="204" stroke="#f5c518" stroke-width="1"/>
+  <text x="12" y="215" fill="white" font-family="Arial, sans-serif" font-size="5.5" font-weight="bold">Computer Science</text>
+  <text x="12" y="224" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">University Name</text>
+  <text x="12" y="233" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">2020 - 2024</text>
+
+  <!-- Sidebar: Languages section -->
+  <circle cx="16" cy="252" r="4" fill="#f5c518"/>
+  <text x="24" y="255" fill="white" font-family="Arial, sans-serif" font-size="7" font-weight="bold">LANGUAGES</text>
+  <line x1="24" y1="258" x2="92" y2="258" stroke="#f5c518" stroke-width="1"/>
+  <text x="12" y="269" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">English</text>
+  <text x="12" y="278" fill="#b0b0b0" font-family="Arial, sans-serif" font-size="5.5">Kurdish</text>
+
+  <!-- Main content area -->
+  <!-- Name -->
+  <text x="115" y="30" fill="#333333" font-family="Arial, sans-serif" font-size="16" font-weight="bold">SARAH JOHNSON</text>
+  <text x="115" y="45" fill="#555555" font-family="Arial, sans-serif" font-size="9">Marketing Manager</text>
+
+  <!-- Summary section with yellow dot -->
+  <circle cx="120" cy="65" r="5" fill="#f5c518"/>
+  <text x="130" y="68" fill="#333333" font-family="Arial, sans-serif" font-size="9" font-weight="bold">SUMMARY</text>
+  <rect x="115" y="76" width="160" height="4" rx="2" fill="#d1d5db"/>
+  <rect x="115" y="83" width="145" height="4" rx="2" fill="#d1d5db"/>
+  <rect x="115" y="90" width="130" height="4" rx="2" fill="#d1d5db"/>
+
+  <!-- Experience section with yellow dot -->
+  <circle cx="120" cy="112" r="5" fill="#f5c518"/>
+  <text x="130" y="115" fill="#333333" font-family="Arial, sans-serif" font-size="9" font-weight="bold">EXPERIENCE</text>
+
   <!-- Experience entry 1 -->
-  <text x="120" y="120" fill="#6b7280" font-family="Arial, sans-serif" font-size="8" font-weight="bold">Senior Marketing Specialist</text>
-  <text x="120" y="130" fill="#9ca3af" font-family="Arial, sans-serif" font-size="7">ABC Company • 2022-Present</text>
-  <text x="120" y="138" fill="#d1d5db" font-family="Arial, sans-serif" font-size="6">• Led digital marketing campaigns increasing ROI by 35%</text>
-  <text x="120" y="144" fill="#d1d5db" font-family="Arial, sans-serif" font-size="6">• Managed social media presence across 5 platforms</text>
-  
+  <text x="115" y="130" fill="#333333" font-family="Arial, sans-serif" font-size="7" font-weight="bold">Senior Marketing Specialist</text>
+  <text x="115" y="139" fill="#555555" font-family="Arial, sans-serif" font-size="6">ABC Company | Jan 2022 - Present</text>
+  <rect x="115" y="144" width="155" height="3.5" rx="1.5" fill="#e5e7eb"/>
+  <rect x="115" y="150" width="140" height="3.5" rx="1.5" fill="#e5e7eb"/>
+
   <!-- Experience entry 2 -->
-  <text x="120" y="165" fill="#6b7280" font-family="Arial, sans-serif" font-size="8" font-weight="bold">Marketing Coordinator</text>
-  <text x="120" y="175" fill="#9ca3af" font-family="Arial, sans-serif" font-size="7">XYZ Corp • 2020-2022</text>
-  <text x="120" y="183" fill="#d1d5db" font-family="Arial, sans-serif" font-size="6">• Coordinated email marketing campaigns with 25% open rate</text>
-  <text x="120" y="189" fill="#d1d5db" font-family="Arial, sans-serif" font-size="6">• Assisted in product launch strategies</text>
-  
-  <!-- Projects section -->
-  <text x="120" y="215" fill="#374151" font-family="Arial, sans-serif" font-size="10" font-weight="bold">KEY PROJECTS</text>
-  <text x="120" y="230" fill="#6b7280" font-family="Arial, sans-serif" font-size="7">Brand Relaunch Campaign</text>
-  <text x="120" y="238" fill="#d1d5db" font-family="Arial, sans-serif" font-size="6">Successfully increased brand awareness by 40%</text>
-  
-  <!-- Border to separate sections -->
-  <line x1="120" y1="150" x2="280" y2="150" stroke="#e5e7eb" stroke-width="1"/>
-  <line x1="120" y1="200" x2="280" y2="200" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="115" y="168" fill="#333333" font-family="Arial, sans-serif" font-size="7" font-weight="bold">Marketing Coordinator</text>
+  <text x="115" y="177" fill="#555555" font-family="Arial, sans-serif" font-size="6">XYZ Corp | Mar 2020 - Dec 2021</text>
+  <rect x="115" y="182" width="150" height="3.5" rx="1.5" fill="#e5e7eb"/>
+  <rect x="115" y="188" width="135" height="3.5" rx="1.5" fill="#e5e7eb"/>
+
+  <!-- Projects section with yellow dot -->
+  <circle cx="120" cy="210" r="5" fill="#f5c518"/>
+  <text x="130" y="213" fill="#333333" font-family="Arial, sans-serif" font-size="9" font-weight="bold">PROJECTS</text>
+
+  <text x="115" y="228" fill="#333333" font-family="Arial, sans-serif" font-size="7" font-weight="bold">Brand Relaunch</text>
+  <rect x="115" y="233" width="145" height="3.5" rx="1.5" fill="#e5e7eb"/>
+  <rect x="115" y="239" width="125" height="3.5" rx="1.5" fill="#e5e7eb"/>
 </svg>

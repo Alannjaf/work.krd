@@ -48,7 +48,7 @@
 2. Register in `registry.tsx`: add to `templateRegistry` object
 3. Add metadata in `templates.ts`: `getAllTemplates()` array
 4. Optionally add crop config in `template-config.ts`
-5. Add thumbnail SVG in `public/thumbnails/{id}.svg`
+5. **REQUIRED**: Create thumbnail SVG at `public/thumbnails/{id}.svg` (300×400 viewBox) — must match the template's actual colors, layout, and accent elements. TemplateSwitcher loads these via `<img src={/thumbnails/${id}.svg}>` into 72×96 boxes
 
 ### Template Props
 ```typescript
@@ -195,6 +195,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Wrap entire sidebar sections in `resume-entry` (causes cascading break algorithm to waste space)
 - Use `flexDirection: isRtl ? 'row-reverse' : 'row'` — the root `direction: rtl` already reverses flex rows, so `row-reverse` double-reverses back to LTR
 - Duplicate RTL detection regex — always import `isRTLText` from `@/lib/rtl`
+- Skip creating a thumbnail SVG — every template MUST have `public/thumbnails/{id}.svg` (300×400) with accurate colors/layout
 
 ## PDF Pipeline
 - `renderHtml.ts`: React SSR → full HTML document with embedded fonts (Inter LTR + Noto Sans Arabic RTL via base64)
