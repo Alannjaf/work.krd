@@ -70,7 +70,7 @@ projects?: [{ name, description (HTML), technologies, link, startDate, endDate }
 certifications?: [{ name, issuer, date, expiryDate, credentialId, url }]
 ```
 
-### Mandatory Template Rules
+### Mandatory Template Rules (ALL templates)
 
 **Dimensions**: `width: '794px'`, NO `minHeight` on root container
 
@@ -91,7 +91,11 @@ certifications?: [{ name, issuer, date, expiryDate, credentialId, url }]
 .resume-entry { break-inside: avoid; page-break-inside: avoid; }
 .resume-section h2 { break-after: avoid; page-break-after: avoid; }
 ```
-Apply `className="resume-section"` to sections, `className="resume-entry"` to items.
+
+**resume-entry granularity** (CRITICAL — gets page breaks right the first time):
+- `className="resume-entry"` goes on the **smallest atomic item** that shouldn't be split: one experience entry, one skill line, one contact field, one demographic field, one language line
+- NEVER put `resume-entry` on a section wrapper that contains multiple items — the break algorithm will push the entire section to the next page, wasting space
+- `className="resume-section"` goes on the outer section container (Experience, Education, etc.) — its `h2` gets `break-after: avoid` to stay with content
 
 **List Styles** (Tailwind strips bullets, include via `<style>`):
 ```css
@@ -103,6 +107,86 @@ Apply `className="resume-section"` to sections, `className="resume-entry"` to it
 **Rich text**: `dangerouslySetInnerHTML={{ __html: description }}` with `className="resume-desc"`
 
 **Watermark**: `{watermark && <Watermark />}` — import from shared components
+
+### Two-Column Template Checklist (sidebar + main content)
+
+Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate:
+
+**1. Sidebar background (PDF — edge-to-edge on every page)**:
+```jsx
+// In <style> tag:
+.sidebar-bg { display: none; }
+@media print {
+  .sidebar-bg {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important; bottom: 0 !important;
+    ${isRtl ? 'right' : 'left'}: 0;
+    width: ${SIDEBAR_WIDTH}px;
+    background-color: ${SIDEBAR_BG};
+    z-index: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+// Then render: <div className="sidebar-bg" />
+```
+
+**2. Sidebar background (Preview — `--resume-page-bg` variable)**:
+```jsx
+// On root div, use percentage-based gradient stops (scales with page card):
+'--resume-page-bg': isRtl
+  ? `linear-gradient(to left, ${ACCENT} 0.756%, ${SIDEBAR_BG} 0.756%, ${SIDEBAR_BG} 35.265%, #ffffff 35.265%)`
+  : `linear-gradient(to right, ${ACCENT} 0.756%, ${SIDEBAR_BG} 0.756%, ${SIDEBAR_BG} 35.265%, #ffffff 35.265%)`
+// Calculate percentages: accentWidth / 794 * 100, sidebarWidth / 794 * 100
+```
+
+**3. Per-page content padding (`box-decoration-break: clone`)**:
+```jsx
+// On BOTH sidebar and main content divs:
+{ padding: '40px 24px', WebkitBoxDecorationBreak: 'clone' as const, boxDecorationBreak: 'clone' as const }
+// This repeats padding on every page fragment — no content touching page edges
+```
+
+**4. Page break classes (granular — one per atomic item)**:
+```jsx
+// Section wrapper (Experience, Education, etc.):
+<div className="resume-section" style={{ marginBottom: 24 }}>
+  <MainSectionTitle>Experience</MainSectionTitle>
+  {data.experience.map(exp => (
+    <div key={exp.id} className="resume-entry" style={{ marginBottom: 16 }}>  // ← each entry
+      ...
+    </div>
+  ))}
+</div>
+
+// Sidebar items — EACH field is its own resume-entry:
+<div style={{ marginBottom: 24 }}>  // ← section wrapper has NO resume-entry
+  <SidebarSectionTitle>Contact</SidebarSectionTitle>
+  {data.personal.email && (
+    <div className="resume-entry" style={{ marginBottom: 10 }}>  // ← individual field
+      <div>Email</div>
+      <div>{data.personal.email}</div>
+    </div>
+  )}
+  // ... same for phone, location, etc.
+</div>
+```
+
+**5. Flex layout with RTL**:
+```jsx
+<div style={{ display: 'flex', flexDirection: isRtl ? 'row-reverse' : 'row', position: 'relative', zIndex: 1 }}>
+  <div style={{ width: SIDEBAR_WIDTH, ... }}>  {/* sidebar */}
+  <div style={{ flex: 1, ... }}>                {/* main content */}
+</div>
+```
+
+**6. DO NOT**:
+- Add `@page` rules in template CSS (handled by `renderHtml.ts`)
+- Add `minHeight` on root container (breaks page count)
+- Use `html { background }` for print backgrounds (Chromium doesn't propagate to page canvas)
+- Remove `@page { margin: 0 }` from renderHtml.ts (clips `position: fixed` elements)
+- Wrap entire sidebar sections in `resume-entry` (causes cascading break algorithm to waste space)
 
 ## PDF Pipeline
 - `renderHtml.ts`: React SSR → full HTML document with embedded fonts (Inter LTR + Noto Sans Arabic RTL via base64)
@@ -123,9 +207,9 @@ Apply `className="resume-section"` to sections, `className="resume-entry"` to it
 - **Auto-save refs pattern**: `formDataRef`, `resumeIdRef`, `templateRef` — prevents stale closures in debounced saves
 - Buttons without `type="button"` cause page refresh
 - `minHeight: 1123px` on template root causes wrong page count (remove it)
-- `@page { margin: X }` clips `position: fixed` elements — use `@page { margin: 0 }` + `box-decoration-break: clone` for content padding that repeats per page
-- Two-column sidebar templates: apply `className="resume-entry"` to each **individual item** within sidebar sections (each contact field, each demographic field, each skill, each language) — NOT on the section wrapper. Wrapping entire sections causes aggressive cascading in the break algorithm, pushing whole sections to the next page and wasting space.
-- Preview break algorithm (`ResumePageScaler.tsx`): uses a convergence loop (`while (!settled)`) to handle two-column layouts — adjusting for one column's entry may cause an entry in the other column to straddle, requiring re-checking until `adjustedEnd` stabilizes
+- `@page { margin: X }` clips `position: fixed` elements — must use `@page { margin: 0 }` (see Two-Column Checklist)
+- `html { background }` does NOT propagate to print page canvas in Chromium — don't try it, use `position: fixed` instead
+- Preview break algorithm (`ResumePageScaler.tsx`): convergence loop re-checks all entries until stable — handles two-column cascading correctly
 - Mixed LTR/RTL text garbles → use `unicode-bidi: isolate` spans
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)
