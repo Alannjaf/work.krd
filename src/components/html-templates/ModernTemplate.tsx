@@ -109,7 +109,11 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
       color: MAIN_TEXT,
       direction: dir,
       position: 'relative',
-    }}>
+      // CSS variable read by ResumePageScaler to paint sidebar bg on each page (percentages scale with page card)
+      '--resume-page-bg': isRtl
+        ? `linear-gradient(to left, ${ACCENT} 0.756%, ${SIDEBAR_BG} 0.756%, ${SIDEBAR_BG} 35.265%, #ffffff 35.265%)`
+        : `linear-gradient(to right, ${ACCENT} 0.756%, ${SIDEBAR_BG} 0.756%, ${SIDEBAR_BG} 35.265%, #ffffff 35.265%)`,
+    } as React.CSSProperties}>
       <style dangerouslySetInnerHTML={{ __html: `
         .resume-desc ul, .resume-desc ol { list-style: disc; padding-left: 1.2em; padding-right: 0; margin: 4px 0; }
         .resume-desc ol { list-style: decimal; }
@@ -117,21 +121,42 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
         [dir="rtl"] .resume-desc ul, [dir="rtl"] .resume-desc ol { padding-left: 0; padding-right: 1.2em; }
         .resume-entry { break-inside: avoid; page-break-inside: avoid; }
         .resume-section h2 { break-after: avoid; page-break-after: avoid; }
+        .modern-sidebar-bg { display: none; }
+        @media print {
+          .modern-sidebar-bg {
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            ${isRtl ? 'right' : 'left'}: 0;
+            width: 280px;
+            background-color: ${SIDEBAR_BG};
+            border-${isRtl ? 'right' : 'left'}: 6px solid ${ACCENT};
+            z-index: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        }
       `}} />
 
       {watermark && <Watermark />}
 
+      {/* Sidebar background: position:fixed repeats on every print page (needs @page margin:0) */}
+      <div className="modern-sidebar-bg" />
+
       <div style={{
         display: 'flex',
         flexDirection: isRtl ? 'row-reverse' : 'row',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* ===== SIDEBAR ===== */}
         <div style={{
           width: 280,
-          backgroundColor: SIDEBAR_BG,
           padding: '40px 24px',
           flexShrink: 0,
-          [isRtl ? 'borderRight' : 'borderLeft']: `6px solid ${ACCENT}`,
+          WebkitBoxDecorationBreak: 'clone' as const,
+          boxDecorationBreak: 'clone' as const,
         }}>
           {/* Profile Photo */}
           {data.personal.profileImage && (
@@ -168,8 +193,8 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           </div>
 
           {/* Contact */}
-          <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}</SidebarSectionTitle>
-          <div style={{ marginBottom: 24 }}>
+          <div className="resume-entry" style={{ marginBottom: 24 }}>
+            <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}</SidebarSectionTitle>
             {data.personal.email && (
               <div style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold', textAlign, marginBottom: 1 }}>
@@ -222,9 +247,8 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
 
           {/* Demographics */}
           {hasDemographics && (
-            <>
+            <div className="resume-entry" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u0632\u0627\u0646\u06CC\u0627\u0631\u06CC \u06A9\u06D5\u0633\u06CC' : 'Personal'}</SidebarSectionTitle>
-              <div style={{ marginBottom: 24 }}>
                 {data.personal.dateOfBirth && (
                   <div style={{ marginBottom: 6, textAlign }}>
                     <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'DOB'}: </span>
@@ -255,15 +279,13 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.country}</span>
                   </div>
                 )}
-              </div>
-            </>
+            </div>
           )}
 
           {/* Skills */}
           {data.skills && data.skills.length > 0 && (
-            <>
+            <div className="resume-entry" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Skills'}</SidebarSectionTitle>
-              <div style={{ marginBottom: 24 }}>
                 {data.skills.map((skill) => (
                   <div key={skill.id} style={{
                     fontSize: 11,
@@ -278,29 +300,26 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
                     )}
                   </div>
                 ))}
-              </div>
-            </>
+            </div>
           )}
 
           {/* Languages */}
           {data.languages && data.languages.length > 0 && (
-            <>
+            <div className="resume-entry" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages'}</SidebarSectionTitle>
-              <div style={{ marginBottom: 24 }}>
-                {data.languages.map((lang) => (
-                  <div key={lang.id} style={{
-                    fontSize: 11,
-                    color: SIDEBAR_TEXT,
-                    marginBottom: 6,
-                    textAlign,
-                    lineHeight: isRtl ? 1.6 : 1.4,
-                  }}>
-                    {lang.name}
-                    <span style={{ color: SIDEBAR_MUTED, fontSize: 10 }}> — {lang.proficiency}</span>
-                  </div>
-                ))}
-              </div>
-            </>
+              {data.languages.map((lang) => (
+                <div key={lang.id} style={{
+                  fontSize: 11,
+                  color: SIDEBAR_TEXT,
+                  marginBottom: 6,
+                  textAlign,
+                  lineHeight: isRtl ? 1.6 : 1.4,
+                }}>
+                  {lang.name}
+                  <span style={{ color: SIDEBAR_MUTED, fontSize: 10 }}> — {lang.proficiency}</span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -309,6 +328,8 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           flex: 1,
           padding: '40px 36px',
           backgroundColor: '#ffffff',
+          WebkitBoxDecorationBreak: 'clone' as const,
+          boxDecorationBreak: 'clone' as const,
         }}>
           {/* Profile / Summary */}
           {data.summary && (

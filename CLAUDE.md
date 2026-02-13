@@ -107,7 +107,11 @@ Apply `className="resume-section"` to sections, `className="resume-entry"` to it
 ## PDF Pipeline
 - `renderHtml.ts`: React SSR → full HTML document with embedded fonts (Inter LTR + Noto Sans Arabic RTL via base64)
 - `generatePdf.ts`: Puppeteer (`puppeteer-core`) → A4 PDF; waits for `document.fonts.ready`
-- PDF margins: `@page { margin: 40px 0; }` — templates must NOT add their own page margins
+- Page margins: `@page { size: A4; margin: 0; }` in `renderHtml.ts` — zero margin so `position: fixed` backgrounds extend edge-to-edge
+- Content spacing handled by template padding + `box-decoration-break: clone` on sidebar/main divs — padding repeats on every page fragment (Chrome 130+)
+- Puppeteer `margin: { top: 40px, bottom: 40px }` in `generatePdf.ts` — overridden by @page but kept as fallback
+- Templates must NOT add their own `@page` margin overrides
+- For two-column templates with sidebar backgrounds: use `position: fixed` div in `@media print` (repeats every page with @page margin:0). Preview uses `--resume-page-bg` CSS variable read by ResumePageScaler.
 - Preview pagination: `ResumePageScaler.tsx` measures content, calculates page breaks matching Puppeteer output
 
 ## Key Patterns & Gotchas
@@ -119,6 +123,8 @@ Apply `className="resume-section"` to sections, `className="resume-entry"` to it
 - **Auto-save refs pattern**: `formDataRef`, `resumeIdRef`, `templateRef` — prevents stale closures in debounced saves
 - Buttons without `type="button"` cause page refresh
 - `minHeight: 1123px` on template root causes wrong page count (remove it)
+- `@page { margin: X }` clips `position: fixed` elements — use `@page { margin: 0 }` + `box-decoration-break: clone` for content padding that repeats per page
+- Two-column sidebar templates: apply `className="resume-entry"` to ALL sidebar sections (Contact, Demographics, Skills, Languages) to prevent page-break splitting
 - Mixed LTR/RTL text garbles → use `unicode-bidi: isolate` spans
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)

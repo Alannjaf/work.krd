@@ -17,6 +17,7 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
   const measureRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [pageBreaks, setPageBreaks] = useState<number[]>([0]);
+  const [pageBg, setPageBg] = useState('');
 
   const measure = useCallback(() => {
     const container = containerRef.current;
@@ -61,22 +62,20 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
     while (nextPageEnd < contentHeight) {
       let adjustedEnd = nextPageEnd;
 
-      // Check if any entry (break-inside: avoid) would be split
+      // Check ALL entries (break-inside: avoid) that would be split — handles two-column layouts
       for (const entry of entryPositions) {
-        if (entry.top < nextPageEnd && entry.bottom > nextPageEnd) {
+        if (entry.top < adjustedEnd && entry.bottom > adjustedEnd) {
           if (entry.height <= CONTENT_PER_PAGE) {
             adjustedEnd = Math.floor(entry.top);
           }
-          break;
         }
       }
 
-      // Check if a section heading would be orphaned at the bottom (break-after: avoid on h2)
+      // Check ALL section headings that would be orphaned at the bottom (break-after: avoid on h2)
       for (const heading of headingPositions) {
         if (heading.top < adjustedEnd && heading.headingBottom >= adjustedEnd - 2) {
           // Heading is at the very bottom — push it to the next page
           adjustedEnd = Math.floor(heading.top);
-          break;
         }
       }
 
@@ -90,6 +89,11 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
     }
 
     setPageBreaks(breaks);
+
+    // Read template page background CSS variable (used by two-column templates like Modern)
+    const templateRoot = content.firstElementChild as HTMLElement | null;
+    const bg = templateRoot ? getComputedStyle(templateRoot).getPropertyValue('--resume-page-bg').trim() : '';
+    setPageBg(bg);
   }, []);
 
   useEffect(() => {
@@ -140,7 +144,7 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
                 overflow: 'hidden',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
                 borderRadius: '2px',
-                background: 'white',
+                background: pageBg || 'white',
               }}
             >
               {/* Scale wrapper — clipping at full A4 dimensions, then scaled */}
