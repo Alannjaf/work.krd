@@ -52,7 +52,7 @@ export async function GET(req: Request) {
       }
     })
 
-    const response = NextResponse.json({ 
+    const response = NextResponse.json({
       resumes: optimizedResumes,
       pagination: {
         total: totalCount,
@@ -62,9 +62,9 @@ export async function GET(req: Request) {
       }
     })
 
-    // Add cache headers for client-side caching (5 minutes)
-    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=60')
-    
+    // No browser caching — resume list must always reflect latest state
+    response.headers.set('Cache-Control', 'no-store')
+
     return response
   } catch (error) {
     console.error('Error fetching resumes:', error)

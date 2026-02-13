@@ -562,6 +562,7 @@
           "preview": "Preview",
           "delete": "Delete",
           "editResume": "Edit resume",
+          "duplicateResume": "Duplicate resume",
           "deleteResume": "Delete resume"
         },
         "deleteConfirm": {
@@ -573,7 +574,9 @@
         "messages": {
           "deleteSuccess": "Resume deleted successfully",
           "deleteError": "Failed to delete resume. Please try again.",
-          "deleteErrorGeneric": "Error deleting resume. Please try again."
+          "deleteErrorGeneric": "Error deleting resume. Please try again.",
+          "duplicateSuccess": "Resume duplicated successfully",
+          "duplicateLimitReached": "You've reached your resume limit. Upgrade your plan to create more."
         },
         "updated": "Updated {date}"
       }

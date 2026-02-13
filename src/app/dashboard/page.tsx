@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AppHeader } from '@/components/shared/AppHeader'
-import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText } from 'lucide-react'
+import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText, Copy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
   // Fetch user's resumes
   useEffect(() => {
@@ -45,6 +46,30 @@ export default function Dashboard() {
 
     fetchResumes()
   }, [])
+
+  const handleDuplicateResume = async (resumeId: string) => {
+    setDuplicatingId(resumeId)
+    try {
+      const response = await fetch(`/api/resumes/${resumeId}/duplicate`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setResumes(prev => [data.resume, ...prev])
+        toast.success(t('pages.dashboard.resumes.messages.duplicateSuccess'))
+      } else if (response.status === 403) {
+        toast.error(t('pages.dashboard.resumes.messages.duplicateLimitReached'))
+      } else {
+        toast.error(t('pages.dashboard.resumes.messages.deleteErrorGeneric'))
+      }
+    } catch (error) {
+      console.error('[Dashboard] Failed to duplicate resume:', error);
+      toast.error(t('pages.dashboard.resumes.messages.deleteErrorGeneric'))
+    } finally {
+      setDuplicatingId(null)
+    }
+  }
 
   const handleDeleteResume = async (resumeId: string) => {
     // Show a warning toast with confirmation
@@ -184,6 +209,21 @@ export default function Dashboard() {
                         aria-label={t('pages.dashboard.resumes.actions.editResume')}
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDuplicateResume(resume.id)}
+                        disabled={duplicatingId === resume.id}
+                        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        title={t('pages.dashboard.resumes.actions.duplicateResume')}
+                        aria-label={t('pages.dashboard.resumes.actions.duplicateResume')}
+                      >
+                        {duplicatingId === resume.id ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
                         variant="ghost"

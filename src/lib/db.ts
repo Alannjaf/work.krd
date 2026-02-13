@@ -237,6 +237,65 @@ async function getSystemSettings() {
   }
 }
 
+export async function duplicateResume(resumeId: string, userId: string, clerkId: string) {
+  // Check if user can create more resumes
+  const limits = await checkUserLimits(clerkId)
+  if (!limits.canCreateResume) {
+    throw new Error('RESUME_LIMIT_REACHED')
+  }
+
+  // Fetch original resume with sections
+  const original = await prisma.resume.findFirst({
+    where: { id: resumeId, userId },
+    include: { sections: { orderBy: { order: 'asc' } } }
+  })
+
+  if (!original) {
+    throw new Error('RESUME_NOT_FOUND')
+  }
+
+  // Fall back template if user can't access the original's template
+  const availableTemplates = limits.availableTemplates || ['modern']
+  const template = availableTemplates.includes(original.template)
+    ? original.template
+    : 'modern'
+
+  // Atomically create the copy and increment resume count
+  const newResume = await prisma.$transaction(async (tx) => {
+    const resume = await tx.resume.create({
+      data: {
+        userId,
+        title: `${original.title} (Copy)`,
+        template,
+        status: 'DRAFT',
+        isPublic: false,
+        publicSlug: null,
+        personalInfo: original.personalInfo ?? undefined,
+        summary: original.summary,
+        sections: {
+          create: original.sections.map((s) => ({
+            type: s.type,
+            title: s.title,
+            content: s.content as InputJsonValue,
+            order: s.order,
+            isVisible: s.isVisible,
+          })),
+        },
+      },
+      include: { sections: true },
+    })
+
+    await tx.subscription.update({
+      where: { userId },
+      data: { resumeCount: { increment: 1 } },
+    })
+
+    return resume
+  })
+
+  return newResume
+}
+
 export async function checkUserLimits(clerkUserId: string) {
   // First get the database user from Clerk ID
   const user = await prisma.user.findUnique({

@@ -206,6 +206,13 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - For two-column templates with sidebar backgrounds: use `position: fixed` div in `@media print` (repeats every page with @page margin:0). Preview uses `--resume-page-bg` CSS variable read by ResumePageScaler.
 - Preview pagination: `ResumePageScaler.tsx` measures content, calculates page breaks matching Puppeteer output
 
+## Resume Duplicate Feature
+- **`duplicateResume()`** in `db.ts`: Takes `resumeId`, `userId`, `clerkId` — checks limits, copies resume + all sections atomically via `$transaction`, increments `resumeCount`
+- **API**: POST `/api/resumes/[id]/duplicate` — returns new resume; 403 if limit reached, 404 if not found
+- **Dashboard**: Copy button (blue) between Edit and Delete icons, `duplicatingId` state pattern mirrors `deletingId`
+- **Template fallback**: If user's plan can't access the original's template, copy uses `'modern'`
+- **i18n keys**: `pages.dashboard.resumes.actions.duplicateResume`, `pages.dashboard.resumes.messages.duplicateSuccess`, `pages.dashboard.resumes.messages.duplicateLimitReached`
+
 ## Key Patterns & Gotchas
 - **Prisma Json fields**: Pass arrays directly (`proTemplates: ['modern']`), never `JSON.stringify()` — causes double-encoding
 - **PRO template access**: `checkUserLimits` always includes all `getTemplateIds()` for PRO, regardless of DB settings
@@ -235,7 +242,7 @@ src/components/html-templates/
 src/lib/
   templates.ts                # Template metadata (getAllTemplates, getTemplateIds, getTemplateTier)
   template-config.ts          # Per-template crop configs for profile photos
-  db.ts                       # getCurrentUser, checkUserLimits (private getSystemSettings)
+  db.ts                       # getCurrentUser, checkUserLimits, duplicateResume (private getSystemSettings)
   system-settings.ts          # getSystemSettings (exported), updateSystemSettings
   rtl.ts                      # isRTLText(), isResumeRTL() — Arabic/Kurdish detection
   pdf/renderHtml.ts           # React SSR → HTML with embedded fonts
@@ -253,6 +260,7 @@ src/hooks/useDownloadPDF.ts   # PDF download with 403 → billing redirect
 
 src/app/api/
   pdf/generate/               # POST: generate PDF (checks limits + template access)
+  resumes/[id]/duplicate/     # POST: duplicate resume (checks limits + template fallback)
   admin/settings/             # GET/POST: system settings (requires admin)
   admin/stats/                # GET: platform metrics
   admin/users/                # GET: user listing; [userId]/upgrade POST
