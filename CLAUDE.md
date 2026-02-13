@@ -78,10 +78,12 @@ certifications?: [{ name, issuer, date, expiryDate, credentialId, url }]
 
 **RTL Support** (MANDATORY):
 ```js
-// Detect: /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
+// Detect: use isRTLText() from '@/lib/rtl' — never duplicate the regex
 // Root: direction: isRtl ? 'rtl' : 'ltr'
 // Text blocks: textAlign: isRtl ? 'right' : 'left'
-// Flex containers: flexDirection: isRtl ? 'row-reverse' : 'row'
+// Flex containers: use flexDirection: 'row' (NOT 'row-reverse' for RTL!)
+//   — direction: rtl on root already reverses flex row order
+//   — adding row-reverse DOUBLE-REVERSES back to LTR layout
 // Contact/URLs: <span style={{ unicodeBidi: 'isolate' }}> inside direction:'ltr', unicodeBidi:'plaintext' container
 // Line-height: increase for RTL (1.5-1.8 vs 1.3-1.5 LTR)
 ```
@@ -175,10 +177,14 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 
 **5. Flex layout with RTL**:
 ```jsx
-<div style={{ display: 'flex', flexDirection: isRtl ? 'row-reverse' : 'row', position: 'relative', zIndex: 1 }}>
-  <div style={{ width: SIDEBAR_WIDTH, ... }}>  {/* sidebar */}
+// IMPORTANT: use flexDirection: 'row' — NOT 'row-reverse' for RTL!
+// The root div's direction: rtl already reverses flex row order.
+// Using row-reverse + direction:rtl = double-reversal = sidebar stays on LEFT (wrong!)
+<div style={{ display: 'flex', flexDirection: 'row', position: 'relative', zIndex: 1 }}>
+  <div style={{ width: SIDEBAR_WIDTH, ... }}>  {/* sidebar — auto-flips to right in RTL */}
   <div style={{ flex: 1, ... }}>                {/* main content */}
 </div>
+// Same for section title flex containers — just use flexDirection: 'row'
 ```
 
 **6. DO NOT**:
@@ -187,6 +193,8 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Use `html { background }` for print backgrounds (Chromium doesn't propagate to page canvas)
 - Remove `@page { margin: 0 }` from renderHtml.ts (clips `position: fixed` elements)
 - Wrap entire sidebar sections in `resume-entry` (causes cascading break algorithm to waste space)
+- Use `flexDirection: isRtl ? 'row-reverse' : 'row'` — the root `direction: rtl` already reverses flex rows, so `row-reverse` double-reverses back to LTR
+- Duplicate RTL detection regex — always import `isRTLText` from `@/lib/rtl`
 
 ## PDF Pipeline
 - `renderHtml.ts`: React SSR → full HTML document with embedded fonts (Inter LTR + Noto Sans Arabic RTL via base64)

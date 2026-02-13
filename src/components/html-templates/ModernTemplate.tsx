@@ -2,10 +2,7 @@ import React from 'react';
 import type { HtmlTemplateProps } from './types';
 import { Watermark } from './shared/Watermark';
 import { ProfilePhoto } from './shared/ProfilePhoto';
-
-function hasRtlChars(text: string): boolean {
-  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
-}
+import { isRTLText } from '@/lib/rtl';
 
 const ACCENT = '#f5c518';
 const SIDEBAR_BG = '#1e1e1e';
@@ -19,7 +16,7 @@ function SidebarSectionTitle({ children, isRtl }: { children: React.ReactNode; i
   return (
     <div style={{
       display: 'flex',
-      flexDirection: isRtl ? 'row-reverse' : 'row',
+      flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
       marginBottom: 12,
@@ -53,7 +50,7 @@ function MainSectionTitle({ children, isRtl }: { children: React.ReactNode; isRt
   return (
     <div style={{
       display: 'flex',
-      flexDirection: isRtl ? 'row-reverse' : 'row',
+      flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
       marginBottom: 14,
@@ -82,7 +79,7 @@ function MainSectionTitle({ children, isRtl }: { children: React.ReactNode; isRt
 
 export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
   const textToCheck = [data.personal.fullName, data.personal.title, data.summary].filter(Boolean).join(' ');
-  const isRtl = hasRtlChars(textToCheck);
+  const isRtl = isRTLText(textToCheck);
   const dir = isRtl ? 'rtl' : 'ltr';
   const textAlign = isRtl ? 'right' as const : 'left' as const;
 
@@ -146,7 +143,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
 
       <div style={{
         display: 'flex',
-        flexDirection: isRtl ? 'row-reverse' : 'row',
+        flexDirection: 'row',
         position: 'relative',
         zIndex: 1,
       }}>

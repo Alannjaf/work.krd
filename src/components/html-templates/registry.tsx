@@ -2,6 +2,7 @@ import React from 'react';
 import type { HtmlTemplateProps } from './types';
 import type { ComponentType } from 'react';
 import { ModernTemplate } from './ModernTemplate';
+import { isRTLText } from '@/lib/rtl';
 
 export interface TemplateEntry {
   id: string;
@@ -9,16 +10,11 @@ export interface TemplateEntry {
   component: ComponentType<HtmlTemplateProps>;
 }
 
-// Detect if text contains Arabic/Kurdish characters (RTL)
-function hasRtlChars(text: string): boolean {
-  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
-}
-
 // Placeholder template shown when no templates are available
 function PlaceholderTemplate({ data }: HtmlTemplateProps) {
   // Detect RTL from content: check name, title, and summary
   const textToCheck = [data.personal.fullName, data.personal.title, data.summary].filter(Boolean).join(' ');
-  const isRtl = hasRtlChars(textToCheck);
+  const isRtl = isRTLText(textToCheck);
   const dir = isRtl ? 'rtl' : 'ltr';
   const textAlign = isRtl ? 'right' as const : 'left' as const;
   const flexRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', direction: dir };

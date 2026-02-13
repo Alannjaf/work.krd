@@ -4,11 +4,12 @@
  * Unicode ranges for Arabic/Kurdish script:
  * - U+0600-U+06FF: Arabic
  * - U+0750-U+077F: Arabic Supplement
+ * - U+08A0-U+08FF: Arabic Extended-A (Kurdish, modern Arabic phonetic extensions)
  * - U+FB50-U+FDFF: Arabic Presentation Forms-A
  * - U+FE70-U+FEFF: Arabic Presentation Forms-B
  */
 
-const ARABIC_REGEX = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const ARABIC_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
 export function isRTLText(text: string | null | undefined): boolean {
   if (!text) return false;
