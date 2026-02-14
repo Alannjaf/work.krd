@@ -354,17 +354,17 @@ export async function checkUserLimits(clerkUserId: string) {
 
   // Get available templates for user's plan
   const allRegisteredTemplates = getTemplateIds()
-  let availableTemplates: string[] = ['placeholder']
+  let availableTemplates: string[] = ['basic']
   switch (subscription.plan) {
     case 'FREE':
-      availableTemplates = [...new Set(['placeholder', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
+      availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
       break
     case 'BASIC':
-      availableTemplates = [...new Set(['placeholder', ...ensureStringArray(systemSettings.basicTemplates, ['modern'])])]
+      availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.basicTemplates, ['modern'])])]
       break
     case 'PRO':
       // PRO always gets all registered templates plus any from settings
-      availableTemplates = [...new Set(['placeholder', ...allRegisteredTemplates, ...ensureStringArray(systemSettings.proTemplates, allRegisteredTemplates)])]
+      availableTemplates = [...new Set(['basic', ...allRegisteredTemplates, ...ensureStringArray(systemSettings.proTemplates, allRegisteredTemplates)])]
       break
   }
 

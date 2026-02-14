@@ -43,7 +43,7 @@ function ResumeBuilderContent() {
   // State
   const [currentSection, setCurrentSection] = useState(0);
   const [showATS, setShowATS] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("placeholder");
+  const [selectedTemplate, setSelectedTemplate] = useState("basic");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
@@ -242,7 +242,7 @@ function ResumeBuilderContent() {
 
         setResumeId(resume.id);
         setResumeTitle(resume.title || "");
-        setSelectedTemplate(resume.template || "placeholder");
+        setSelectedTemplate(resume.template || "basic");
 
         let idCounter = 0;
         const generateId = () => `${Date.now()}_${++idCounter}`;

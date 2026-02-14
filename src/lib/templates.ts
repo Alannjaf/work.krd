@@ -10,6 +10,12 @@ export interface TemplateInfo {
 export const getAllTemplates = (): TemplateInfo[] => {
   return [
     {
+      id: 'basic',
+      name: 'Basic',
+      description: 'Clean, single-column layout with centered header',
+      category: 'minimal'
+    },
+    {
       id: 'modern',
       name: 'Modern Professional',
       description: 'Clean, professional layout with dual columns',
