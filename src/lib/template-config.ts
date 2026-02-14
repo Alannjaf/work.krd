@@ -106,7 +106,7 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       safeArea: {
         padding: 10,
         showGuide: true,
-        color: '#e07a5f'
+        color: '#FF6B6B'
       }
     }
   },

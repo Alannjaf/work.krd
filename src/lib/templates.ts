@@ -36,7 +36,7 @@ export const getAllTemplates = (): TemplateInfo[] => {
     {
       id: 'creative',
       name: 'Creative',
-      description: 'Coral sidebar with dot skill ratings, perfect for designers and creatives',
+      description: 'Vibrant two-column with circular skill rings, progress bars, and multi-color accents for designers',
       category: 'creative'
     },
   ]

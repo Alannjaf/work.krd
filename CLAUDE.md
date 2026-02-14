@@ -7,6 +7,9 @@
 - Commit only, wait for Alan to say "push" — Netlify auto-builds (20 deploys/month)
 - Test mobile AND desktop after CSS changes
 
+## Self-Improvement Rule
+After completing a task that took 8+ tool calls, append ONE optimization hint as a comment at the end of your response. Format: "💡 Optimization: [one sentence - reusable skill, memory pattern, or workflow fix]". Skip if the task was exploratory.
+
 ## Tech Stack
 - Next.js 15 + Tailwind + Prisma (PostgreSQL) + Clerk auth
 - Resume builder SaaS for Kurdish/Arabic speakers — RTL is critical
@@ -17,7 +20,7 @@
 
 ### Template System
 - **Registry** (`src/components/html-templates/registry.tsx`): Maps template IDs to `{ id, name, component }` entries
-- **Current templates**: `placeholder` (fallback), `modern` (Modern Professional — dark sidebar + yellow accent), `elegant` (Elegant Dark — both columns dark + gold accents), `bold` (Bold Creative — dark sidebar + white main, skill bars, HELLO greeting), `developer` (Developer — dark IDE theme with green syntax accents), `creative` (Creative — full-width coral header band, NO sidebar, timeline dots for experience/education, pill-tag skills, summary callout box)
+- **Current templates**: `placeholder` (fallback), `modern` (Modern Professional — dark sidebar + yellow accent), `elegant` (Elegant Dark — both columns dark + gold accents), `bold` (Bold Creative — dark sidebar + white main, skill bars, HELLO greeting), `developer` (Developer — dark IDE theme with green syntax accents), `creative` (Creative — deep indigo sidebar #2D2B55 + coral accent strip, SVG circular skill rings, colored progress bars for languages, multi-color card system: coral=experience, yellow=education, mint=projects, lavender=certifications, diamond dividers)
 - **Shared components** in `src/components/html-templates/shared/`: ResumeHeader, ContactInfo, ProfilePhoto, SectionTitle, ExperienceSection, EducationSection, SkillsSection, LanguagesSection, ProjectsSection, CertificationsSection, Watermark
 - **Metadata** (`src/lib/templates.ts`): `getAllTemplates()`, `getTemplateIds()`, `getTemplateTier()`
 - **Crop configs** (`src/lib/template-config.ts`): Per-template profile photo crop settings
@@ -193,6 +196,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Use `html { background }` for print backgrounds (Chromium doesn't propagate to page canvas)
 - Remove `@page { margin: 0 }` from renderHtml.ts (clips `position: fixed` elements)
 - Wrap entire sidebar sections in `resume-entry` (causes cascading break algorithm to waste space)
+- Assume page break convergence works the same for sidebar and main content — sidebar entries are dense and cascade badly; ResumePageScaler skips them in Phase 2 re-convergence
 - Use `flexDirection: isRtl ? 'row-reverse' : 'row'` — the root `direction: rtl` already reverses flex rows, so `row-reverse` double-reverses back to LTR
 - Duplicate RTL detection regex — always import `isRTLText` from `@/lib/rtl`
 - Skip creating a thumbnail SVG — every template MUST have `public/thumbnails/{id}.svg` (300×400) with accurate colors/layout
@@ -225,7 +229,11 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - `minHeight: 1123px` on template root causes wrong page count (remove it)
 - `@page { margin: X }` clips `position: fixed` elements — must use `@page { margin: 0 }` (see Two-Column Checklist)
 - `html { background }` does NOT propagate to print page canvas in Chromium — don't try it, use `position: fixed` instead
-- Preview break algorithm (`ResumePageScaler.tsx`): convergence loop re-checks all entries until stable — handles two-column cascading correctly
+- **Preview break algorithm** (`ResumePageScaler.tsx`): Column-aware 2-phase approach:
+  - Phase 1: Converge ALL entries (sidebar + main) — stable base break
+  - Phase 2: Fix heading orphans (heading on page but `firstEntryTop >= adjustedEnd`), re-converge ONLY main-content entries (skip sidebar via `isSidebar` flag)
+  - `isSidebar` determined by horizontal center position < 40% of content width
+  - **Why column-aware**: Sidebar entries (e.g., skill rings) are densely packed → cascading re-convergence pushes break far back, wasting page space. Skipping sidebar in Phase 2 prevents this cascade while keeping main content sections grouped with their headings
 - Mixed LTR/RTL text garbles → use `unicode-bidi: isolate` spans
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)
@@ -239,7 +247,7 @@ src/components/html-templates/
   ElegantTemplate.tsx          # Both-dark columns + gold accents two-column
   BoldTemplate.tsx             # Dark sidebar + white main, skill bars, HELLO greeting
   DeveloperTemplate.tsx          # Dark IDE theme with syntax highlighting accents
-  CreativeTemplate.tsx           # Coral sidebar with dot skill ratings for designers
+  CreativeTemplate.tsx           # Deep indigo sidebar, circular skill rings, progress bars, multi-color cards
   TemplateRenderer.tsx         # Wrapper: looks up registry, renders component
   ResumePageScaler.tsx         # Browser preview with page break simulation
   shared/                     # Reusable template building blocks (13 components)

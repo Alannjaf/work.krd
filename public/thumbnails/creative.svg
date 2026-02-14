@@ -2,107 +2,174 @@
   <!-- White page background -->
   <rect width="300" height="400" fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
 
-  <!-- ============ CORAL HEADER BAND (~100px) ============ -->
-  <rect x="0" y="0" width="300" height="100" fill="#e07a5f"/>
+  <!-- ============ SIDEBAR (deep indigo) ============ -->
+  <rect x="0" y="0" width="103" height="400" fill="#2D2B55"/>
 
-  <!-- Profile photo circle (left side of header) -->
-  <circle cx="42" cy="50" r="24" fill="none" stroke="white" stroke-width="2"/>
-  <circle cx="42" cy="45" r="8" fill="rgba(255,255,255,0.5)"/>
-  <ellipse cx="42" cy="58" rx="11" ry="7" fill="rgba(255,255,255,0.5)"/>
+  <!-- Accent strip -->
+  <rect x="103" y="0" width="2" height="400" fill="#FF6B6B"/>
 
-  <!-- Name (large white rectangle) to the right of photo -->
-  <rect x="78" y="34" width="110" height="7" rx="1.5" fill="white"/>
-  <!-- Title (smaller white rectangle) -->
-  <rect x="78" y="46" width="75" height="4.5" rx="1" fill="rgba(255,255,255,0.7)"/>
+  <!-- ============ SIDEBAR CONTENT ============ -->
 
-  <!-- Contact info row below name -->
-  <rect x="78" y="60" width="38" height="3" rx="0.8" fill="rgba(255,255,255,0.5)"/>
-  <rect x="120" y="60" width="45" height="3" rx="0.8" fill="rgba(255,255,255,0.5)"/>
-  <rect x="169" y="60" width="35" height="3" rx="0.8" fill="rgba(255,255,255,0.5)"/>
-  <rect x="78" y="67" width="42" height="3" rx="0.8" fill="rgba(255,255,255,0.5)"/>
-  <rect x="124" y="67" width="50" height="3" rx="0.8" fill="rgba(255,255,255,0.5)"/>
+  <!-- Profile photo circle with coral border -->
+  <circle cx="52" cy="40" r="22" fill="none" stroke="#FF6B6B" stroke-width="2"/>
+  <circle cx="52" cy="35" r="7" fill="rgba(255,255,255,0.4)"/>
+  <ellipse cx="52" cy="47" rx="10" ry="6" fill="rgba(255,255,255,0.4)"/>
 
-  <!-- ============ WHITE CONTENT AREA ============ -->
+  <!-- Name -->
+  <rect x="18" y="70" width="67" height="5.5" rx="1.5" fill="#ffffff"/>
+  <!-- Title -->
+  <rect x="24" y="79" width="55" height="3.5" rx="1" fill="rgba(255,255,255,0.5)"/>
 
-  <!-- SUMMARY section -->
-  <rect x="20" y="116" width="3.5" height="6" rx="0.8" fill="#e07a5f"/>
-  <text x="27" y="121" font-family="Arial, sans-serif" font-size="5.5" font-weight="bold" letter-spacing="1" fill="#e07a5f">SUMMARY</text>
+  <!-- Diamond divider -->
+  <rect x="40" y="89" width="4" height="4" rx="0.5" fill="#FF6B6B" transform="rotate(45 42 91)"/>
+  <rect x="48" y="89" width="4" height="4" rx="0.5" fill="#4ECDC4" transform="rotate(45 50 91)"/>
+  <rect x="56" y="89" width="4" height="4" rx="0.5" fill="#FFE66D" transform="rotate(45 58 91)"/>
+
+  <!-- Contact section: dot + title -->
+  <circle cx="16" cy="106" r="2.5" fill="#FF6B6B"/>
+  <rect x="22" y="104" width="32" height="3" rx="0.8" fill="rgba(255,255,255,0.7)"/>
+
+  <!-- Contact items -->
+  <rect x="14" y="114" width="20" height="2" rx="0.5" fill="rgba(255,255,255,0.3)"/>
+  <rect x="14" y="118" width="72" height="2.5" rx="0.5" fill="rgba(255,255,255,0.6)"/>
+  <rect x="14" y="126" width="18" height="2" rx="0.5" fill="rgba(255,255,255,0.3)"/>
+  <rect x="14" y="130" width="50" height="2.5" rx="0.5" fill="rgba(255,255,255,0.6)"/>
+  <rect x="14" y="138" width="22" height="2" rx="0.5" fill="rgba(255,255,255,0.3)"/>
+  <rect x="14" y="142" width="60" height="2.5" rx="0.5" fill="rgba(255,255,255,0.6)"/>
+
+  <!-- Skills section: dot + title -->
+  <circle cx="16" cy="158" r="2.5" fill="#4ECDC4"/>
+  <rect x="22" y="156" width="22" height="3" rx="0.8" fill="rgba(255,255,255,0.7)"/>
+
+  <!-- Circular progress ring 1 (coral) -->
+  <circle cx="32" cy="182" r="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+  <circle cx="32" cy="182" r="12" fill="none" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round"
+    stroke-dasharray="75.4" stroke-dashoffset="18.85" transform="rotate(-90 32 182)"/>
+  <text x="32" y="183" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="6" font-weight="bold" font-family="Arial">75%</text>
+  <rect x="20" y="197" width="24" height="2" rx="0.5" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Circular progress ring 2 (teal) -->
+  <circle cx="70" cy="182" r="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+  <circle cx="70" cy="182" r="12" fill="none" stroke="#4ECDC4" stroke-width="3" stroke-linecap="round"
+    stroke-dasharray="75.4" stroke-dashoffset="37.7" transform="rotate(-90 70 182)"/>
+  <text x="70" y="183" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="6" font-weight="bold" font-family="Arial">50%</text>
+  <rect x="58" y="197" width="24" height="2" rx="0.5" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Circular progress ring 3 (yellow) -->
+  <circle cx="32" cy="220" r="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+  <circle cx="32" cy="220" r="12" fill="none" stroke="#FFE66D" stroke-width="3" stroke-linecap="round"
+    stroke-dasharray="75.4" stroke-dashoffset="7.54" transform="rotate(-90 32 220)"/>
+  <text x="32" y="221" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="6" font-weight="bold" font-family="Arial">90%</text>
+  <rect x="20" y="235" width="24" height="2" rx="0.5" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Circular progress ring 4 (mint) -->
+  <circle cx="70" cy="220" r="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+  <circle cx="70" cy="220" r="12" fill="none" stroke="#A8E6CF" stroke-width="3" stroke-linecap="round"
+    stroke-dasharray="75.4" stroke-dashoffset="22.62" transform="rotate(-90 70 220)"/>
+  <text x="70" y="221" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="6" font-weight="bold" font-family="Arial">70%</text>
+  <rect x="58" y="235" width="24" height="2" rx="0.5" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Languages section: dot + title -->
+  <circle cx="16" cy="255" r="2.5" fill="#FFE66D"/>
+  <rect x="22" y="253" width="32" height="3" rx="0.8" fill="rgba(255,255,255,0.7)"/>
+
+  <!-- Language progress bar 1 -->
+  <rect x="14" y="264" width="30" height="2" rx="0.5" fill="rgba(255,255,255,0.5)"/>
+  <rect x="14" y="269" width="76" height="3" rx="1.5" fill="rgba(255,255,255,0.08)"/>
+  <rect x="14" y="269" width="65" height="3" rx="1.5" fill="#4ECDC4"/>
+
+  <!-- Language progress bar 2 -->
+  <rect x="14" y="278" width="24" height="2" rx="0.5" fill="rgba(255,255,255,0.5)"/>
+  <rect x="14" y="283" width="76" height="3" rx="1.5" fill="rgba(255,255,255,0.08)"/>
+  <rect x="14" y="283" width="45" height="3" rx="1.5" fill="#FF6B6B"/>
+
+  <!-- Language progress bar 3 -->
+  <rect x="14" y="292" width="28" height="2" rx="0.5" fill="rgba(255,255,255,0.5)"/>
+  <rect x="14" y="297" width="76" height="3" rx="1.5" fill="rgba(255,255,255,0.08)"/>
+  <rect x="14" y="297" width="55" height="3" rx="1.5" fill="#FFE66D"/>
+
+  <!-- Details section: dot + title -->
+  <circle cx="16" cy="316" r="2.5" fill="#C3A6F2"/>
+  <rect x="22" y="314" width="25" height="3" rx="0.8" fill="rgba(255,255,255,0.7)"/>
+
+  <!-- Detail items -->
+  <rect x="14" y="324" width="18" height="2" rx="0.5" fill="rgba(255,255,255,0.3)"/>
+  <rect x="14" y="328" width="45" height="2.5" rx="0.5" fill="rgba(255,255,255,0.6)"/>
+  <rect x="14" y="336" width="22" height="2" rx="0.5" fill="rgba(255,255,255,0.3)"/>
+  <rect x="14" y="340" width="30" height="2.5" rx="0.5" fill="rgba(255,255,255,0.6)"/>
+
+  <!-- ============ MAIN CONTENT ============ -->
+
+  <!-- About Me section -->
+  <circle cx="117" cy="22" r="3.5" fill="#4ECDC4"/>
+  <rect x="124" y="20" width="38" height="3.5" rx="0.8" fill="#4ECDC4"/>
+  <rect x="113" y="28" width="175" height="1" rx="0.5" fill="#4ECDC4" opacity="0.2"/>
 
   <!-- Summary callout box -->
-  <rect x="20" y="128" width="260" height="26" rx="3" fill="#fdf0ed"/>
-  <rect x="20" y="128" width="2.5" height="26" rx="1" fill="#e07a5f"/>
-  <rect x="28" y="135" width="240" height="2.5" rx="0.8" fill="#636e72" opacity="0.3"/>
-  <rect x="28" y="141" width="220" height="2.5" rx="0.8" fill="#636e72" opacity="0.3"/>
-  <rect x="28" y="147" width="200" height="2.5" rx="0.8" fill="#636e72" opacity="0.3"/>
+  <rect x="113" y="34" width="175" height="22" rx="3" fill="#f0faf8"/>
+  <rect x="113" y="34" width="2" height="22" rx="1" fill="#4ECDC4"/>
+  <rect x="120" y="40" width="160" height="2" rx="0.5" fill="#6B6B8D" opacity="0.3"/>
+  <rect x="120" y="45" width="140" height="2" rx="0.5" fill="#6B6B8D" opacity="0.3"/>
+  <rect x="120" y="50" width="150" height="2" rx="0.5" fill="#6B6B8D" opacity="0.3"/>
 
-  <!-- EXPERIENCE section -->
-  <rect x="20" y="168" width="3.5" height="6" rx="0.8" fill="#e07a5f"/>
-  <text x="27" y="173" font-family="Arial, sans-serif" font-size="5.5" font-weight="bold" letter-spacing="1" fill="#e07a5f">EXPERIENCE</text>
+  <!-- Experience section -->
+  <circle cx="117" cy="68" r="3.5" fill="#FF6B6B"/>
+  <rect x="124" y="66" width="44" height="3.5" rx="0.8" fill="#FF6B6B"/>
+  <rect x="113" y="74" width="175" height="1" rx="0.5" fill="#FF6B6B" opacity="0.2"/>
 
-  <!-- Timeline line (vertical connecting line) -->
-  <line x1="26" y1="183" x2="26" y2="280" stroke="#e8c4bc" stroke-width="0.8"/>
+  <!-- Experience card 1 -->
+  <rect x="113" y="80" width="175" height="38" rx="3" fill="#fef5f5"/>
+  <rect x="113" y="80" width="2" height="38" rx="1" fill="#FF6B6B"/>
+  <rect x="120" y="86" width="80" height="3.5" rx="0.8" fill="#2D2B55"/>
+  <rect x="120" y="92" width="55" height="2.5" rx="0.5" fill="#6B6B8D" opacity="0.4"/>
+  <rect x="120" y="99" width="158" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
+  <rect x="120" y="104" width="145" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
+  <rect x="120" y="109" width="155" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
 
-  <!-- Experience entry 1 -->
-  <circle cx="26" cy="186" r="2.5" fill="#e07a5f"/>
-  <rect x="35" y="182" width="100" height="4" rx="0.8" fill="#2d3436"/>
-  <rect x="35" y="189" width="55" height="3" rx="0.8" fill="#e07a5f" opacity="0.6"/>
-  <rect x="35" y="196" width="240" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-  <rect x="35" y="202" width="225" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-  <rect x="35" y="208" width="210" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
+  <!-- Experience card 2 -->
+  <rect x="113" y="124" width="175" height="32" rx="3" fill="#fef5f5"/>
+  <rect x="113" y="124" width="2" height="32" rx="1" fill="#FF6B6B"/>
+  <rect x="120" y="130" width="70" height="3.5" rx="0.8" fill="#2D2B55"/>
+  <rect x="120" y="136" width="48" height="2.5" rx="0.5" fill="#6B6B8D" opacity="0.4"/>
+  <rect x="120" y="143" width="158" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
+  <rect x="120" y="148" width="140" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
 
-  <!-- Experience entry 2 -->
-  <circle cx="26" cy="222" r="2.5" fill="#e07a5f"/>
-  <rect x="35" y="218" width="90" height="4" rx="0.8" fill="#2d3436"/>
-  <rect x="35" y="225" width="50" height="3" rx="0.8" fill="#e07a5f" opacity="0.6"/>
-  <rect x="35" y="232" width="240" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-  <rect x="35" y="238" width="230" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
+  <!-- Education section -->
+  <circle cx="117" cy="170" r="3.5" fill="#FFE66D"/>
+  <rect x="124" y="168" width="38" height="3.5" rx="0.8" fill="#FFE66D"/>
+  <rect x="113" y="176" width="175" height="1" rx="0.5" fill="#FFE66D" opacity="0.2"/>
 
-  <!-- Experience entry 3 -->
-  <circle cx="26" cy="252" r="2.5" fill="#e07a5f"/>
-  <rect x="35" y="248" width="110" height="4" rx="0.8" fill="#2d3436"/>
-  <rect x="35" y="255" width="48" height="3" rx="0.8" fill="#e07a5f" opacity="0.6"/>
-  <rect x="35" y="262" width="240" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-  <rect x="35" y="268" width="215" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-  <rect x="35" y="274" width="230" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
+  <!-- Education card -->
+  <rect x="113" y="182" width="175" height="30" rx="3" fill="#fffef5"/>
+  <rect x="113" y="182" width="2" height="30" rx="1" fill="#FFE66D"/>
+  <rect x="120" y="188" width="100" height="3.5" rx="0.8" fill="#2D2B55"/>
+  <rect x="120" y="194" width="60" height="2.5" rx="0.5" fill="#6B6B8D" opacity="0.4"/>
+  <rect x="120" y="201" width="145" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
 
-  <!-- SKILLS section -->
-  <rect x="20" y="292" width="3.5" height="6" rx="0.8" fill="#e07a5f"/>
-  <text x="27" y="297" font-family="Arial, sans-serif" font-size="5.5" font-weight="bold" letter-spacing="1" fill="#e07a5f">SKILLS</text>
+  <!-- Projects section -->
+  <circle cx="117" cy="226" r="3.5" fill="#A8E6CF"/>
+  <rect x="124" y="224" width="32" height="3.5" rx="0.8" fill="#A8E6CF"/>
+  <rect x="113" y="232" width="175" height="1" rx="0.5" fill="#A8E6CF" opacity="0.2"/>
 
-  <!-- Skill pills row 1 -->
-  <rect x="20" y="304" width="38" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="22" y="307" width="24" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
-  <rect x="62" y="304" width="32" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="64" y="307" width="20" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
-  <rect x="98" y="304" width="44" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="100" y="307" width="30" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
-  <rect x="146" y="304" width="28" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="148" y="307" width="16" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
+  <!-- Project card -->
+  <rect x="113" y="238" width="175" height="28" rx="3" fill="#f0faf5"/>
+  <rect x="113" y="238" width="2" height="28" rx="1" fill="#A8E6CF"/>
+  <rect x="120" y="243" width="65" height="3.5" rx="0.8" fill="#2D2B55"/>
+  <!-- Tech pills -->
+  <rect x="120" y="250" width="22" height="5" rx="2.5" fill="#e6f7f1"/>
+  <rect x="145" y="250" width="18" height="5" rx="2.5" fill="#e6f7f1"/>
+  <rect x="166" y="250" width="25" height="5" rx="2.5" fill="#e6f7f1"/>
+  <rect x="120" y="258" width="150" height="2" rx="0.5" fill="#6B6B8D" opacity="0.25"/>
 
-  <!-- Skill pills row 2 -->
-  <rect x="20" y="317" width="42" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="22" y="320" width="28" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
-  <rect x="66" y="317" width="36" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="68" y="320" width="22" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
-  <rect x="106" y="317" width="30" height="9" rx="4.5" fill="#fdf0ed" stroke="#e8c4bc" stroke-width="0.7"/>
-  <rect x="108" y="320" width="18" height="3" rx="0.8" fill="#2d3436" opacity="0.4"/>
+  <!-- Certifications section -->
+  <circle cx="117" cy="280" r="3.5" fill="#C3A6F2"/>
+  <rect x="124" y="278" width="48" height="3.5" rx="0.8" fill="#C3A6F2"/>
+  <rect x="113" y="286" width="175" height="1" rx="0.5" fill="#C3A6F2" opacity="0.2"/>
 
-  <!-- EDUCATION section -->
-  <rect x="20" y="340" width="3.5" height="6" rx="0.8" fill="#e07a5f"/>
-  <text x="27" y="345" font-family="Arial, sans-serif" font-size="5.5" font-weight="bold" letter-spacing="1" fill="#e07a5f">EDUCATION</text>
-
-  <!-- Timeline line for education -->
-  <line x1="26" y1="353" x2="26" y2="390" stroke="#e8c4bc" stroke-width="0.8"/>
-
-  <!-- Education entry 1 -->
-  <circle cx="26" cy="356" r="2.5" fill="#e07a5f"/>
-  <rect x="35" y="352" width="120" height="4" rx="0.8" fill="#2d3436"/>
-  <rect x="35" y="359" width="60" height="3" rx="0.8" fill="#e07a5f" opacity="0.6"/>
-  <rect x="35" y="366" width="180" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
-
-  <!-- Education entry 2 -->
-  <circle cx="26" cy="380" r="2.5" fill="#e07a5f"/>
-  <rect x="35" y="376" width="105" height="4" rx="0.8" fill="#2d3436"/>
-  <rect x="35" y="383" width="55" height="3" rx="0.8" fill="#e07a5f" opacity="0.6"/>
-  <rect x="35" y="390" width="160" height="2.5" rx="0.8" fill="#636e72" opacity="0.25"/>
+  <!-- Certification card -->
+  <rect x="113" y="292" width="175" height="22" rx="3" fill="#f8f3ff"/>
+  <rect x="113" y="292" width="2" height="22" rx="1" fill="#C3A6F2"/>
+  <rect x="120" y="297" width="85" height="3.5" rx="0.8" fill="#2D2B55"/>
+  <rect x="120" y="303" width="50" height="2.5" rx="0.5" fill="#6B6B8D" opacity="0.4"/>
+  <rect x="120" y="308" width="70" height="2" rx="0.5" fill="#C3A6F2" opacity="0.5"/>
 </svg>

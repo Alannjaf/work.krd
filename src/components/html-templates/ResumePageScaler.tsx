@@ -33,42 +33,48 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
     // Find all elements that should not be split across pages (break-inside: avoid)
     const entries = Array.from(content.querySelectorAll('.resume-entry'));
     const contentRect = content.getBoundingClientRect();
+    const contentWidth = content.scrollWidth;
+    const sidebarThreshold = contentWidth * 0.4; // entries left of this are sidebar
+
     const entryPositions = entries.map(el => {
       const rect = el.getBoundingClientRect();
       return {
         top: rect.top - contentRect.top,
         bottom: rect.bottom - contentRect.top,
         height: rect.height,
+        isSidebar: (rect.left - contentRect.left + rect.width / 2) < sidebarThreshold,
       };
     });
 
-    // Find section headings that should stay with their content (break-after: avoid)
+    // Find section headings that should stay with their first content entry (break-after: avoid)
     const sectionHeadings = Array.from(content.querySelectorAll('.resume-section'));
     const headingPositions = sectionHeadings.map(el => {
       const rect = el.getBoundingClientRect();
-      const h2 = el.querySelector('h2');
-      const h2Height = h2 ? h2.getBoundingClientRect().height + 12 : 40; // heading + margin
+      // Find first resume-entry child — heading must stay with it
+      const firstEntry = el.querySelector('.resume-entry');
+      const firstEntryTop = firstEntry
+        ? firstEntry.getBoundingClientRect().top - contentRect.top
+        : rect.top - contentRect.top + 40; // fallback: heading + min spacing
       return {
         top: rect.top - contentRect.top,
-        headingBottom: rect.top - contentRect.top + h2Height,
-        bottom: rect.bottom - contentRect.top,
+        firstEntryTop,
       };
     });
 
-    // Calculate page breaks that mimic Puppeteer's break-inside: avoid behavior
+    // Calculate page breaks:
+    // Phase 1: Converge ALL entries (break-inside: avoid) — stable across both columns
+    // Phase 2: Fix heading orphans, re-converge only main-content entries (skip sidebar
+    //          to prevent dense sidebar items from cascading the break too far back)
     const breaks: number[] = [0];
     let nextPageEnd = CONTENT_PER_PAGE;
 
     while (nextPageEnd < contentHeight) {
       let adjustedEnd = nextPageEnd;
 
-      // Iterate until stable — in two-column layouts, adjusting for a main-content entry
-      // may cause a sidebar entry to now straddle the new break point (and vice versa).
+      // Phase 1: Converge ALL entries (sidebar + main)
       let settled = false;
       while (!settled) {
         settled = true;
-
-        // Check all entries (break-inside: avoid) that would be split
         for (const entry of entryPositions) {
           if (entry.top < adjustedEnd && entry.bottom > adjustedEnd) {
             if (entry.height <= CONTENT_PER_PAGE) {
@@ -80,14 +86,39 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
             }
           }
         }
+      }
 
-        // Check all section headings that would be orphaned at the bottom
+      // Phase 2: Heading orphan fix + main-content-only re-convergence (loop until stable)
+      for (let round = 0; round < 4; round++) {
+        let headingPushed = false;
+
+        // Check heading orphans: heading on this page but first entry starts on next page
         for (const heading of headingPositions) {
-          if (heading.top < adjustedEnd && heading.headingBottom >= adjustedEnd - 2) {
+          if (heading.top < adjustedEnd && heading.firstEntryTop >= adjustedEnd) {
             const newEnd = Math.floor(heading.top);
             if (newEnd < adjustedEnd) {
               adjustedEnd = newEnd;
-              settled = false;
+              headingPushed = true;
+            }
+          }
+        }
+
+        if (!headingPushed) break; // No orphans, stable
+
+        // Re-converge ONLY main-content entries (skip sidebar to avoid cascade)
+        settled = false;
+        while (!settled) {
+          settled = true;
+          for (const entry of entryPositions) {
+            if (entry.isSidebar) continue; // sidebar entries don't cascade heading fixes
+            if (entry.top < adjustedEnd && entry.bottom > adjustedEnd) {
+              if (entry.height <= CONTENT_PER_PAGE) {
+                const newEnd = Math.floor(entry.top);
+                if (newEnd < adjustedEnd) {
+                  adjustedEnd = newEnd;
+                  settled = false;
+                }
+              }
             }
           }
         }
