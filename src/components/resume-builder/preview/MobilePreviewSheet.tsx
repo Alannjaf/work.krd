@@ -52,6 +52,7 @@ export function MobilePreviewSheet({ data, templateId, onTemplateChange }: Mobil
               <span className="text-sm font-semibold">Preview</span>
               <div className="flex items-center gap-2">
                 <Button
+                  type="button"
                   size="sm"
                   onClick={() => downloadPDF(data, templateId)}
                   disabled={isDownloading || isRestricted}

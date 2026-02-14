@@ -30,6 +30,7 @@ export function PreviewModal({ isOpen, onClose, data, template }: PreviewModalPr
           <span className="text-sm font-medium text-gray-600">Preview</span>
           <div className="flex items-center gap-2">
             <Button
+              type="button"
               size="sm"
               onClick={() => downloadPDF(data, template)}
               disabled={isDownloading}
