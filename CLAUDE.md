@@ -17,7 +17,7 @@
 
 ### Template System
 - **Registry** (`src/components/html-templates/registry.tsx`): Maps template IDs to `{ id, name, component }` entries
-- **Current templates**: `placeholder` (fallback), `modern` (Modern Professional — dark sidebar + yellow accent), `elegant` (Elegant Dark — both columns dark + gold accents), `bold` (Bold Creative — dark sidebar + white main, skill bars, HELLO greeting)
+- **Current templates**: `placeholder` (fallback), `modern` (Modern Professional — dark sidebar + yellow accent), `elegant` (Elegant Dark — both columns dark + gold accents), `bold` (Bold Creative — dark sidebar + white main, skill bars, HELLO greeting), `developer` (Developer — dark IDE theme with green syntax accents)
 - **Shared components** in `src/components/html-templates/shared/`: ResumeHeader, ContactInfo, ProfilePhoto, SectionTitle, ExperienceSection, EducationSection, SkillsSection, LanguagesSection, ProjectsSection, CertificationsSection, Watermark
 - **Metadata** (`src/lib/templates.ts`): `getAllTemplates()`, `getTemplateIds()`, `getTemplateTier()`
 - **Crop configs** (`src/lib/template-config.ts`): Per-template profile photo crop settings
@@ -238,6 +238,7 @@ src/components/html-templates/
   ModernTemplate.tsx           # Dark sidebar + yellow accent two-column
   ElegantTemplate.tsx          # Both-dark columns + gold accents two-column
   BoldTemplate.tsx             # Dark sidebar + white main, skill bars, HELLO greeting
+  DeveloperTemplate.tsx          # Dark IDE theme with syntax highlighting accents
   TemplateRenderer.tsx         # Wrapper: looks up registry, renders component
   ResumePageScaler.tsx         # Browser preview with page break simulation
   shared/                     # Reusable template building blocks (13 components)

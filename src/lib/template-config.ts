@@ -76,6 +76,23 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       }
     }
   },
+  developer: {
+    id: 'developer',
+    name: 'Developer',
+    crop: {
+      shape: 'circle',
+      aspectRatio: 1,
+      minSize: 80,
+      maxSize: 160,
+      defaultSize: 110,
+      position: { x: 0.5, y: 0.5 },
+      safeArea: {
+        padding: 10,
+        showGuide: true,
+        color: '#a6e3a1'
+      }
+    }
+  },
 }
 
 // Get template crop configuration

@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 import { ModernTemplate } from './ModernTemplate';
 import { ElegantTemplate } from './ElegantTemplate';
 import { BoldTemplate } from './BoldTemplate';
+import { DeveloperTemplate } from './DeveloperTemplate';
 import { isRTLText } from '@/lib/rtl';
 
 export interface TemplateEntry {
@@ -214,6 +215,7 @@ export const templateRegistry: Record<string, TemplateEntry> = {
   modern: { id: 'modern', name: 'Modern Professional', component: ModernTemplate },
   elegant: { id: 'elegant', name: 'Elegant Dark', component: ElegantTemplate },
   bold: { id: 'bold', name: 'Bold Creative', component: BoldTemplate },
+  developer: { id: 'developer', name: 'Developer', component: DeveloperTemplate },
 };
 
 export function getHtmlTemplate(templateId: string): TemplateEntry {

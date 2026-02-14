@@ -27,6 +27,12 @@ export const getAllTemplates = (): TemplateInfo[] => {
       description: 'Dark sidebar with skill bars, HELLO greeting, and 2-column education grid',
       category: 'creative'
     },
+    {
+      id: 'developer',
+      name: 'Developer',
+      description: 'IDE-inspired dark theme with syntax highlighting accents for tech professionals',
+      category: 'creative'
+    },
   ]
 }
 
