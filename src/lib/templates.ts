@@ -15,6 +15,12 @@ export const getAllTemplates = (): TemplateInfo[] => {
       description: 'Clean, professional layout with dual columns',
       category: 'professional'
     },
+    {
+      id: 'elegant',
+      name: 'Elegant Dark',
+      description: 'Dark theme with gold accents and two-column layout',
+      category: 'professional'
+    },
   ]
 }
 

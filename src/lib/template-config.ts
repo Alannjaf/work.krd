@@ -42,6 +42,23 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       }
     }
   },
+  elegant: {
+    id: 'elegant',
+    name: 'Elegant Dark',
+    crop: {
+      shape: 'square',
+      aspectRatio: 1,
+      minSize: 120,
+      maxSize: 200,
+      defaultSize: 160,
+      position: { x: 0.5, y: 0.5 },
+      safeArea: {
+        padding: 10,
+        showGuide: true,
+        color: '#c9a84c'
+      }
+    }
+  },
 }
 
 // Get template crop configuration
