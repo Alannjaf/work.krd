@@ -93,6 +93,23 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       }
     }
   },
+  creative: {
+    id: 'creative',
+    name: 'Creative',
+    crop: {
+      shape: 'circle',
+      aspectRatio: 1,
+      minSize: 80,
+      maxSize: 160,
+      defaultSize: 120,
+      position: { x: 0.5, y: 0.5 },
+      safeArea: {
+        padding: 10,
+        showGuide: true,
+        color: '#e07a5f'
+      }
+    }
+  },
 }
 
 // Get template crop configuration

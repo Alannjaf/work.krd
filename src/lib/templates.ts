@@ -33,6 +33,12 @@ export const getAllTemplates = (): TemplateInfo[] => {
       description: 'IDE-inspired dark theme with syntax highlighting accents for tech professionals',
       category: 'creative'
     },
+    {
+      id: 'creative',
+      name: 'Creative',
+      description: 'Coral sidebar with dot skill ratings, perfect for designers and creatives',
+      category: 'creative'
+    },
   ]
 }
 
