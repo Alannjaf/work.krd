@@ -147,7 +147,7 @@ Please provide only the description without any additional formatting or explana
   ): Promise<string[]> {
     const { language = "en" } = options;
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: "Provide skills in English",
       ar: "Provide skills in Arabic",
       ku: "Provide skills in Kurdish Sorani",
@@ -204,7 +204,7 @@ Format: Return only skill names separated by newlines.`,
   ): Promise<string[]> {
     const { language = "en" } = options;
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: "Write in English",
       ar: "Write in Arabic with proper RTL formatting",
       ku: "Write in Kurdish Sorani",
@@ -270,7 +270,7 @@ Example format:
   ): Promise<string> {
     const { language = "en" } = options;
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: "Write in English",
       ar: "Write in Arabic with proper RTL formatting",
       ku: "Write in Kurdish Sorani",
