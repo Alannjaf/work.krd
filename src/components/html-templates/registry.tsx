@@ -3,6 +3,7 @@ import type { HtmlTemplateProps } from './types';
 import type { ComponentType } from 'react';
 import { ModernTemplate } from './ModernTemplate';
 import { ElegantTemplate } from './ElegantTemplate';
+import { BoldTemplate } from './BoldTemplate';
 import { isRTLText } from '@/lib/rtl';
 
 export interface TemplateEntry {
@@ -212,6 +213,7 @@ export const templateRegistry: Record<string, TemplateEntry> = {
   placeholder: { id: 'placeholder', name: 'Default', component: PlaceholderTemplate },
   modern: { id: 'modern', name: 'Modern Professional', component: ModernTemplate },
   elegant: { id: 'elegant', name: 'Elegant Dark', component: ElegantTemplate },
+  bold: { id: 'bold', name: 'Bold Creative', component: BoldTemplate },
 };
 
 export function getHtmlTemplate(templateId: string): TemplateEntry {

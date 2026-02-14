@@ -59,6 +59,23 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       }
     }
   },
+  bold: {
+    id: 'bold',
+    name: 'Bold Creative',
+    crop: {
+      shape: 'square',
+      aspectRatio: 1,
+      minSize: 120,
+      maxSize: 240,
+      defaultSize: 200,
+      position: { x: 0.5, y: 0.5 },
+      safeArea: {
+        padding: 10,
+        showGuide: true,
+        color: '#2b2b2b'
+      }
+    }
+  },
 }
 
 // Get template crop configuration

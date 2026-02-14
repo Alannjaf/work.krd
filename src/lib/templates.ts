@@ -21,6 +21,12 @@ export const getAllTemplates = (): TemplateInfo[] => {
       description: 'Dark theme with gold accents and two-column layout',
       category: 'professional'
     },
+    {
+      id: 'bold',
+      name: 'Bold Creative',
+      description: 'Dark sidebar with skill bars, HELLO greeting, and 2-column education grid',
+      category: 'creative'
+    },
   ]
 }
 
