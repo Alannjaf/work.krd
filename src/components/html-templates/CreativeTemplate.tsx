@@ -56,7 +56,7 @@ function CircularProgress({ percentage, color, size = 56, label, isRtl }: {
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div style={{ textAlign: 'center', width: size + 8 }}>
+    <div style={{ textAlign: 'center' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', margin: '0 auto' }}>
         <circle
           cx={size / 2} cy={size / 2} r={radius}
@@ -85,9 +85,7 @@ function CircularProgress({ percentage, color, size = 56, label, isRtl }: {
         marginTop: 4,
         lineHeight: isRtl ? '1.5' : '1.3',
         textAlign: 'center',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        wordBreak: 'break-word' as const,
       }}>
         {label}
       </div>
@@ -318,8 +316,9 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
                 {isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Skills'}
               </SidebarSectionTitle>
               <div style={{
-                display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-                gap: '14px 20px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '14px 12px',
               }}>
                 {allSkills.map((skill, i) => (
                   <div key={skill.id} className="resume-entry">
