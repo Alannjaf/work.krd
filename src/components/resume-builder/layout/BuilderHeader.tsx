@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Target, Languages, Download, Keyboard } from 'lucide-react'
+import { ArrowLeft, ScanSearch, Languages, Download, Keyboard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SaveIndicator } from '@/components/resume-builder/shared/SaveIndicator'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -87,11 +87,11 @@ export function BuilderHeader({
           variant="ghost"
           size="sm"
           onClick={onShowATS}
-          className="h-8 px-2 text-xs"
+          className="h-8 px-2.5 text-xs text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 gap-1"
           title={t('pages.resumeBuilder.actions.atsOptimization')}
         >
-          <Target className="h-4 w-4 text-gray-500" />
-          <span className="hidden md:inline ml-1">ATS</span>
+          <ScanSearch className="h-4 w-4 shrink-0" />
+          <span className="text-[11px] font-medium leading-tight sm:text-xs">{t('pages.resumeBuilder.actions.ats')}</span>
         </Button>
 
         {showTranslate && (

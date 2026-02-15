@@ -237,6 +237,8 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Mixed LTR/RTL text garbles → use `unicode-bidi: isolate` spans
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)
+- **Hydration**: Never use `new Date()`, `Date.now()`, or `Math.random()` in `useState` initializers — they differ server vs client. Use empty default + `useEffect` to set client-only values
+- **Dev mobile testing (WSL)**: Access via `http://<WSL_IP>:3000`. Requires `allowedDevOrigins` in `next.config.js` for Next.js 15.3+ (validates Host header). Chunk load errors → `error.tsx` auto-reloads on `ChunkLoadError`
 
 ## ATS Feature
 - **Routes**: `src/app/api/ats/score/route.ts` and `src/app/api/ats/keywords/route.ts`
@@ -247,6 +249,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Max job description**: 10,000 characters (keywords route only)
 - **i18n keys**: `pages.resumeBuilder.ats.*` — ~40 keys covering title, tabs, score, keywords, importance badges, upgrade, toasts
 - **Frontend**: `ATSOptimization.tsx` — `useLanguage()` for `t()` and `isRTL`, `dir` attribute on modal root, `rotate-180` on ArrowRight icons for RTL, logical margins (`me-2` not `mr-2`)
+- **Header button**: `BuilderHeader.tsx` — `ScanSearch` icon + always-visible "ATS" label (emerald color accent to distinguish from gray ghost buttons), uses `t('pages.resumeBuilder.actions.ats')` for label
 - **AI prompts**: Multilingual awareness (English/Arabic/Kurdish), semantic keyword matching across languages, don't penalize non-English resumes
 
 ## File Map

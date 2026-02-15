@@ -47,9 +47,7 @@ function ResumeBuilderContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
-  const [resumeTitle, setResumeTitle] = useState(
-    `Resume - ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}`
-  );
+  const [resumeTitle, setResumeTitle] = useState("");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [titleError, setTitleError] = useState(false);
 
@@ -83,6 +81,15 @@ function ResumeBuilderContent() {
 
   const { downloadPDF, isDownloading } = useDownloadPDF();
   const completionStatus = useSectionCompletion(formData);
+
+  // Set default title client-side to avoid hydration mismatch (new Date() differs server vs client)
+  useEffect(() => {
+    setResumeTitle((prev) =>
+      prev === ""
+        ? `Resume - ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}`
+        : prev
+    );
+  }, []);
 
   // Save wrappers
   const updatePersonalFieldWithSave = useCallback(

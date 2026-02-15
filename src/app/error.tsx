@@ -10,6 +10,11 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
+    // Auto-recover from chunk load errors (stale deploys, network IP access in dev)
+    if (error.name === 'ChunkLoadError' || error.message?.includes('Loading chunk')) {
+      window.location.reload()
+      return
+    }
     console.error('[AppError]', error)
   }, [error])
 

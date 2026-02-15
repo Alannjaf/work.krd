@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   serverExternalPackages: ['@sparticuz/chromium-min', 'puppeteer-core'],
   reactStrictMode: true,
+  allowedDevOrigins: ['http://192.168.1.188:3000'],
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
