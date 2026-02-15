@@ -123,60 +123,7 @@
     "title": "Resume Builder",
     "progress": "Step {current} of {total}",
     "autosaved": "Autosaved",
-    "saving": "Saving...",
-    "ats": {
-      "title": "ATS Optimization",
-      "subtitle": "{used} / {limit} checks used",
-      "subtitleUnlimited": "Unlimited checks",
-      "tabs": {
-        "score": "Score Analysis",
-        "keywords": "Keyword Match"
-      },
-      "score": {
-        "emptyTitle": "Analyze Your Resume",
-        "emptyDescription": "Get an ATS compatibility score and detailed feedback on how to improve your resume for applicant tracking systems.",
-        "analyzeButton": "Analyze ATS Score",
-        "analyzing": "Analyzing...",
-        "reanalyze": "Re-analyze",
-        "scoreLabel": "ATS Compatibility Score",
-        "strengths": "Strengths",
-        "issues": "Issues to Fix",
-        "suggestions": "Improvement Suggestions",
-        "edit": "Edit",
-        "limitReached": "ATS check limit reached. Please upgrade your plan."
-      },
-      "keywords": {
-        "pasteLabel": "Paste Job Description",
-        "placeholder": "Paste the job description here to compare against your resume...",
-        "charCount": "{count} characters (minimum 50)",
-        "charCountMax": "{count} / 10,000 characters (minimum 50)",
-        "matchButton": "Match Keywords",
-        "matchScore": "Keyword Match Score",
-        "matched": "Matched Keywords ({count})",
-        "missing": "Missing Keywords ({count})",
-        "suggestions": "Suggestions",
-        "add": "Add",
-        "minChars": "Please enter a job description (minimum 50 characters)",
-        "tooLong": "Job description is too long (maximum 10,000 characters)"
-      },
-      "importance": {
-        "critical": "Critical",
-        "important": "Important",
-        "niceToHave": "Nice to have"
-      },
-      "upgrade": {
-        "title": "Upgrade Required",
-        "description": "You have reached your ATS check limit",
-        "button": "Upgrade Now"
-      },
-      "toast": {
-        "scoreSuccess": "ATS analysis complete!",
-        "keywordSuccess": "Keyword analysis complete!",
-        "scoreFailed": "Failed to analyze ATS score",
-        "keywordFailed": "Failed to match keywords",
-        "rateLimited": "Too many requests. Please try again later."
-      }
-    }
+    "saving": "Saving..."
   },
   "billing": {
     "title": "Billing & Subscription",

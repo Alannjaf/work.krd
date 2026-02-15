@@ -241,16 +241,26 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Dev mobile testing (WSL)**: Access via `http://<WSL_IP>:3000`. Requires `allowedDevOrigins` in `next.config.js` for Next.js 15.3+ (validates Host header). Chunk load errors → `error.tsx` auto-reloads on `ChunkLoadError`
 
 ## ATS Feature
+- **Shared utilities**: `src/lib/ats-utils.ts` — `stripHtml()`, `buildResumeText()`, Zod `resumeDataSchema`, `ATS_AI_CONFIG` (env vars), `withTimeout()`, `ATS_SCORE_THRESHOLDS`, `MAX_REQUEST_SIZE`
 - **Routes**: `src/app/api/ats/score/route.ts` and `src/app/api/ats/keywords/route.ts`
-- **Rate limited**: 10 requests/60s per IP, uses `rateLimit()` from `@/lib/rate-limit`
-- **Atomic limit enforcement**: Uses `prisma.subscription.updateMany` with `where: { atsUsageCount: { lt: limit } }` to prevent race conditions — if `result.count === 0`, limit was reached concurrently
+- **Rate limited**: 10 requests/60s per userId+IP (authenticated), uses `rateLimit()` from `@/lib/rate-limit`
+- **Atomic limit enforcement**: Increment happens BEFORE AI call — prevents wasted API calls on race conditions. Uses `prisma.subscription.updateMany` with `where: { atsUsageCount: { lt: limit } }` — if `result.count === 0`, limit was reached concurrently
 - **Unlimited plans** (`atsLimit === -1`): Just increment normally, skip atomic check
-- **Error sanitization**: API routes never expose `error.message` to client — always generic messages
+- **Zod validation**: Both routes validate `resumeData` shape via `resumeDataSchema.safeParse()` before processing
+- **Request size limit**: 1MB max (checked via Content-Length header)
+- **AI timeout**: 30s default via `Promise.race` wrapper (`withTimeout()`), configurable via `ATS_AI_TIMEOUT_MS` env var
+- **Error sanitization**: API routes never expose `error.message` to client — always generic messages. `console.error` in catch blocks for server-side logging
 - **Max job description**: 10,000 characters (keywords route only)
-- **i18n keys**: `pages.resumeBuilder.ats.*` — ~40 keys covering title, tabs, score, keywords, importance badges, upgrade, toasts
-- **Frontend**: `ATSOptimization.tsx` — `useLanguage()` for `t()` and `isRTL`, `dir` attribute on modal root, `rotate-180` on ArrowRight icons for RTL, logical margins (`me-2` not `mr-2`)
+- **AI config env vars**: `ATS_AI_MODEL`, `ATS_AI_TEMPERATURE`, `ATS_SCORE_MAX_TOKENS`, `ATS_KEYWORDS_MAX_TOKENS`, `ATS_AI_TIMEOUT_MS`
+- **i18n keys**: `pages.resumeBuilder.ats.*` — ~40 keys covering title, tabs, score, keywords, importance badges, upgrade, toasts. NO duplicate keys at `resumeBuilder.ats.*` (removed)
+- **Frontend**: Split into 3 files:
+  - `ATSOptimization.tsx` — Modal wrapper with accessibility (aria-modal, escape key, focus trap), usage update callback, client-side result caching (invalidates on resume change)
+  - `ats/ScoreTab.tsx` — Score analysis tab with loading skeleton, score color constants from `ATS_SCORE_THRESHOLDS`
+  - `ats/KeywordsTab.tsx` — Keyword matching tab with loading skeleton, default importance badge case, label/htmlFor association
+- **Usage update**: `onUsageUpdate` callback prop → `refreshSubscription()` in page.tsx — keeps subtitle count fresh after each analysis
+- **General issues**: Edit CTA disabled for `section: "general"` items (no misleading navigation)
 - **Header button**: `BuilderHeader.tsx` — `ScanSearch` icon + always-visible "ATS" label (emerald color accent to distinguish from gray ghost buttons), uses `t('pages.resumeBuilder.actions.ats')` for label
-- **AI prompts**: Multilingual awareness (English/Arabic/Kurdish), semantic keyword matching across languages, don't penalize non-English resumes
+- **AI prompts**: Multilingual awareness (English/Arabic/Kurdish), semantic keyword matching across languages, don't penalize non-English resumes. Score prompt has calibration ranges (90-100/70-89/50-69/<50), optional `targetRole` param, keyword density criterion. Keywords prompt sends ALL resume sections (not just 4), has importance categorization rules (critical/important/nice-to-have)
 
 ## File Map
 ```
@@ -272,11 +282,15 @@ src/lib/
   db.ts                       # getCurrentUser, checkUserLimits, duplicateResume (private getSystemSettings)
   system-settings.ts          # getSystemSettings (exported), updateSystemSettings
   rtl.ts                      # isRTLText(), isResumeRTL() — Arabic/Kurdish detection
+  ats-utils.ts                # Shared ATS utilities: stripHtml, buildResumeText, Zod schema, AI config, timeout
   pdf/renderHtml.ts           # React SSR → HTML with embedded fonts
   pdf/generatePdf.ts          # Puppeteer HTML → PDF buffer
 
 src/components/resume-builder/
   page.tsx                    # Main builder (3-column desktop, mobile responsive)
+  ATSOptimization.tsx         # ATS modal wrapper (accessibility, caching, usage callback)
+  ats/ScoreTab.tsx            # Score analysis tab (loading skeleton, score thresholds)
+  ats/KeywordsTab.tsx         # Keyword matching tab (loading skeleton, importance badges)
   form/                       # 6 section components + FormSectionRenderer
   preview/                    # LivePreviewPanel, TemplateSwitcher, MobilePreviewSheet
 

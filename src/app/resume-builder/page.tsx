@@ -38,7 +38,7 @@ function ResumeBuilderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useLanguage();
-  const { checkPermission, subscription } = useSubscription();
+  const { checkPermission, subscription, refreshSubscription } = useSubscription();
 
   // State
   const [currentSection, setCurrentSection] = useState(0);
@@ -406,6 +406,7 @@ function ResumeBuilderContent() {
           setShowATS(false);
           handleSectionChange(sectionIndex);
         }}
+        onUsageUpdate={() => refreshSubscription()}
       />
 
       <KeyboardShortcutsHelp

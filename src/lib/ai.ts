@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { stripHtml, buildResumeText, ATS_AI_CONFIG, withTimeout, type ValidatedResumeData } from '@/lib/ats-utils'
 
 // Initialize OpenRouter client
 const openai = new OpenAI({
@@ -471,50 +472,7 @@ IMPORTANT: Do NOT use any markdown formatting like **bold**, *italic*, or other 
     }
   }
 
-  static async analyzeATSScore(resumeData: {
-    personal: {
-      fullName?: string;
-      email?: string;
-      phone?: string;
-      title?: string;
-      location?: string;
-      linkedin?: string;
-      website?: string;
-    };
-    summary?: string;
-    experience?: Array<{
-      jobTitle?: string;
-      company?: string;
-      description?: string;
-      startDate?: string;
-      endDate?: string;
-      current?: boolean;
-    }>;
-    education?: Array<{
-      degree?: string;
-      field?: string;
-      school?: string;
-      startDate?: string;
-      endDate?: string;
-      location?: string;
-    }>;
-    skills?: Array<{ name?: string }>;
-    languages?: Array<{
-      name?: string;
-      proficiency?: string;
-    }>;
-    projects?: Array<{
-      name?: string;
-      description?: string;
-      technologies?: string;
-    }>;
-    certifications?: Array<{
-      name?: string;
-      issuer?: string;
-      date?: string;
-      credentialId?: string;
-    }>;
-  }): Promise<{
+  static async analyzeATSScore(resumeData: ValidatedResumeData, targetRole?: string): Promise<{
     score: number;
     issues: Array<{
       type: string;
@@ -535,79 +493,13 @@ IMPORTANT: Do NOT use any markdown formatting like **bold**, *italic*, or other 
     strengths: string[];
     suggestions: string[];
   }> {
-    // Helper to strip HTML tags and convert to plain text
-    const stripHtml = (html?: string): string => {
-      if (!html) return "";
-      return html
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p>/gi, "\n")
-        .replace(/<\/li>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/\n\s*\n/g, "\n")
-        .trim();
-    };
+    const resumeText = buildResumeText(resumeData);
 
-    // Helper to format date range for experience
-    const formatDateRange = (
-      startDate?: string,
-      endDate?: string,
-      current?: boolean
-    ): string => {
-      if (!startDate) return "";
-      const start = startDate;
-      const end = current ? "Present" : endDate || "Present";
-      return ` (${start} - ${end})`;
-    };
-
-    // Helper to format date range for education
-    const formatEducationDateRange = (
-      startDate?: string,
-      endDate?: string
-    ): string => {
-      if (!startDate && !endDate) return "";
-      const start = startDate || "Unknown";
-      const end = endDate || "Unknown";
-      return ` (${start} - ${end})`;
-    };
-
-    const resumeText = `
-Name: ${resumeData.personal?.fullName || "Not provided"}
-Email: ${resumeData.personal?.email || "Not provided"}
-Phone: ${resumeData.personal?.phone || "Not provided"}
-Job Title: ${resumeData.personal?.title || "Not provided"}
-${resumeData.personal?.location ? `Location: ${resumeData.personal.location}` : ""}
-${resumeData.personal?.linkedin ? `LinkedIn: ${resumeData.personal.linkedin}` : ""}
-${resumeData.personal?.website ? `Website: ${resumeData.personal.website}` : ""}
-
-Summary: ${stripHtml(resumeData.summary) || "Not provided"}
-
-Experience:
-${resumeData.experience?.length ? resumeData.experience.map((exp) => `- ${exp.jobTitle || "No title"} at ${exp.company || "No company"}${formatDateRange(exp.startDate, exp.endDate, exp.current)}: ${stripHtml(exp.description) || "No description"}`).join("\n") : "No experience listed"}
-
-Education:
-${resumeData.education?.length ? resumeData.education.map((edu) => `- ${edu.degree || "No degree"}${edu.field ? ` in ${edu.field}` : ""} from ${edu.school || "No institution"}${edu.location ? `, ${edu.location}` : ""}${formatEducationDateRange(edu.startDate, edu.endDate)}`).join("\n") : "No education listed"}
-
-Skills:
-${
-  resumeData.skills
-    ?.map((skill) => skill.name)
-    .filter(Boolean)
-    .join(", ") || "No skills listed"
-}
-
-Languages:
-${resumeData.languages?.length ? resumeData.languages.map((lang) => `- ${lang.name || "Unknown"}${lang.proficiency ? ` (${lang.proficiency})` : ""}`).join("\n") : "No languages listed"}
-
-Projects:
-${resumeData.projects?.length ? resumeData.projects.map((proj) => `- ${proj.name || "Unnamed project"}${proj.technologies ? ` - ${proj.technologies}` : ""}: ${stripHtml(proj.description) || "No description"}`).join("\n") : "No projects listed"}
-
-Certifications:
-${resumeData.certifications?.length ? resumeData.certifications.map((cert) => `- ${cert.name || "Unnamed certification"} from ${cert.issuer || "Unknown issuer"}${cert.date ? ` (${cert.date})` : ""}${cert.credentialId ? ` - ID: ${cert.credentialId}` : ""}`).join("\n") : "No certifications listed"}
-`;
+    const targetRoleInstruction = targetRole
+      ? `\nThe candidate is targeting a "${targetRole}" position. Weight your evaluation toward relevance for that type of role.`
+      : resumeData.personal?.title
+        ? `\nThe candidate's stated job title is "${resumeData.personal.title}". Weight your evaluation toward relevance for that type of role.`
+        : '';
 
     const messages = [
       {
@@ -619,6 +511,7 @@ ${resumeData.certifications?.length ? resumeData.certifications.map((cert) => `-
         content: `Analyze this resume for ATS compatibility and provide a detailed assessment:
 
 ${resumeText}
+${targetRoleInstruction}
 
 Respond with a JSON object containing:
 {
@@ -642,8 +535,14 @@ Evaluation criteria:
 3. Work experience with quantifiable achievements (25 points)
 4. Skills section with relevant keywords (20 points)
 5. Education section completeness (10 points)
-6. Overall structure and formatting (10 points)
+6. Keyword density and relevance to stated job title (10 points)
 7. Use of action verbs and professional language (10 points)
+
+CALIBRATION:
+- 90-100: Exceptional — all sections complete, quantified achievements, strong keywords
+- 70-89: Good — minor gaps in quantification or keywords
+- 50-69: Needs work — missing sections or weak descriptions
+- Below 50: Major issues — incomplete resume or critical sections missing
 
 IMPORTANT RULES:
 - Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.
@@ -661,12 +560,15 @@ IMPORTANT RULES:
     ];
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        max_tokens: 1500,
-        temperature: 0.3,
-      });
+      const completion = await withTimeout(
+        openai.chat.completions.create({
+          model: ATS_AI_CONFIG.model,
+          messages,
+          max_tokens: ATS_AI_CONFIG.scoreMaxTokens,
+          temperature: ATS_AI_CONFIG.temperature,
+        }),
+        ATS_AI_CONFIG.timeoutMs
+      );
 
       const responseText =
         completion.choices[0]?.message?.content?.trim() || "";
@@ -691,12 +593,7 @@ IMPORTANT RULES:
   }
 
   static async matchKeywords(
-    resumeData: {
-      personal: { fullName?: string; title?: string };
-      summary?: string;
-      experience?: Array<{ jobTitle?: string; description?: string }>;
-      skills?: Array<{ name?: string }>;
-    },
+    resumeData: ValidatedResumeData,
     jobDescription: string
   ): Promise<{
     matchScore: number;
@@ -722,33 +619,7 @@ IMPORTANT RULES:
     }>;
     suggestions: string[];
   }> {
-    // Helper to strip HTML tags and convert to plain text
-    const stripHtml = (html?: string): string => {
-      if (!html) return "";
-      return html
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p>/gi, "\n")
-        .replace(/<\/li>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/\n\s*\n/g, "\n")
-        .trim();
-    };
-
-    const resumeText = `
-Job Title: ${resumeData.personal?.title || "Not specified"}
-Summary: ${stripHtml(resumeData.summary) || ""}
-Experience: ${resumeData.experience?.map((exp) => `${exp.jobTitle}: ${stripHtml(exp.description)}`).join("; ") || ""}
-Skills: ${
-      resumeData.skills
-        ?.map((skill) => skill.name)
-        .filter(Boolean)
-        .join(", ") || ""
-    }
-`;
+    const resumeText = buildResumeText(resumeData);
 
     const messages = [
       {
@@ -786,10 +657,15 @@ Respond with a JSON object containing:
   "suggestions": ["<top 3-5 suggestions to improve keyword match>"]
 }
 
+When categorizing importance:
+- "critical": Explicitly listed as "required" or "must-have" in the job description
+- "important": Listed as "preferred", "desired", or appears in core responsibilities
+- "nice-to-have": Mentioned once, in bonus/supplementary sections, or implied
+
 Guidelines:
 1. Extract key skills, technologies, qualifications, and requirements from the job description
 2. Check if each keyword exists in the resume (exact or semantic match)
-3. Rate importance: critical (required qualifications), important (preferred), nice-to-have (bonus)
+3. Cross-reference ALL resume sections before marking a keyword as missing. A certification listed under Certifications counts as a match. A technology listed under Projects counts as a match.
 4. Calculate match score based on how many critical/important keywords are matched
 5. Provide actionable suggestions for missing keywords
 6. Each missing keyword MUST include a "section" field indicating the best resume section to add it to (skills for technical skills, experience for job duties, etc.)
@@ -802,12 +678,15 @@ IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, 
     ];
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        max_tokens: 2000,
-        temperature: 0.3,
-      });
+      const completion = await withTimeout(
+        openai.chat.completions.create({
+          model: ATS_AI_CONFIG.model,
+          messages,
+          max_tokens: ATS_AI_CONFIG.keywordsMaxTokens,
+          temperature: ATS_AI_CONFIG.temperature,
+        }),
+        ATS_AI_CONFIG.timeoutMs
+      );
 
       const responseText =
         completion.choices[0]?.message?.content?.trim() || "";

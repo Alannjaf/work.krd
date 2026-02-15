@@ -44,7 +44,8 @@
     "svix": "^1.67.0",
     "tailwind-merge": "^3.3.1",
     "typescript": "^5.8.3",
-    "underscore": "^1.13.7"
+    "underscore": "^1.13.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^15.3.4",

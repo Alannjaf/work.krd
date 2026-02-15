@@ -29,6 +29,8 @@ export interface RateLimitConfig {
   windowSeconds: number;
   /** Identifier prefix for the rate limit bucket */
   identifier: string;
+  /** Optional user ID for authenticated rate limiting */
+  userId?: string;
 }
 
 function getClientIp(request: NextRequest): string {
@@ -48,7 +50,9 @@ export function rateLimit(
   config: RateLimitConfig
 ): { success: boolean; remaining: number; resetIn: number } {
   const ip = getClientIp(request);
-  const key = `${config.identifier}:${ip}`;
+  const key = config.userId
+    ? `${config.identifier}:${config.userId}:${ip}`
+    : `${config.identifier}:${ip}`;
   const now = Date.now();
   const windowMs = config.windowSeconds * 1000;
 
