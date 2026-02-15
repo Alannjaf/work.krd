@@ -19,13 +19,32 @@ export async function POST(req: Request) {
       return errorResponse('Full name is required', 400)
     }
 
-    const user = await prisma.user.findUnique({
+    // Find or create user (webhook may not have fired yet on local dev)
+    let user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: { subscription: true }
     })
 
     if (!user) {
-      return notFoundResponse('User not found')
+      // Create user + subscription if webhook hasn't fired yet
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          name: fullName.trim(),
+          email: '',
+          subscription: {
+            create: {
+              plan: 'FREE',
+              resumeCount: 0,
+              aiUsageCount: 0,
+              exportCount: 0,
+              importCount: 0,
+              atsUsageCount: 0,
+            }
+          }
+        },
+        include: { subscription: true }
+      })
     }
 
     // Update user name

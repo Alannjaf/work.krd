@@ -254,24 +254,25 @@ function ResumeBuilderContent() {
         let idCounter = 0;
         const generateId = () => `${Date.now()}_${++idCounter}`;
 
+        const toArray = (val: unknown) => Array.isArray(val) ? val : [];
         const formDataWithIds = {
           ...resume.formData,
-          experience: (resume.formData.experience || []).map(
+          experience: toArray(resume.formData.experience).map(
             (exp: Record<string, unknown>) => ({ ...exp, id: exp.id || generateId() })
           ),
-          education: (resume.formData.education || []).map(
+          education: toArray(resume.formData.education).map(
             (edu: Record<string, unknown>) => ({ ...edu, id: edu.id || generateId() })
           ),
-          skills: (resume.formData.skills || []).map(
+          skills: toArray(resume.formData.skills).map(
             (skill: Record<string, unknown>) => ({ ...skill, id: skill.id || generateId() })
           ),
-          languages: (resume.formData.languages || []).map(
+          languages: toArray(resume.formData.languages).map(
             (lang: Record<string, unknown>) => ({ ...lang, id: lang.id || generateId() })
           ),
-          projects: (resume.formData.projects || []).map(
+          projects: toArray(resume.formData.projects).map(
             (proj: Record<string, unknown>) => ({ ...proj, id: proj.id || generateId() })
           ),
-          certifications: (resume.formData.certifications || []).map(
+          certifications: toArray(resume.formData.certifications).map(
             (cert: Record<string, unknown>) => ({ ...cert, id: cert.id || generateId() })
           ),
         };
