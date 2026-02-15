@@ -21,17 +21,19 @@ export async function POST(
       where: { userId }
     })
 
+    // Verify user exists
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      return validationErrorResponse('User not found')
+    }
+
     if (existingSubscription) {
-      // Update existing subscription
+      // Update existing subscription — preserve usage counts
       await prisma.subscription.update({
         where: { userId },
         data: {
           plan,
           status: 'ACTIVE',
-          // Reset limits based on new plan
-          resumeCount: 0,
-          aiUsageCount: 0,
-          exportCount: 0,
           startDate: new Date(),
           endDate: plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         }

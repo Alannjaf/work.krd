@@ -85,13 +85,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Admin PDF generation error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    if (errorStack) {
-      console.error('Error stack:', errorStack);
-    }
-
-    return errorResponse(`Failed to generate preview PDF: ${errorMessage}`, 500);
+    return errorResponse('Failed to generate preview PDF', 500);
   }
 }

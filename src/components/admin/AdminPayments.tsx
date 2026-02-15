@@ -14,6 +14,7 @@ import {
   X,
   Loader2,
   ImageIcon,
+  Search,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -81,6 +82,7 @@ export function AdminPayments() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<StatusFilter>('PENDING')
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Review modal state
   const [reviewingId, setReviewingId] = useState<string | null>(null)
@@ -104,6 +106,9 @@ export function AdminPayments() {
       if (filter !== 'ALL') {
         params.set('status', filter)
       }
+      if (searchTerm.trim()) {
+        params.set('search', searchTerm.trim())
+      }
       const res = await fetch(`/api/admin/payments?${params}`)
       if (!res.ok) throw new Error('Failed to fetch payments')
       const data: PaymentsResponse = await res.json()
@@ -115,16 +120,16 @@ export function AdminPayments() {
     } finally {
       setLoading(false)
     }
-  }, [page, filter])
+  }, [page, filter, searchTerm])
 
   useEffect(() => {
     fetchPayments()
   }, [fetchPayments])
 
-  // Reset page when filter changes
+  // Reset page when filter or search changes
   useEffect(() => {
     setPage(1)
-  }, [filter])
+  }, [filter, searchTerm])
 
   // ─── Review handlers ────────────────────────────────────────────────────
 
@@ -230,14 +235,27 @@ export function AdminPayments() {
           </p>
         </div>
 
-        {/* Stats bar */}
-        <div className="flex items-center gap-4 mb-6 text-sm text-gray-600">
-          <span>{total} total payment{total !== 1 ? 's' : ''}</span>
-          {pendingCount !== null && (
-            <span className="text-yellow-700 font-medium">
-              {pendingCount} pending
-            </span>
-          )}
+        {/* Search + Stats */}
+        <div className="mb-6 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by user email or name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900
+                       focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>{total} total payment{total !== 1 ? 's' : ''}</span>
+            {pendingCount !== null && (
+              <span className="text-yellow-700 font-medium">
+                {pendingCount} pending
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Filter tabs */}

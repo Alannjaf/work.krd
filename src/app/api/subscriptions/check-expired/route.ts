@@ -13,7 +13,7 @@ export async function POST() {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['BASIC', 'PRO']
+          in: ['PRO']
         },
         endDate: {
           lte: now
@@ -122,7 +122,7 @@ export async function GET() {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['BASIC', 'PRO']
+          in: ['PRO']
         },
         endDate: {
           lte: now
@@ -144,7 +144,7 @@ export async function GET() {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['BASIC', 'PRO']
+          in: ['PRO']
         },
         endDate: {
           gt: now,

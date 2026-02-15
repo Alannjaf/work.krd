@@ -16,7 +16,6 @@ interface ResumeFiltersProps {
 
 interface TemplatesByTier {
   free: Array<TemplateInfo & { tier: 'free' }>;
-  basic: Array<TemplateInfo & { tier: 'basic' }>;
   pro: Array<TemplateInfo & { tier: 'pro' }>;
 }
 
@@ -29,20 +28,16 @@ export function ResumeFilters({
   onTemplateChange}: ResumeFiltersProps) {
   const [templates, setTemplates] = useState<TemplateInfo[]>(getAllTemplates());
 
-  // Fetch templates from API to ensure we have all available templates
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
         const response = await fetch('/api/templates');
         if (response.ok) {
           const data: TemplatesByTier = await response.json();
-          // Combine all templates from all tiers
           const allTemplates = [
             ...(data.free || []),
-            ...(data.basic || []),
             ...(data.pro || [])
           ];
-          // Remove duplicates by id and map to TemplateInfo format
           const uniqueTemplates = Array.from(
             new Map(allTemplates.map(t => [t.id, { id: t.id, name: t.name, description: t.description, category: t.category }])).values()
           );
@@ -50,14 +45,13 @@ export function ResumeFilters({
         }
       } catch (error) {
         console.error('[ResumeFilters] Failed to fetch templates:', error);
-        // Fallback to hardcoded templates if API fails
         setTemplates(getAllTemplates());
       }
     };
 
     fetchTemplates();
   }, []);
-  
+
   return (
     <div className="space-y-4">
       <div className="relative">

@@ -186,7 +186,6 @@ export async function GET(
     return successResponse(transformedData);
   } catch (error) {
     console.error(`Error fetching resume ${id}:`, error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return errorResponse(`Internal Server Error: ${errorMessage}`, 500);
+    return errorResponse('Failed to fetch resume data', 500);
   }
 }

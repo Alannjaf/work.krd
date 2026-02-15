@@ -98,7 +98,7 @@ export function AdminResumePreview({
     if (isOpen && viewMode === 'pdf') {
       generatePDF();
     }
-  }, [isOpen, viewMode, data, template]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return () => {

@@ -89,26 +89,19 @@ model SystemSettings {
   maxFreeResumes     Int      @default(10)
   maxFreeAIUsage     Int      @default(100)
   maxFreeExports     Int      @default(20)
-  maxBasicResumes    Int      @default(50)
-  maxBasicAIUsage    Int      @default(500)
-  maxBasicExports    Int      @default(100)
+  maxFreeImports     Int      @default(1)
+  maxFreeATSChecks   Int      @default(0)
   maxProResumes      Int      @default(-1)
   maxProAIUsage      Int      @default(-1)
   maxProExports      Int      @default(-1)
-  basicPlanPrice     Int      @default(5000)
-  proPlanPrice       Int      @default(10000)
+  maxProImports      Int      @default(-1)
+  maxProATSChecks    Int      @default(-1)
+  proPlanPrice       Int      @default(5000)
   maintenanceMode    Boolean  @default(false)
   updatedAt          DateTime @default(now()) @updatedAt
-  maxBasicImports    Int      @default(0)
-  maxFreeImports     Int      @default(1)
-  maxProImports      Int      @default(-1)
-  basicTemplates     Json     @default("[\"modern\"]")
   freeTemplates      Json     @default("[\"modern\"]")
-  photoUploadPlans   Json     @default("[\"BASIC\", \"PRO\"]")
   proTemplates       Json     @default("[\"modern\"]")
-  maxFreeATSChecks   Int      @default(0)
-  maxBasicATSChecks  Int      @default(5)
-  maxProATSChecks    Int      @default(-1)
+  photoUploadPlans   Json     @default("[\"PRO\"]")
 }
 
 enum UserRole {
@@ -136,7 +129,6 @@ enum SectionType {
 
 enum SubscriptionPlan {
   FREE
-  BASIC
   PRO
 }
 

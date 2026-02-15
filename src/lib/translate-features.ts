@@ -40,7 +40,7 @@ export function translatePlanFeatures(features: string[], t: TranslationFunction
     
     // Static features mapping
     const featureMap: { [key: string]: string } = {
-      'Basic templates': `${keyPrefix}.features.basicTemplates`,
+      'Free templates': `${keyPrefix}.features.freeTemplates`,
       'All template options': `${keyPrefix}.features.allTemplates`,
       'All premium templates': `${keyPrefix}.features.premiumTemplates`,
       'PDF export': `${keyPrefix}.features.pdfExport`,

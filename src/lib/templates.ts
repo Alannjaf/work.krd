@@ -55,7 +55,7 @@ export const getTemplateIds = (): string[] => {
 
 // Extended template interface with tier information
 export interface TemplateWithTier extends TemplateInfo {
-  tier: 'free' | 'basic' | 'pro'
+  tier: 'free' | 'pro'
   thumbnail: string
 }
 
@@ -63,27 +63,20 @@ export interface TemplateWithTier extends TemplateInfo {
 export const getTemplateTier = (
   templateId: string,
   freeTemplates: string[],
-  basicTemplates: string[],
   proTemplates: string[]
-): 'free' | 'basic' | 'pro' => {
+): 'free' | 'pro' => {
   if (freeTemplates.includes(templateId)) return 'free'
-  if (basicTemplates.includes(templateId)) return 'basic'
   if (proTemplates.includes(templateId)) return 'pro'
   return 'pro' // default tier
 }
 
 // Helper function to get tier badge styling
-export const getTierBadgeStyle = (tier: 'free' | 'basic' | 'pro') => {
+export const getTierBadgeStyle = (tier: 'free' | 'pro') => {
   switch (tier) {
     case 'free':
       return {
         className: 'bg-green-100 text-green-800',
         label: '✨ Free'
-      }
-    case 'basic':
-      return {
-        className: 'bg-blue-100 text-blue-800',
-        label: '📈 Basic'
       }
     case 'pro':
       return {

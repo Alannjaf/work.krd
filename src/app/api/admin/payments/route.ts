@@ -19,7 +19,21 @@ export async function GET(req: Request) {
       return validationErrorResponse('Invalid status filter. Must be PENDING, APPROVED, or REJECTED.')
     }
 
-    const where = status ? { status: status as typeof VALID_STATUSES[number] } : {}
+    const search = searchParams.get('search')?.trim()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {}
+    if (status) {
+      where.status = status as typeof VALID_STATUSES[number]
+    }
+    if (search) {
+      where.user = {
+        OR: [
+          { email: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } }
+        ]
+      }
+    }
 
     const [payments, total] = await Promise.all([
       prisma.payment.findMany({
