@@ -18,22 +18,15 @@ const DEFAULT_SETTINGS: SystemSettings = {
   maxFreeExports: 20,
   maxFreeImports: 1,
   maxFreeATSChecks: 0,
-  maxBasicResumes: 50,
-  maxBasicAIUsage: 500,
-  maxBasicExports: 100,
-  maxBasicImports: 0,
-  maxBasicATSChecks: 5,
   maxProResumes: -1,
   maxProAIUsage: -1,
   maxProExports: -1,
   maxProImports: -1,
   maxProATSChecks: -1,
   freeTemplates: ['modern'],
-  basicTemplates: ['modern'],
   proTemplates: [],
-  photoUploadPlans: ['BASIC', 'PRO'],
-  basicPlanPrice: 5000,
-  proPlanPrice: 10000,
+  photoUploadPlans: ['PRO'],
+  proPlanPrice: 5000,
   maintenanceMode: false
 }
 
@@ -85,23 +78,16 @@ export function AdminDashboard() {
         maxFreeExports: data.maxFreeExports ?? 20,
         maxFreeImports: data.maxFreeImports ?? 1,
         maxFreeATSChecks: data.maxFreeATSChecks ?? 0,
-        maxBasicResumes: data.maxBasicResumes ?? 50,
-        maxBasicAIUsage: data.maxBasicAIUsage ?? 500,
-        maxBasicExports: data.maxBasicExports ?? 100,
-        maxBasicImports: data.maxBasicImports ?? 0,
-        maxBasicATSChecks: data.maxBasicATSChecks ?? 5,
         maxProResumes: data.maxProResumes ?? -1,
         maxProAIUsage: data.maxProAIUsage ?? -1,
         maxProExports: data.maxProExports ?? -1,
         maxProImports: data.maxProImports ?? -1,
         maxProATSChecks: data.maxProATSChecks ?? -1,
         freeTemplates: parseArray(data.freeTemplates, ['modern']),
-        basicTemplates: parseArray(data.basicTemplates, ['modern']),
         // PRO always includes all registered templates
         proTemplates: [...new Set([...availableTemplates, ...parseArray(data.proTemplates, availableTemplates)])],
-        photoUploadPlans: parseArray(data.photoUploadPlans, ['BASIC', 'PRO']),
-        basicPlanPrice: data.basicPlanPrice ?? 5000,
-        proPlanPrice: data.proPlanPrice ?? 10000,
+        photoUploadPlans: parseArray(data.photoUploadPlans, ['PRO']),
+        proPlanPrice: data.proPlanPrice ?? 5000,
         maintenanceMode: data.maintenanceMode ?? false
       })
     } catch (error) {
@@ -208,19 +194,6 @@ export function AdminDashboard() {
         />
 
         <AdminQuickActions />
-
-        {/* Payment Management */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Payment Reviews</h3>
-              <p className="text-gray-600 mt-1">Review and manage payment submissions</p>
-            </div>
-            <Button onClick={() => window.location.href = '/admin/payments'}>
-              View Payments
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   )

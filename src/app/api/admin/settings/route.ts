@@ -6,29 +6,21 @@ export async function GET() {
   try {
     await requireAdmin()
     const settings = await getSystemSettings()
-    
-    // Return only the fields we need
+
     return successResponse({
       maxFreeResumes: settings.maxFreeResumes,
       maxFreeAIUsage: settings.maxFreeAIUsage,
       maxFreeExports: settings.maxFreeExports,
       maxFreeImports: settings.maxFreeImports,
       maxFreeATSChecks: settings.maxFreeATSChecks,
-      maxBasicResumes: settings.maxBasicResumes,
-      maxBasicAIUsage: settings.maxBasicAIUsage,
-      maxBasicExports: settings.maxBasicExports,
-      maxBasicImports: settings.maxBasicImports,
-      maxBasicATSChecks: settings.maxBasicATSChecks,
       maxProResumes: settings.maxProResumes,
       maxProAIUsage: settings.maxProAIUsage,
       maxProExports: settings.maxProExports,
       maxProImports: settings.maxProImports,
       maxProATSChecks: settings.maxProATSChecks,
       freeTemplates: settings.freeTemplates,
-      basicTemplates: settings.basicTemplates,
       proTemplates: settings.proTemplates,
       photoUploadPlans: settings.photoUploadPlans,
-      basicPlanPrice: settings.basicPlanPrice,
       proPlanPrice: settings.proPlanPrice,
       maintenanceMode: settings.maintenanceMode
     })
@@ -41,10 +33,10 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await requireAdmin()
-    
+
     const newSettings = await req.json()
     const savedSettings = await updateSystemSettings(newSettings)
-    
+
     return successResponse({
       success: true,
       settings: savedSettings

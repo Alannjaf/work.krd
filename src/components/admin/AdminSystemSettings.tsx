@@ -49,17 +49,6 @@ export function AdminSystemSettings({
         />
 
         <PlanLimitsSection
-          title="Basic Plan Limits"
-          resumes={settings.maxBasicResumes}
-          aiUsage={settings.maxBasicAIUsage}
-          exports={settings.maxBasicExports}
-          imports={settings.maxBasicImports}
-          atsChecks={settings.maxBasicATSChecks}
-          onChange={(field, value) => setSettings({ ...settings, [field]: value })}
-          fieldPrefix="maxBasic"
-        />
-
-        <PlanLimitsSection
           title="Pro Plan Limits"
           resumes={settings.maxProResumes}
           aiUsage={settings.maxProAIUsage}
@@ -190,7 +179,7 @@ interface TemplateAccessSectionProps {
 }
 
 function TemplateAccessSection({ settings, setSettings, availableTemplates }: TemplateAccessSectionProps) {
-  const toggleTemplate = (plan: 'free' | 'basic' | 'pro', template: string, checked: boolean) => {
+  const toggleTemplate = (plan: 'free' | 'pro', template: string, checked: boolean) => {
     const field = `${plan}Templates` as keyof SystemSettings
     const current = settings[field] as string[]
     const updated = checked ? [...current, template] : current.filter(t => t !== template)
@@ -201,7 +190,7 @@ function TemplateAccessSection({ settings, setSettings, availableTemplates }: Te
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Template Access Control</h3>
       <div className="space-y-4">
-        {(['free', 'basic', 'pro'] as const).map(plan => (
+        {(['free', 'pro'] as const).map(plan => (
           <div key={plan}>
             <label className="block text-sm font-medium mb-2 capitalize">{plan} Plan Templates</label>
             <div className="space-y-2">
@@ -236,7 +225,7 @@ function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) 
       <div>
         <label className="block text-sm font-medium mb-2">Plans with Photo Upload Access</label>
         <div className="space-y-2">
-          {['FREE', 'BASIC', 'PRO'].map(plan => (
+          {['FREE', 'PRO'].map(plan => (
             <label key={plan} className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -270,31 +259,17 @@ function PricingSection({ settings, setSettings }: PricingSectionProps) {
   return (
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Pricing Settings</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Basic Plan Price (IQD)</label>
-          <Input
-            type="number"
-            min="0"
-            value={settings.basicPlanPrice}
-            onChange={(e) => setSettings({
-              ...settings,
-              basicPlanPrice: parseInt(e.target.value) || 0
-            })}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
-          <Input
-            type="number"
-            min="0"
-            value={settings.proPlanPrice}
-            onChange={(e) => setSettings({
-              ...settings,
-              proPlanPrice: parseInt(e.target.value) || 0
-            })}
-          />
-        </div>
+      <div className="max-w-xs">
+        <label className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
+        <Input
+          type="number"
+          min="0"
+          value={settings.proPlanPrice}
+          onChange={(e) => setSettings({
+            ...settings,
+            proPlanPrice: parseInt(e.target.value) || 0
+          })}
+        />
       </div>
     </div>
   )
@@ -326,4 +301,3 @@ function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectio
     </div>
   )
 }
-

@@ -3,6 +3,11 @@ export interface Stats {
   totalResumes: number
   activeSubscriptions: number
   revenue: number
+  payments?: {
+    pending: number
+    approved: number
+    rejected: number
+  }
 }
 
 export interface SubscriptionStatus {
@@ -36,22 +41,14 @@ export interface SystemSettings {
   maxFreeExports: number
   maxFreeImports: number
   maxFreeATSChecks: number
-  maxBasicResumes: number
-  maxBasicAIUsage: number
-  maxBasicExports: number
-  maxBasicImports: number
-  maxBasicATSChecks: number
   maxProResumes: number
   maxProAIUsage: number
   maxProExports: number
   maxProImports: number
   maxProATSChecks: number
   freeTemplates: string[]
-  basicTemplates: string[]
   proTemplates: string[]
   photoUploadPlans: string[]
-  basicPlanPrice: number
   proPlanPrice: number
   maintenanceMode: boolean
 }
-

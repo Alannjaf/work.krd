@@ -8,11 +8,11 @@ export async function POST(
 ) {
   try {
     await requireAdmin()
-    
+
     const { userId } = await params
     const { plan } = await req.json()
 
-    if (!['FREE', 'BASIC', 'PRO'].includes(plan)) {
+    if (!['FREE', 'PRO'].includes(plan)) {
       return validationErrorResponse('Invalid plan')
     }
 
@@ -51,7 +51,7 @@ export async function POST(
 
     return successResponse({
       success: true,
-      message: `User upgraded to ${plan} plan`
+      message: `User updated to ${plan} plan`
     })
   } catch (error) {
     console.error('[AdminUpgrade] Failed to upgrade user:', error);

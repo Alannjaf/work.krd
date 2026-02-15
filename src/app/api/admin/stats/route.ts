@@ -6,35 +6,29 @@ export async function GET() {
   try {
     await requireAdmin()
 
-    // Get statistics
-    const [totalUsers, totalResumes, activeSubscriptions] = await Promise.all([
+    const [totalUsers, totalResumes, activeSubscriptions, pendingPayments, approvedPayments, rejectedPayments] = await Promise.all([
       prisma.user.count(),
       prisma.resume.count(),
       prisma.subscription.count({
-        where: { status: 'ACTIVE' }
-      })
+        where: { status: 'ACTIVE', plan: 'PRO' }
+      }),
+      prisma.payment.count({ where: { status: 'PENDING' } }),
+      prisma.payment.count({ where: { status: 'APPROVED' } }),
+      prisma.payment.count({ where: { status: 'REJECTED' } })
     ])
 
-    // Calculate revenue based on current IQD pricing
-    const basicSubs = await prisma.subscription.count({
-      where: { status: 'ACTIVE', plan: 'BASIC' }
-    })
-    const proSubs = await prisma.subscription.count({
-      where: { status: 'ACTIVE', plan: 'PRO' }
-    })
-    
-    // Revenue in IQD (Basic: 5,000 IQD, Pro: 10,000 IQD)
-    const revenueIQD = (basicSubs * 5000) + (proSubs * 10000)
+    // Revenue in IQD (Pro: 5,000 IQD)
+    const revenueIQD = activeSubscriptions * 5000
 
     return successResponse({
       totalUsers,
       totalResumes,
       activeSubscriptions,
       revenue: revenueIQD,
-      breakdown: {
-        basicSubscriptions: basicSubs,
-        proSubscriptions: proSubs,
-        freeUsers: totalUsers - activeSubscriptions
+      payments: {
+        pending: pendingPayments,
+        approved: approvedPayments,
+        rejected: rejectedPayments
       }
     })
   } catch (error) {

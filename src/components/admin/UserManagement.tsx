@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { AppHeader } from '@/components/shared/AppHeader'
-import { 
-  Search, 
-  RefreshCw, 
-  User, 
-  Mail, 
+import {
+  Search,
+  RefreshCw,
+  User,
+  Mail,
   Calendar,
   CreditCard,
   Check,
@@ -72,35 +72,35 @@ export function UserManagement() {
       })
 
       if (response.ok) {
-        toast.success('User plan upgraded successfully!')
+        toast.success('User plan updated successfully!')
         setShowUpgradeModal(false)
         setSelectedUser(null)
         fetchUsers()
       } else {
-        toast.error('Failed to upgrade user plan')
+        toast.error('Failed to update user plan')
       }
     } catch (error) {
-      console.error('[UserManagement] Failed to upgrade user plan:', error);
-      toast.error('Error upgrading user plan')
+      console.error('[UserManagement] Failed to update user plan:', error);
+      toast.error('Error updating user plan')
     } finally {
       setUpgrading(false)
     }
   }
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.name?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
+      <AppHeader
         title="User Management"
         showBackButton={true}
         backButtonText="Back to Admin Dashboard"
         backButtonHref="/admin"
       />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
@@ -173,9 +173,9 @@ export function UserManagement() {
                       <div className="text-xs text-gray-600 mt-1">
                         {user.subscription && (
                           <>
-                            {user.subscription.resumeCount} resumes • 
-                            {user.subscription.aiUsageCount} AI uses • 
-                            {user.subscription.exportCount} exports • 
+                            {user.subscription.resumeCount} resumes •
+                            {user.subscription.aiUsageCount} AI uses •
+                            {user.subscription.exportCount} exports •
                             {user.subscription.importCount} imports
                           </>
                         )}
@@ -206,7 +206,7 @@ export function UserManagement() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <Card className="w-full max-w-md p-6">
               <h3 className="text-lg font-semibold mb-4">Manage User Subscription</h3>
-              
+
               <div className="mb-4">
                 <p className="text-sm text-gray-600">User: {selectedUser.email}</p>
                 <div className="text-sm text-gray-600 flex items-center gap-2">
@@ -225,17 +225,7 @@ export function UserManagement() {
                   {selectedUser.subscription?.plan === 'FREE' && <Check className="h-4 w-4 mr-2" />}
                   Free Plan
                 </Button>
-                
-                <Button
-                  className="w-full justify-start"
-                  variant={selectedUser.subscription?.plan === 'BASIC' ? 'default' : 'outline'}
-                  onClick={() => upgradeUserPlan(selectedUser.id, 'BASIC')}
-                  disabled={upgrading || selectedUser.subscription?.plan === 'BASIC'}
-                >
-                  {selectedUser.subscription?.plan === 'BASIC' && <Check className="h-4 w-4 mr-2" />}
-                  Basic Plan (5,000 IQD/mo)
-                </Button>
-                
+
                 <Button
                   className="w-full justify-start"
                   variant={selectedUser.subscription?.plan === 'PRO' ? 'default' : 'outline'}
@@ -243,7 +233,7 @@ export function UserManagement() {
                   disabled={upgrading || selectedUser.subscription?.plan === 'PRO'}
                 >
                   {selectedUser.subscription?.plan === 'PRO' && <Check className="h-4 w-4 mr-2" />}
-                  Pro Plan (10,000 IQD/mo)
+                  Pro Plan (5,000 IQD/mo)
                 </Button>
               </div>
 
