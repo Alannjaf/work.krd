@@ -240,6 +240,18 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Hydration**: Never use `new Date()`, `Date.now()`, or `Math.random()` in `useState` initializers — they differ server vs client. Use empty default + `useEffect` to set client-only values
 - **Dev mobile testing (WSL)**: Access via `http://<WSL_IP>:3000`. Requires `allowedDevOrigins` in `next.config.js` for Next.js 15.3+ (validates Host header). Chunk load errors → `error.tsx` auto-reloads on `ChunkLoadError`
 
+## Onboarding Wizard
+- **3-step flow**: Welcome+Name → Template Picker → Upload CV or Start from Scratch
+- **Guard logic**: Dashboard checks `resumeCount === 0` + `onboardingCompleted === false` → redirects to `/onboarding`. Onboarding page checks if already completed → redirects to `/dashboard`
+- **Clerk webhook race**: The onboarding-status API returns `userNotFound: true` if the webhook hasn't created the DB user yet — the page retries after 2s
+- **Routing**: `signUpForceRedirectUrl="/onboarding"` in layout.tsx, `signInForceRedirectUrl="/dashboard"` (existing users go to dashboard)
+- **Template picker**: Uses SVG thumbnails from `public/thumbnails/{id}.svg` rendered large (no subscription gating during onboarding)
+- **Upload flow**: Reuses existing `/api/resume/upload` endpoint. Free users get 1 import (`maxFreeImports: 1`)
+- **Onboarding-complete API**: Creates resume via `createResume()`, optionally populates sections from CV data in a `$transaction`, sets `user.onboardingCompleted = true`
+- **Skip**: Sets `onboardingCompleted = true` without creating a resume — user goes to dashboard and never sees onboarding again
+- **i18n keys**: `pages.onboarding.*` in all 3 locales (en, ar, ckb) — ~15 keys covering all 3 steps + errors
+- **Mobile-first**: Full-width cards, stacked vertically, `max-w-lg` for steps 1/3, `max-w-4xl` for step 2 (template grid)
+
 ## ATS Feature
 - **Shared utilities**: `src/lib/ats-utils.ts` — `stripHtml()`, `buildResumeText()`, Zod `resumeDataSchema`, `ATS_AI_CONFIG` (env vars), `withTimeout()`, `ATS_SCORE_THRESHOLDS`, `MAX_REQUEST_SIZE`
 - **Routes**: `src/app/api/ats/score/route.ts` and `src/app/api/ats/keywords/route.ts`
@@ -309,4 +321,10 @@ src/app/api/
   ats/score/                  # POST: ATS score analysis (rate limited, atomic limits)
   ats/keywords/               # POST: keyword matching (rate limited, atomic limits, 10K max)
   user/subscription-data/     # GET: subscription + permissions for client context
+  user/onboarding-status/     # GET: check onboarding completion + resume count
+  user/onboarding-complete/   # POST: create first resume + mark onboarding done
+  user/onboarding-skip/       # POST: mark onboarding done without creating resume
+
+src/app/onboarding/
+  page.tsx                    # 3-step onboarding wizard (name → template → upload/scratch)
 ```

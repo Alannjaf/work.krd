@@ -28,14 +28,29 @@ export default function Dashboard() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
-  // Fetch user's resumes
+  // Fetch user's resumes + check onboarding status
   useEffect(() => {
     const fetchResumes = async () => {
       try {
         const response = await fetch('/api/resumes')
         if (response.ok) {
           const data = await response.json()
-          setResumes(data.resumes || [])
+          const userResumes = data.resumes || []
+          setResumes(userResumes)
+
+          // Redirect to onboarding if user has no resumes and hasn't completed it
+          if (userResumes.length === 0) {
+            try {
+              const statusRes = await fetch('/api/user/onboarding-status')
+              const statusData = await statusRes.json()
+              if (!statusData.onboardingCompleted) {
+                router.replace('/onboarding')
+                return
+              }
+            } catch {
+              // If onboarding check fails, stay on dashboard
+            }
+          }
         }
       } catch (error) {
         console.error('[Dashboard] Failed to fetch resumes:', error);
@@ -45,7 +60,7 @@ export default function Dashboard() {
     }
 
     fetchResumes()
-  }, [])
+  }, [router])
 
   const handleDuplicateResume = async (resumeId: string) => {
     setDuplicatingId(resumeId)

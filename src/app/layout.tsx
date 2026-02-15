@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <ClerkProvider
       signInForceRedirectUrl="/dashboard"
-      signUpForceRedirectUrl="/dashboard"
+      signUpForceRedirectUrl="/onboarding"
     >
       <html lang="en">
         <head>

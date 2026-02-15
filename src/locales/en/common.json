@@ -581,6 +581,39 @@
         "updated": "Updated {date}"
       }
     },
+    "onboarding": {
+      "skip": "Skip for now",
+      "step1": {
+        "title": "Welcome to Work.krd!",
+        "subtitle": "Let's create your first professional resume",
+        "nameLabel": "What's your full name?",
+        "namePlaceholder": "Enter your full name",
+        "continue": "Continue"
+      },
+      "step2": {
+        "title": "Pick your style",
+        "subtitle": "Choose a template — you can always change it later",
+        "continue": "Continue"
+      },
+      "step3": {
+        "title": "How do you want to start?",
+        "uploadCard": {
+          "title": "Upload existing CV",
+          "subtitle": "We'll extract your info from a PDF or Word file"
+        },
+        "scratchCard": {
+          "title": "Start from scratch",
+          "subtitle": "Build your resume step by step"
+        },
+        "uploadSuccess": "Got it! We extracted your info",
+        "createResume": "Create my resume",
+        "creating": "Creating your resume..."
+      },
+      "errors": {
+        "nameRequired": "Please enter your name",
+        "createFailed": "Something went wrong. Please try again."
+      }
+    },
     "resumeBuilder": {
       "title": "Resume Builder",
       "backToDashboard": "Back to Dashboard",

@@ -210,7 +210,7 @@ async function getSystemSettings() {
     maxFreeResumes: 1,
     maxFreeAIUsage: 10,
     maxFreeExports: 0,
-    maxFreeImports: 0,
+    maxFreeImports: 1,
     maxFreeATSChecks: 0,
     
     // Basic Plan Limits

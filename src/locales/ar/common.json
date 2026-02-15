@@ -547,6 +547,39 @@
         "updated": "آخر تحديث {date}"
       }
     },
+    "onboarding": {
+      "skip": "تخطي الآن",
+      "step1": {
+        "title": "!Work.krd أهلاً بك في",
+        "subtitle": "لنصنع سيرتك الذاتية الاحترافية الأولى",
+        "nameLabel": "ما اسمك الكامل؟",
+        "namePlaceholder": "أدخل اسمك الكامل",
+        "continue": "متابعة"
+      },
+      "step2": {
+        "title": "اختر تصميمك",
+        "subtitle": "اختر قالباً — يمكنك تغييره لاحقاً",
+        "continue": "متابعة"
+      },
+      "step3": {
+        "title": "كيف تريد أن تبدأ؟",
+        "uploadCard": {
+          "title": "رفع سيرة ذاتية موجودة",
+          "subtitle": "سنستخرج معلوماتك من ملف PDF أو Word"
+        },
+        "scratchCard": {
+          "title": "البدء من الصفر",
+          "subtitle": "ابنِ سيرتك الذاتية خطوة بخطوة"
+        },
+        "uploadSuccess": "تم! استخرجنا معلوماتك",
+        "createResume": "أنشئ سيرتي الذاتية",
+        "creating": "جارٍ إنشاء سيرتك الذاتية..."
+      },
+      "errors": {
+        "nameRequired": "يرجى إدخال اسمك",
+        "createFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
+    },
     "resumeBuilder": {
       "title": "منشئ السيرة الذاتية",
       "backToDashboard": "العودة للوحة التحكم",

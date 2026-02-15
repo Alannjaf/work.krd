@@ -41,7 +41,7 @@ async function getSystemSettings() {
     maxFreeResumes: 10,
     maxFreeAIUsage: 100,
     maxFreeExports: 20,
-    maxFreeImports: 0,
+    maxFreeImports: 1,
     maxFreeATSChecks: 0,
 
     // Basic Plan Limits
@@ -88,7 +88,7 @@ export async function GET() {
       resumesLimit = settings.maxFreeResumes !== null && settings.maxFreeResumes !== undefined ? settings.maxFreeResumes : 10
       aiUsageLimit = settings.maxFreeAIUsage !== null && settings.maxFreeAIUsage !== undefined ? settings.maxFreeAIUsage : 100
       exportLimit = settings.maxFreeExports !== null && settings.maxFreeExports !== undefined ? settings.maxFreeExports : 20
-      importLimit = settings.maxFreeImports !== null && settings.maxFreeImports !== undefined ? settings.maxFreeImports : 0
+      importLimit = settings.maxFreeImports !== null && settings.maxFreeImports !== undefined ? settings.maxFreeImports : 1
       atsUsageLimit = settings.maxFreeATSChecks !== null && settings.maxFreeATSChecks !== undefined ? settings.maxFreeATSChecks : 0
     } else if (plan === 'BASIC') {
       resumesLimit = settings.maxBasicResumes !== null && settings.maxBasicResumes !== undefined ? settings.maxBasicResumes : 50

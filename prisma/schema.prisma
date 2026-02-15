@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  clerkId      String        @unique
-  email        String        @unique
-  name         String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  role         UserRole      @default(USER)
-  resumes      Resume[]
-  subscription Subscription?
+  id                   String        @id @default(cuid())
+  clerkId              String        @unique
+  email                String        @unique
+  name                 String?
+  onboardingCompleted  Boolean       @default(false)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  role                 UserRole      @default(USER)
+  resumes              Resume[]
+  subscription         Subscription?
 
   @@index([clerkId])
   @@index([email])
@@ -98,7 +99,7 @@ model SystemSettings {
   maintenanceMode    Boolean  @default(false)
   updatedAt          DateTime @default(now()) @updatedAt
   maxBasicImports    Int      @default(0)
-  maxFreeImports     Int      @default(0)
+  maxFreeImports     Int      @default(1)
   maxProImports      Int      @default(-1)
   basicTemplates     Json     @default("[\"modern\"]")
   freeTemplates      Json     @default("[\"modern\"]")
