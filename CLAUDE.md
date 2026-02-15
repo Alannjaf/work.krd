@@ -284,6 +284,16 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Header button**: `BuilderHeader.tsx` — `ScanSearch` icon + always-visible "ATS" label (emerald color accent to distinguish from gray ghost buttons), uses `t('pages.resumeBuilder.actions.ats')` for label
 - **AI prompts**: Multilingual awareness (English/Arabic/Kurdish), semantic keyword matching across languages, don't penalize non-English resumes. Score prompt has calibration ranges (90-100/70-89/50-69/<50), optional `targetRole` param, keyword density criterion. Keywords prompt sends ALL resume sections (not just 4), has importance categorization rules (critical/important/nice-to-have)
 
+## Completion Progress Bar
+- **Component**: `src/components/resume-builder/layout/CompletionProgressBar.tsx`
+- **Placement**: Between header and main content in `BuilderShell` (new `progressBar` slot)
+- **Calculation**: Average of 6 section completions from `useSectionCompletion` hook (0-100%)
+- **Color thresholds**: <30% red, 30-69% amber, 70-99% blue, 100% green (text + bar gradient)
+- **Encouraging messages**: 5 tiers (0%, 1-29%, 30-69%, 70-99%, 100%) via i18n keys `pages.resumeBuilder.completion.*`
+- **Section dots**: Desktop only (`hidden sm:flex`), clickable, ring on active section — redundant with mobile bottom nav dots
+- **Mobile**: Compact view (percentage + bar only), text/dots hidden
+- **i18n keys**: `pages.resumeBuilder.completion.{label,getStarted,goodStart,gettingThere,almostDone,complete}` in en/ar/ckb
+
 ## File Map
 ```
 src/components/html-templates/
@@ -315,6 +325,7 @@ src/components/resume-builder/
   ats/KeywordsTab.tsx         # Keyword matching tab (loading skeleton, importance badges)
   form/                       # 6 section components + FormSectionRenderer
   preview/                    # LivePreviewPanel, TemplateSwitcher, MobilePreviewSheet
+  layout/CompletionProgressBar.tsx  # Overall resume completion bar (avg of 6 sections, color-coded, i18n)
 
 src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes)
 src/contexts/SubscriptionContext.tsx  # Client provider for subscription + permissions

@@ -14,6 +14,7 @@ import { BuilderShell } from "@/components/resume-builder/layout/BuilderShell";
 import { BuilderHeader } from "@/components/resume-builder/layout/BuilderHeader";
 import { SectionSidebar } from "@/components/resume-builder/layout/SectionSidebar";
 import { MobileBottomNav } from "@/components/resume-builder/layout/MobileBottomNav";
+import { CompletionProgressBar } from "@/components/resume-builder/layout/CompletionProgressBar";
 import { LivePreviewPanel } from "@/components/resume-builder/preview/LivePreviewPanel";
 import { MobilePreviewSheet } from "@/components/resume-builder/preview/MobilePreviewSheet";
 import { useResumeData } from "@/hooks/useResumeData";
@@ -347,6 +348,13 @@ function ResumeBuilderContent() {
             onDownload={() => downloadPDF(formData, selectedTemplate)}
             isDownloading={isDownloading}
             onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+          />
+        }
+        progressBar={
+          <CompletionProgressBar
+            completionStatus={completionStatus}
+            currentSection={currentSection}
+            onSectionChange={handleSectionChange}
           />
         }
         sidebar={

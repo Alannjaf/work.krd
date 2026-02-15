@@ -4,6 +4,7 @@ import React from 'react'
 
 interface BuilderShellProps {
   header: React.ReactNode
+  progressBar: React.ReactNode
   sidebar: React.ReactNode
   form: React.ReactNode
   preview: React.ReactNode
@@ -13,6 +14,7 @@ interface BuilderShellProps {
 
 export function BuilderShell({
   header,
+  progressBar,
   sidebar,
   form,
   preview,
@@ -23,6 +25,9 @@ export function BuilderShell({
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Header */}
       {header}
+
+      {/* Completion progress bar */}
+      {progressBar}
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">

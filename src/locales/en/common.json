@@ -658,7 +658,14 @@
         "success": "Resume translated successfully!",
         "error": "Translation failed. Please try again."
       },
-      "progress": "Progress",
+      "completion": {
+        "label": "{percent}% Complete",
+        "getStarted": "Start filling in your resume!",
+        "goodStart": "Good start! Keep going.",
+        "gettingThere": "Getting there! Add more details.",
+        "almostDone": "Almost done! Just a few more sections.",
+        "complete": "Your resume is complete!"
+      },
       "loading": {
         "resume": "Loading resume...",
         "builder": "Loading resume builder..."
