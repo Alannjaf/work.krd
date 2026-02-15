@@ -578,6 +578,10 @@
           "title": "Start from scratch",
           "subtitle": "Build your resume step by step"
         },
+        "templateCard": {
+          "title": "Start from a template",
+          "subtitle": "Pick a role-based template with example content to customize"
+        },
         "uploadSuccess": "Got it! We extracted your info",
         "createResume": "Create my resume",
         "creating": "Creating your resume..."
@@ -745,6 +749,33 @@
           "scoreFailed": "Failed to analyze ATS score",
           "keywordFailed": "Failed to match keywords",
           "rateLimited": "Too many requests. Please try again later."
+        }
+      },
+      "quickStart": {
+        "title": "Start from a Template",
+        "subtitle": "Pick a role to get started with pre-filled example content you can customize.",
+        "startBlank": "or start with a blank resume",
+        "templates": {
+          "software-engineer": {
+            "name": "Software Engineer / IT",
+            "description": "Web development, cloud, APIs, and modern tech stack experience"
+          },
+          "marketing-sales": {
+            "name": "Marketing / Sales",
+            "description": "Digital marketing, campaigns, analytics, and brand growth"
+          },
+          "fresh-graduate": {
+            "name": "Fresh Graduate",
+            "description": "Internship experience, academics, and extracurricular projects"
+          },
+          "business-management": {
+            "name": "Business / Management",
+            "description": "Operations, strategy, budgets, and team leadership"
+          },
+          "creative-design": {
+            "name": "Creative / Design",
+            "description": "Graphic design, branding, UI/UX, and visual storytelling"
+          }
         }
       }
     },

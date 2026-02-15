@@ -294,6 +294,18 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Mobile**: Compact view (percentage + bar only), text/dots hidden
 - **i18n keys**: `pages.resumeBuilder.completion.{label,getStarted,goodStart,gettingThere,almostDone,complete}` in en/ar/ckb
 
+## Quick-Start Resume Templates
+- **Data**: `src/lib/quick-start-templates.ts` — 5 role-based pre-filled resume data sets
+- **Templates**: `software-engineer`, `marketing-sales`, `fresh-graduate`, `business-management`, `creative-design`
+- **Picker UI**: `src/components/resume-builder/QuickStartPicker.tsx` — modal with accessible focus trap, i18n, mobile-responsive grid
+- **Integration points**:
+  - **Onboarding step 3**: Third card "Start from template" alongside Upload CV and Start from scratch → opens QuickStartPicker → submits formData to onboarding-complete API
+  - **Resume builder**: Auto-shows QuickStartPicker when creating a new resume (no URL `id` param) → populates form data + triggers auto-save
+- **Data merging**: Template data's `fullName` is always overridden with the user's actual name
+- **IDs**: All template item IDs use `qs_` prefix (e.g., `qs_se_exp_1`) to avoid conflicts
+- **i18n keys**: `pages.resumeBuilder.quickStart.*` (title, subtitle, startBlank, templates.{id}.name/description) + `pages.onboarding.step3.templateCard.*` in en/ar/ckb
+- **Template content**: English only (users will replace with their own info)
+
 ## File Map
 ```
 src/components/html-templates/
@@ -315,12 +327,14 @@ src/lib/
   system-settings.ts          # getSystemSettings (exported), updateSystemSettings
   rtl.ts                      # isRTLText(), isResumeRTL() — Arabic/Kurdish detection
   ats-utils.ts                # Shared ATS utilities: stripHtml, buildResumeText, Zod schema, AI config, timeout
+  quick-start-templates.ts    # 5 role-based pre-filled resume data for quick-start feature
   pdf/renderHtml.ts           # React SSR → HTML with embedded fonts
   pdf/generatePdf.ts          # Puppeteer HTML → PDF buffer
 
 src/components/resume-builder/
   page.tsx                    # Main builder (3-column desktop, mobile responsive)
   ATSOptimization.tsx         # ATS modal wrapper (accessibility, caching, usage callback)
+  QuickStartPicker.tsx        # Role-based template picker modal (5 templates, focus trap, i18n)
   ats/ScoreTab.tsx            # Score analysis tab (loading skeleton, score thresholds)
   ats/KeywordsTab.tsx         # Keyword matching tab (loading skeleton, importance badges)
   form/                       # 6 section components + FormSectionRenderer

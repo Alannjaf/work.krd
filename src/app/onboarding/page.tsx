@@ -6,8 +6,10 @@ import { useUser } from '@clerk/nextjs'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { getAllTemplates } from '@/lib/templates'
-import { Upload, FileText, PenLine, X, Check } from 'lucide-react'
+import { Upload, FileText, PenLine, X, Check, LayoutTemplate } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { QuickStartPicker } from '@/components/resume-builder/QuickStartPicker'
+import { getQuickStartTemplate } from '@/lib/quick-start-templates'
 
 // ── Progress Dots ──────────────────────────────────────────────────────
 function ProgressDots({ current, total }: { current: number; total: number }) {
@@ -51,6 +53,9 @@ export default function OnboardingPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+
+  // Quick-start template state
+  const [showQuickStart, setShowQuickStart] = useState(false)
 
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -111,6 +116,41 @@ export default function OnboardingPage() {
       setIsTransitioning(false)
     }, 150)
   }, [])
+
+  // ── Handle quick-start template selection ──
+  const handleQuickStartSelect = async (templateId: string) => {
+    setShowQuickStart(false)
+    const template = getQuickStartTemplate(templateId)
+    if (!template) return
+    // Merge user's name into the template data
+    const formDataWithName = {
+      ...template.data,
+      personal: {
+        ...template.data.personal,
+        fullName: fullName.trim(),
+      },
+    }
+    setUploadedData(formDataWithName)
+    // Submit immediately with the template data
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/user/onboarding-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          template: selectedTemplate,
+          formData: formDataWithName,
+        })
+      })
+      if (!res.ok) throw new Error('Failed to complete onboarding')
+      const data = await res.json()
+      router.push(`/resume-builder?id=${data.resumeId}`)
+    } catch {
+      toast.error(t('pages.onboarding.errors.createFailed'))
+      setIsSubmitting(false)
+    }
+  }
 
   // ── Submit: complete onboarding ──
   const handleComplete = async (withUpload: boolean) => {
@@ -365,7 +405,8 @@ export default function OnboardingPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Upload CV Card */}
                     <div
                       className={`relative rounded-xl border-2 p-6 transition-all cursor-pointer ${
@@ -467,6 +508,28 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
+                    {/* Start from Template Card */}
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickStart(true)}
+                      disabled={isSubmitting}
+                      className="rounded-xl border-2 border-gray-200 p-6 transition-all hover:border-purple-300 hover:shadow-sm text-center cursor-pointer disabled:opacity-50"
+                    >
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <LayoutTemplate className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {t('pages.onboarding.step3.templateCard.title')}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        {t('pages.onboarding.step3.templateCard.subtitle')}
+                      </p>
+                      <span className="inline-flex items-center px-4 py-2 bg-purple-50 rounded-md text-sm font-medium text-purple-700">
+                        <LayoutTemplate className="h-4 w-4 mr-2" />
+                        {t('pages.onboarding.step3.templateCard.title')}
+                      </span>
+                    </button>
+
                     {/* Start from Scratch Card */}
                     <button
                       type="button"
@@ -496,6 +559,14 @@ export default function OnboardingPage() {
                       )}
                     </button>
                   </div>
+
+                  {/* Quick-start template picker modal */}
+                  <QuickStartPicker
+                    isOpen={showQuickStart}
+                    onClose={() => setShowQuickStart(false)}
+                    onSelect={handleQuickStartSelect}
+                  />
+                  </>
                 )}
 
                 {/* Back button */}

@@ -23,6 +23,8 @@ import { useAutoTranslation } from "@/hooks/useAutoTranslation";
 import { useDownloadPDF } from "@/hooks/useDownloadPDF";
 import { useSectionCompletion } from "@/hooks/useSectionCompletion";
 import toast from "react-hot-toast";
+import { QuickStartPicker } from "@/components/resume-builder/QuickStartPicker";
+import { getQuickStartTemplate } from "@/lib/quick-start-templates";
 
 const ATSOptimization = dynamic(
   () =>
@@ -51,6 +53,7 @@ function ResumeBuilderContent() {
   const [resumeTitle, setResumeTitle] = useState("");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(false);
 
   // Refs
   const summaryTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -215,6 +218,25 @@ function ResumeBuilderContent() {
     }
   }, [resumeId, formData, selectedTemplate, resumeTitle, isSaving, t, setLastSavedData]);
 
+  // Quick-start template selection
+  const handleQuickStartSelect = useCallback(
+    (templateId: string) => {
+      const template = getQuickStartTemplate(templateId);
+      if (!template) return;
+      const merged = {
+        ...template.data,
+        personal: {
+          ...template.data.personal,
+          fullName: formData.personal.fullName || template.data.personal.fullName,
+        },
+      };
+      setFormData(merged);
+      setShowQuickStart(false);
+      queueSave("quickstart");
+    },
+    [formData.personal.fullName, setFormData, queueSave]
+  );
+
   // Load existing resume
   useEffect(() => {
     const loadResume = async () => {
@@ -238,7 +260,11 @@ function ResumeBuilderContent() {
       }
 
       const resumeIdParam = searchParams.get("resumeId") || searchParams.get("id");
-      if (!resumeIdParam) return;
+      if (!resumeIdParam) {
+        // New resume with no data — offer quick-start templates
+        setShowQuickStart(true);
+        return;
+      }
 
       setIsLoading(true);
       try {
@@ -421,6 +447,12 @@ function ResumeBuilderContent() {
       <KeyboardShortcutsHelp
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
+      />
+
+      <QuickStartPicker
+        isOpen={showQuickStart}
+        onClose={() => setShowQuickStart(false)}
+        onSelect={handleQuickStartSelect}
       />
     </>
   );
