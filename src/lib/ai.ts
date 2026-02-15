@@ -612,7 +612,7 @@ ${resumeData.certifications?.length ? resumeData.certifications.map((cert) => `-
     const messages = [
       {
         role: "system" as const,
-        content: `You are an ATS (Applicant Tracking System) expert who analyzes resumes for ATS compatibility. You must respond in valid JSON format only.`,
+        content: `You are an ATS (Applicant Tracking System) expert who analyzes resumes for ATS compatibility. You handle resumes in English, Arabic, and Kurdish (Sorani). You must respond in valid JSON format only.`,
       },
       {
         role: "user" as const,
@@ -647,6 +647,10 @@ Evaluation criteria:
 
 IMPORTANT RULES:
 - Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.
+- DO NOT penalize resumes for being written in Arabic or Kurdish. Non-English resumes are perfectly valid.
+- If the resume is entirely in Arabic/Kurdish, suggest adding an English version as an optional improvement, not a required fix.
+- When checking for action verbs and professional language, evaluate quality in the resume's own language.
+- Provide all feedback messages and suggestions in English (the UI handles translation).
 - DO NOT flag date format inconsistencies as issues. The platform uses a consistent date format, so date formatting is not a concern.
 - DO NOT flag formatting, structure, or organization issues related to bullet points, lists, labels, section headers, or text organization. The platform automatically formats content appropriately (e.g., bullet points are handled automatically, labels like "Key Responsibilities" are formatted by the system).
 - Before flagging skills as missing from the Skills section, ALWAYS verify they are NOT already listed in the Skills section.
@@ -660,7 +664,7 @@ IMPORTANT RULES:
       const completion = await openai.chat.completions.create({
         model: "google/gemini-3-flash-preview",
         messages,
-        max_tokens: 1000,
+        max_tokens: 1500,
         temperature: 0.3,
       });
 
@@ -749,7 +753,7 @@ Skills: ${
     const messages = [
       {
         role: "system" as const,
-        content: `You are an ATS keyword matching expert who compares resumes against job descriptions. You must respond in valid JSON format only.`,
+        content: `You are an ATS keyword matching expert who compares resumes against job descriptions across languages (English, Arabic, Kurdish). You match keywords semantically — a skill written in Arabic/Kurdish counts as a match for its English equivalent. You must respond in valid JSON format only.`,
       },
       {
         role: "user" as const,
@@ -789,6 +793,9 @@ Guidelines:
 4. Calculate match score based on how many critical/important keywords are matched
 5. Provide actionable suggestions for missing keywords
 6. Each missing keyword MUST include a "section" field indicating the best resume section to add it to (skills for technical skills, experience for job duties, etc.)
+7. Match keywords SEMANTICALLY across languages — 'برنامەنووسی' (Kurdish for programming) matches 'programming', 'برمجة' (Arabic) matches 'programming'
+8. If resume and job description are in different languages, still match equivalent skills/qualifications
+9. Provide all feedback messages and suggestions in English
 
 IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.`,
       },
@@ -798,7 +805,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, 
       const completion = await openai.chat.completions.create({
         model: "google/gemini-3-flash-preview",
         messages,
-        max_tokens: 1500,
+        max_tokens: 2000,
         temperature: 0.3,
       });
 

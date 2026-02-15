@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Target, FileSearch, CheckCircle, AlertCircle, AlertTriangle, Loader2, Crown, ArrowRight } from 'lucide-react'
 import { ResumeData } from '@/types/resume'
+import { useLanguage } from '@/contexts/LanguageContext'
 import toast from 'react-hot-toast'
 
 type SectionType = 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'languages' | 'projects' | 'certifications' | 'general'
@@ -56,6 +57,7 @@ export function ATSOptimization({
   atsUsed,
   onNavigateToSection
 }: ATSOptimizationProps) {
+  const { t, isRTL } = useLanguage()
   const [activeTab, setActiveTab] = useState<'score' | 'keywords'>('score')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [scoreResult, setScoreResult] = useState<ATSScoreResult | null>(null)
@@ -66,7 +68,7 @@ export function ATSOptimization({
 
   const analyzeScore = async () => {
     if (!canUseATS) {
-      toast.error('ATS check limit reached. Please upgrade your plan.')
+      toast.error(t('pages.resumeBuilder.ats.score.limitReached'))
       return
     }
 
@@ -79,19 +81,22 @@ export function ATSOptimization({
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        if (response.status === 403) {
-          toast.error(error.error || 'ATS check limit reached')
+        if (response.status === 429) {
+          toast.error(t('pages.resumeBuilder.ats.toast.rateLimited'))
           return
         }
-        throw new Error(error.error || 'Failed to analyze')
+        if (response.status === 403) {
+          toast.error(t('pages.resumeBuilder.ats.score.limitReached'))
+          return
+        }
+        throw new Error('Failed to analyze')
       }
 
       const result = await response.json()
       setScoreResult(result)
-      toast.success('ATS analysis complete!')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to analyze ATS score')
+      toast.success(t('pages.resumeBuilder.ats.toast.scoreSuccess'))
+    } catch {
+      toast.error(t('pages.resumeBuilder.ats.toast.scoreFailed'))
     } finally {
       setIsAnalyzing(false)
     }
@@ -99,12 +104,12 @@ export function ATSOptimization({
 
   const matchKeywords = async () => {
     if (!canUseATS) {
-      toast.error('ATS check limit reached. Please upgrade your plan.')
+      toast.error(t('pages.resumeBuilder.ats.score.limitReached'))
       return
     }
 
     if (jobDescription.trim().length < 50) {
-      toast.error('Please enter a job description (minimum 50 characters)')
+      toast.error(t('pages.resumeBuilder.ats.keywords.minChars'))
       return
     }
 
@@ -117,19 +122,22 @@ export function ATSOptimization({
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        if (response.status === 403) {
-          toast.error(error.error || 'ATS check limit reached')
+        if (response.status === 429) {
+          toast.error(t('pages.resumeBuilder.ats.toast.rateLimited'))
           return
         }
-        throw new Error(error.error || 'Failed to match keywords')
+        if (response.status === 403) {
+          toast.error(t('pages.resumeBuilder.ats.score.limitReached'))
+          return
+        }
+        throw new Error('Failed to match keywords')
       }
 
       const result = await response.json()
       setKeywordResult(result)
-      toast.success('Keyword analysis complete!')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to match keywords')
+      toast.success(t('pages.resumeBuilder.ats.toast.keywordSuccess'))
+    } catch {
+      toast.error(t('pages.resumeBuilder.ats.toast.keywordFailed'))
     } finally {
       setIsAnalyzing(false)
     }
@@ -158,16 +166,16 @@ export function ATSOptimization({
   const getImportanceBadge = (importance: 'critical' | 'important' | 'nice-to-have') => {
     switch (importance) {
       case 'critical':
-        return <span className="px-2 py-0.5 text-xs rounded bg-red-100 text-red-700">Critical</span>
+        return <span className="px-2 py-0.5 text-xs rounded bg-red-100 text-red-700">{t('pages.resumeBuilder.ats.importance.critical')}</span>
       case 'important':
-        return <span className="px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700">Important</span>
+        return <span className="px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700">{t('pages.resumeBuilder.ats.importance.important')}</span>
       case 'nice-to-have':
-        return <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">Nice to have</span>
+        return <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">{t('pages.resumeBuilder.ats.importance.niceToHave')}</span>
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-4 border-b flex items-center justify-between">
@@ -176,9 +184,9 @@ export function ATSOptimization({
               <Target className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">ATS Optimization</h2>
+              <h2 className="text-lg font-semibold">{t('pages.resumeBuilder.ats.title')}</h2>
               <p className="text-sm text-gray-500">
-                {atsLimit === -1 ? 'Unlimited checks' : `${atsUsed} / ${atsLimit} checks used`}
+                {atsLimit === -1 ? t('pages.resumeBuilder.ats.subtitleUnlimited') : t('pages.resumeBuilder.ats.subtitle', { used: atsUsed, limit: atsLimit })}
               </p>
             </div>
           </div>
@@ -194,8 +202,8 @@ export function ATSOptimization({
               <div className="flex items-center gap-3">
                 <Crown className="h-5 w-5" />
                 <div>
-                  <p className="font-semibold">Upgrade Required</p>
-                  <p className="text-sm opacity-90">You have reached your ATS check limit</p>
+                  <p className="font-semibold">{t('pages.resumeBuilder.ats.upgrade.title')}</p>
+                  <p className="text-sm opacity-90">{t('pages.resumeBuilder.ats.upgrade.description')}</p>
                 </div>
               </div>
               <Button
@@ -204,7 +212,7 @@ export function ATSOptimization({
                 className="bg-white text-orange-600 hover:bg-gray-100"
                 onClick={() => window.open('/billing', '_blank')}
               >
-                Upgrade Now
+                {t('pages.resumeBuilder.ats.upgrade.button')}
               </Button>
             </div>
           </div>
@@ -213,6 +221,7 @@ export function ATSOptimization({
         {/* Tabs */}
         <div className="flex border-b">
           <button
+            type="button"
             onClick={() => setActiveTab('score')}
             className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'score'
@@ -221,9 +230,10 @@ export function ATSOptimization({
             }`}
           >
             <Target className="h-4 w-4" />
-            Score Analysis
+            {t('pages.resumeBuilder.ats.tabs.score')}
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('keywords')}
             className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'keywords'
@@ -232,7 +242,7 @@ export function ATSOptimization({
             }`}
           >
             <FileSearch className="h-4 w-4" />
-            Keyword Match
+            {t('pages.resumeBuilder.ats.tabs.keywords')}
           </button>
         </div>
 
@@ -249,6 +259,8 @@ export function ATSOptimization({
               getSeverityIcon={getSeverityIcon}
               onNavigateToSection={onNavigateToSection}
               onClose={onClose}
+              t={t}
+              isRTL={isRTL}
             />
           ) : (
             <KeywordsTab
@@ -263,6 +275,8 @@ export function ATSOptimization({
               getImportanceBadge={getImportanceBadge}
               onNavigateToSection={onNavigateToSection}
               onClose={onClose}
+              t={t}
+              isRTL={isRTL}
             />
           )}
         </div>
@@ -281,9 +295,11 @@ interface ScoreTabProps {
   getSeverityIcon: (severity: 'high' | 'medium' | 'low') => React.ReactNode
   onNavigateToSection?: (sectionIndex: number) => void
   onClose: () => void
+  t: (key: string, params?: Record<string, string | number>) => string
+  isRTL: boolean
 }
 
-function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, getScoreBgColor, getSeverityIcon, onNavigateToSection, onClose }: ScoreTabProps) {
+function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, getScoreBgColor, getSeverityIcon, onNavigateToSection, onClose, t, isRTL }: ScoreTabProps) {
   const handleIssueClick = (section?: SectionType) => {
     if (section && onNavigateToSection) {
       const sectionIndex = SECTION_INDEX_MAP[section]
@@ -298,20 +314,20 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
     return (
       <div className="text-center py-12">
         <Target className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Analyze Your Resume</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.resumeBuilder.ats.score.emptyTitle')}</h3>
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Get an ATS compatibility score and detailed feedback on how to improve your resume for applicant tracking systems.
+          {t('pages.resumeBuilder.ats.score.emptyDescription')}
         </p>
         <Button onClick={onAnalyze} disabled={isAnalyzing || !canUseATS}>
           {isAnalyzing ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Analyzing...
+              <Loader2 className="h-4 w-4 me-2 animate-spin" />
+              {t('pages.resumeBuilder.ats.score.analyzing')}
             </>
           ) : (
             <>
-              <Target className="h-4 w-4 mr-2" />
-              Analyze ATS Score
+              <Target className="h-4 w-4 me-2" />
+              {t('pages.resumeBuilder.ats.score.analyzeButton')}
             </>
           )}
         </Button>
@@ -326,10 +342,10 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
         <div className={`text-6xl font-bold ${getScoreColor(result.score)}`}>
           {result.score}
         </div>
-        <div className="text-lg text-gray-600 mt-2">ATS Compatibility Score</div>
+        <div className="text-lg text-gray-600 mt-2">{t('pages.resumeBuilder.ats.score.scoreLabel')}</div>
         <Button onClick={onAnalyze} variant="outline" size="sm" className="mt-4" disabled={isAnalyzing || !canUseATS}>
-          {isAnalyzing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-          Re-analyze
+          {isAnalyzing ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : null}
+          {t('pages.resumeBuilder.ats.score.reanalyze')}
         </Button>
       </div>
 
@@ -338,7 +354,7 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
         <div>
           <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Strengths
+            {t('pages.resumeBuilder.ats.score.strengths')}
           </h4>
           <ul className="space-y-2">
             {result.strengths.map((strength, index) => (
@@ -356,7 +372,7 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
         <div>
           <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-500" />
-            Issues to Fix
+            {t('pages.resumeBuilder.ats.score.issues')}
           </h4>
           <ul className="space-y-2">
             {result.issues.map((issue, index) => {
@@ -379,8 +395,8 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
                     </div>
                     {isClickable && (
                       <div className="flex items-center gap-1 text-xs text-blue-600 font-medium shrink-0">
-                        <span>Edit</span>
-                        <ArrowRight className="h-3 w-3" />
+                        <span>{t('pages.resumeBuilder.ats.score.edit')}</span>
+                        <ArrowRight className={isRTL ? 'h-3 w-3 rotate-180' : 'h-3 w-3'} />
                       </div>
                     )}
                   </div>
@@ -394,7 +410,7 @@ function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, getScoreColor, ge
       {/* Suggestions */}
       {result.suggestions.length > 0 && (
         <div>
-          <h4 className="font-medium text-gray-900 mb-3">Improvement Suggestions</h4>
+          <h4 className="font-medium text-gray-900 mb-3">{t('pages.resumeBuilder.ats.score.suggestions')}</h4>
           <ul className="space-y-2">
             {result.suggestions.map((suggestion, index) => (
               <li key={index} className="flex items-start gap-2 text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
@@ -421,20 +437,24 @@ interface KeywordsTabProps {
   getImportanceBadge: (importance: 'critical' | 'important' | 'nice-to-have') => React.ReactNode
   onNavigateToSection?: (sectionIndex: number) => void
   onClose: () => void
+  t: (key: string, params?: Record<string, string | number>) => string
+  isRTL: boolean
 }
 
-function KeywordsTab({ 
-  result, 
-  isAnalyzing, 
-  canUseATS, 
-  jobDescription, 
-  setJobDescription, 
-  onMatch, 
-  getScoreColor, 
+function KeywordsTab({
+  result,
+  isAnalyzing,
+  canUseATS,
+  jobDescription,
+  setJobDescription,
+  onMatch,
+  getScoreColor,
   getScoreBgColor,
   getImportanceBadge,
   onNavigateToSection,
-  onClose
+  onClose,
+  t,
+  isRTL
 }: KeywordsTabProps) {
   const handleKeywordClick = (section?: SectionType) => {
     if (section && onNavigateToSection) {
@@ -451,28 +471,28 @@ function KeywordsTab({
       {/* Job Description Input */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Paste Job Description
+          {t('pages.resumeBuilder.ats.keywords.pasteLabel')}
         </label>
         <textarea
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
-          placeholder="Paste the job description here to compare against your resume..."
+          placeholder={t('pages.resumeBuilder.ats.keywords.placeholder')}
           className="w-full h-40 px-4 py-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
         <div className="flex justify-between items-center mt-2">
           <span className="text-xs text-gray-500">
-            {jobDescription.length} characters (minimum 50)
+            {t('pages.resumeBuilder.ats.keywords.charCount', { count: jobDescription.length })}
           </span>
           <Button onClick={onMatch} disabled={isAnalyzing || !canUseATS || jobDescription.length < 50}>
             {isAnalyzing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyzing...
+                <Loader2 className="h-4 w-4 me-2 animate-spin" />
+                {t('pages.resumeBuilder.ats.score.analyzing')}
               </>
             ) : (
               <>
-                <FileSearch className="h-4 w-4 mr-2" />
-                Match Keywords
+                <FileSearch className="h-4 w-4 me-2" />
+                {t('pages.resumeBuilder.ats.keywords.matchButton')}
               </>
             )}
           </Button>
@@ -487,7 +507,7 @@ function KeywordsTab({
             <div className={`text-5xl font-bold ${getScoreColor(result.matchScore)}`}>
               {result.matchScore}%
             </div>
-            <div className="text-lg text-gray-600 mt-2">Keyword Match Score</div>
+            <div className="text-lg text-gray-600 mt-2">{t('pages.resumeBuilder.ats.keywords.matchScore')}</div>
           </div>
 
           {/* Matched Keywords */}
@@ -495,7 +515,7 @@ function KeywordsTab({
             <div>
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-500" />
-                Matched Keywords ({result.matchedKeywords.filter(k => k.found).length})
+                {t('pages.resumeBuilder.ats.keywords.matched', { count: result.matchedKeywords.filter(k => k.found).length })}
               </h4>
               <div className="flex flex-wrap gap-2">
                 {result.matchedKeywords.filter(k => k.found).map((keyword, index) => (
@@ -514,7 +534,7 @@ function KeywordsTab({
             <div>
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-red-500" />
-                Missing Keywords ({result.missingKeywords.length})
+                {t('pages.resumeBuilder.ats.keywords.missing', { count: result.missingKeywords.length })}
               </h4>
               <ul className="space-y-2">
                 {result.missingKeywords.map((keyword, index) => {
@@ -535,8 +555,8 @@ function KeywordsTab({
                           {getImportanceBadge(keyword.importance)}
                           {isClickable && (
                             <div className="flex items-center gap-1 text-xs text-blue-600 font-medium">
-                              <span>Add</span>
-                              <ArrowRight className="h-3 w-3" />
+                              <span>{t('pages.resumeBuilder.ats.keywords.add')}</span>
+                              <ArrowRight className={isRTL ? 'h-3 w-3 rotate-180' : 'h-3 w-3'} />
                             </div>
                           )}
                         </div>
@@ -552,7 +572,7 @@ function KeywordsTab({
           {/* Suggestions */}
           {result.suggestions.length > 0 && (
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Suggestions</h4>
+              <h4 className="font-medium text-gray-900 mb-3">{t('pages.resumeBuilder.ats.keywords.suggestions')}</h4>
               <ul className="space-y-2">
                 {result.suggestions.map((suggestion, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
@@ -568,4 +588,3 @@ function KeywordsTab({
     </div>
   )
 }
-

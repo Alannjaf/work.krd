@@ -3,9 +3,17 @@ import { auth } from '@clerk/nextjs/server'
 import { checkUserLimits } from '@/lib/db'
 import { AIService } from '@/lib/ai'
 import { prisma } from '@/lib/prisma'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 export async function POST(request: NextRequest) {
+  const { success, resetIn } = rateLimit(request, {
+    maxRequests: 10,
+    windowSeconds: 60,
+    identifier: 'ats-keywords',
+  });
+  if (!success) return rateLimitResponse(resetIn);
+
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -14,13 +22,13 @@ export async function POST(request: NextRequest) {
 
     // Check user limits for ATS
     const limits = await checkUserLimits(userId)
-    
+
     if (!limits.subscription) {
       return notFoundResponse('Subscription not found')
     }
 
     if (!limits.canUseATS) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'ATS check limit reached. Please upgrade your plan.',
         limit: limits.atsLimit,
         used: limits.atsUsed
@@ -38,24 +46,52 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse('Job description is required (minimum 50 characters)')
     }
 
+    if (jobDescription.length > 10000) {
+      return validationErrorResponse('Job description is too long (maximum 10,000 characters)')
+    }
+
     // Match keywords
     const result = await AIService.matchKeywords(resumeData, jobDescription)
 
-    // Increment ATS usage count
-    await prisma.subscription.update({
-      where: { id: limits.subscription.id },
-      data: { atsUsageCount: { increment: 1 } }
-    })
+    // Atomically increment ATS usage count (race-condition safe)
+    let updatedSubscription
+    if (limits.atsLimit === -1) {
+      // Unlimited plan — just increment
+      updatedSubscription = await prisma.subscription.update({
+        where: { id: limits.subscription.id },
+        data: { atsUsageCount: { increment: 1 } }
+      })
+    } else {
+      // Limited plan — atomic check-and-increment
+      const updateResult = await prisma.subscription.updateMany({
+        where: {
+          id: limits.subscription.id,
+          atsUsageCount: { lt: limits.atsLimit }
+        },
+        data: { atsUsageCount: { increment: 1 } }
+      })
+      if (updateResult.count === 0) {
+        return NextResponse.json({
+          error: 'ATS check limit reached. Please upgrade your plan.',
+          limit: limits.atsLimit,
+          used: limits.atsUsed
+        }, { status: 403 })
+      }
+      // Fetch updated count
+      updatedSubscription = await prisma.subscription.findUnique({
+        where: { id: limits.subscription.id },
+        select: { atsUsageCount: true }
+      })
+    }
 
     return successResponse({
       ...result,
       usage: {
-        used: limits.atsUsed + 1,
+        used: updatedSubscription?.atsUsageCount ?? limits.atsUsed + 1,
         limit: limits.atsLimit
       }
     })
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : 'Failed to match keywords', 500)
+    return errorResponse('Failed to match keywords', 500)
   }
 }
-

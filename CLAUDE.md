@@ -238,6 +238,17 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)
 
+## ATS Feature
+- **Routes**: `src/app/api/ats/score/route.ts` and `src/app/api/ats/keywords/route.ts`
+- **Rate limited**: 10 requests/60s per IP, uses `rateLimit()` from `@/lib/rate-limit`
+- **Atomic limit enforcement**: Uses `prisma.subscription.updateMany` with `where: { atsUsageCount: { lt: limit } }` to prevent race conditions — if `result.count === 0`, limit was reached concurrently
+- **Unlimited plans** (`atsLimit === -1`): Just increment normally, skip atomic check
+- **Error sanitization**: API routes never expose `error.message` to client — always generic messages
+- **Max job description**: 10,000 characters (keywords route only)
+- **i18n keys**: `pages.resumeBuilder.ats.*` — ~40 keys covering title, tabs, score, keywords, importance badges, upgrade, toasts
+- **Frontend**: `ATSOptimization.tsx` — `useLanguage()` for `t()` and `isRTL`, `dir` attribute on modal root, `rotate-180` on ArrowRight icons for RTL, logical margins (`me-2` not `mr-2`)
+- **AI prompts**: Multilingual awareness (English/Arabic/Kurdish), semantic keyword matching across languages, don't penalize non-English resumes
+
 ## File Map
 ```
 src/components/html-templates/
@@ -278,5 +289,7 @@ src/app/api/
   admin/stats/                # GET: platform metrics
   admin/users/                # GET: user listing; [userId]/upgrade POST
   subscriptions/check-expired/# GET: status; POST: process expired
+  ats/score/                  # POST: ATS score analysis (rate limited, atomic limits)
+  ats/keywords/               # POST: keyword matching (rate limited, atomic limits, 10K max)
   user/subscription-data/     # GET: subscription + permissions for client context
 ```
