@@ -42,26 +42,35 @@ export function AdminDashboard() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchStats()
-    fetchSettings()
-    fetchSubscriptionStatus()
+    const loadAll = async () => {
+      setLoading(true)
+      setError(null)
+      await Promise.allSettled([fetchStats(), fetchSettings(), fetchSubscriptionStatus()])
+      setLoading(false)
+    }
+    loadAll()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/admin/stats')
+      if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
       setStats(data)
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch stats:', error);
+      console.error('[AdminDashboard] Failed to fetch stats:', error)
+      setError('Failed to load dashboard data')
+      toast.error('Failed to load stats')
     }
   }
 
   const fetchSettings = async () => {
     try {
       const response = await fetch('/api/admin/settings')
+      if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
 
       const parseArray = (value: unknown, fallback: string[]): string[] => {
@@ -91,19 +100,22 @@ export function AdminDashboard() {
         maintenanceMode: data.maintenanceMode ?? false
       })
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch settings:', error);
-    } finally {
-      setLoading(false)
+      console.error('[AdminDashboard] Failed to fetch settings:', error)
+      setError('Failed to load dashboard data')
+      toast.error('Failed to load settings')
     }
   }
 
   const fetchSubscriptionStatus = async () => {
     try {
       const response = await fetch('/api/subscriptions/check-expired')
+      if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
       setSubscriptionStatus(data)
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch subscription status:', error);
+      console.error('[AdminDashboard] Failed to fetch subscription status:', error)
+      setError('Failed to load dashboard data')
+      toast.error('Failed to load subscription status')
     }
   }
 
@@ -119,8 +131,8 @@ export function AdminDashboard() {
         } else {
           toast.success(`Processed ${data.processed} subscriptions. ${data.successful} successful, ${data.failed} failed.`)
         }
-        fetchStats()
-        fetchSubscriptionStatus()
+        await fetchStats()
+        await fetchSubscriptionStatus()
       } else {
         toast.error('Failed to check subscriptions')
       }
@@ -161,6 +173,26 @@ export function AdminDashboard() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button
+            onClick={async () => {
+              setError(null)
+              setLoading(true)
+              await Promise.allSettled([fetchStats(), fetchSettings(), fetchSubscriptionStatus()])
+              setLoading(false)
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader
@@ -190,7 +222,7 @@ export function AdminDashboard() {
           availableTemplates={availableTemplates}
           saving={saving}
           onSave={saveSettings}
-          onRefresh={fetchStats}
+          onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
         />
 
         <AdminQuickActions />

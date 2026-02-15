@@ -131,6 +131,7 @@ export function ResumeTable({
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">
                     <button
+                      type="button"
                       onClick={() => onViewResume(resume)}
                       className="text-blue-600 hover:text-blue-900"
                       title="View Resume"
@@ -139,6 +140,7 @@ export function ResumeTable({
                       <Eye className="h-5 w-5" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onDeleteResume(resume.id)}
                       className="text-red-600 hover:text-red-900"
                       title="Delete Resume"

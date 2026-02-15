@@ -131,6 +131,17 @@ export function AdminPayments() {
     setPage(1)
   }, [filter, searchTerm])
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeReview()
+    }
+    if (reviewingId) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [reviewingId])
+
   // ─── Review handlers ────────────────────────────────────────────────────
 
   const openReview = async (payment: Payment) => {
@@ -162,6 +173,13 @@ export function AdminPayments() {
 
   const handleAction = async (action: 'approve' | 'reject') => {
     if (!reviewingId) return
+
+    if (action === 'approve') {
+      if (!window.confirm('Are you sure you want to approve this payment? This will activate the user\'s subscription.')) return
+    } else {
+      if (!window.confirm('Are you sure you want to reject this payment?')) return
+    }
+
     setSubmitting(true)
 
     try {

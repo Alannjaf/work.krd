@@ -98,6 +98,16 @@ export function ResumeManagement() {
     fetchResumes();
   }, [fetchResumes]);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, status, template]);
+
+  // Clear checkbox selection when navigating to a different page
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [page]);
+
   const handleSelectId = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id)
@@ -226,7 +236,7 @@ export function ResumeManagement() {
       <div className="flex justify-end">
         <Button onClick={handleExport} variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
-          Export CSV
+          Export CSV (This Page)
         </Button>
       </div>
 

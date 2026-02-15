@@ -1,12 +1,13 @@
 import { requireAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, forbiddenResponse } from '@/lib/api-helpers'
+import { getSystemSettings } from '@/lib/system-settings'
 
 export async function GET() {
   try {
     await requireAdmin()
 
-    const [totalUsers, totalResumes, activeSubscriptions, pendingPayments, approvedPayments, rejectedPayments] = await Promise.all([
+    const [totalUsers, totalResumes, activeSubscriptions, pendingPayments, approvedPayments, rejectedPayments, settings] = await Promise.all([
       prisma.user.count(),
       prisma.resume.count(),
       prisma.subscription.count({
@@ -14,11 +15,12 @@ export async function GET() {
       }),
       prisma.payment.count({ where: { status: 'PENDING' } }),
       prisma.payment.count({ where: { status: 'APPROVED' } }),
-      prisma.payment.count({ where: { status: 'REJECTED' } })
+      prisma.payment.count({ where: { status: 'REJECTED' } }),
+      getSystemSettings()
     ])
 
-    // Revenue in IQD (Pro: 5,000 IQD)
-    const revenueIQD = activeSubscriptions * 5000
+    // Revenue in IQD (Pro plan price from system settings)
+    const revenueIQD = activeSubscriptions * (settings?.proPlanPrice || 5000)
 
     return successResponse({
       totalUsers,

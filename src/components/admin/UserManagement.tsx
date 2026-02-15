@@ -28,10 +28,12 @@ interface UserData {
   subscription: {
     plan: string
     status: string
+    endDate: string | null
     resumeCount: number
     aiUsageCount: number
     exportCount: number
     importCount: number
+    atsUsageCount: number
   } | null
 }
 
@@ -46,6 +48,19 @@ export function UserManagement() {
   useEffect(() => {
     fetchUsers()
   }, [])
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowUpgradeModal(false)
+        setSelectedUser(null)
+      }
+    }
+    if (showUpgradeModal) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showUpgradeModal])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -170,13 +185,19 @@ export function UserManagement() {
                       <Badge variant={user.subscription?.plan === 'PRO' ? 'default' : 'outline'}>
                         {user.subscription?.plan || 'NO PLAN'}
                       </Badge>
+                      {user.subscription?.endDate && (
+                        <span className="text-xs text-gray-500">
+                          Expires: {new Date(user.subscription.endDate).toLocaleDateString()}
+                        </span>
+                      )}
                       <div className="text-xs text-gray-600 mt-1">
                         {user.subscription && (
                           <>
-                            {user.subscription.resumeCount} resumes •
-                            {user.subscription.aiUsageCount} AI uses •
-                            {user.subscription.exportCount} exports •
-                            {user.subscription.importCount} imports
+                            {user.subscription.resumeCount} resumes •{' '}
+                            {user.subscription.aiUsageCount} AI uses •{' '}
+                            {user.subscription.exportCount} exports •{' '}
+                            {user.subscription.importCount} imports •{' '}
+                            ATS: {user.subscription.atsUsageCount ?? 0}
                           </>
                         )}
                       </div>
@@ -203,7 +224,18 @@ export function UserManagement() {
 
         {/* Upgrade Modal */}
         {showUpgradeModal && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Manage user plan"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowUpgradeModal(false)
+                setSelectedUser(null)
+              }
+            }}
+          >
             <Card className="w-full max-w-md p-6">
               <h3 className="text-lg font-semibold mb-4">Manage User Subscription</h3>
 

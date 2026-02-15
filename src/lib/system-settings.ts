@@ -52,21 +52,21 @@ export async function getSystemSettings() {
 }
 
 interface SystemSettingsUpdateData {
-  maxFreeResumes: number
-  maxFreeAIUsage: number
-  maxFreeExports: number
-  maxFreeImports: number
-  maxFreeATSChecks: number
-  maxProResumes: number
-  maxProAIUsage: number
-  maxProExports: number
-  maxProImports: number
-  maxProATSChecks: number
-  freeTemplates: string[]
-  proTemplates: string[]
-  photoUploadPlans: string[]
-  proPlanPrice: number
-  maintenanceMode: boolean
+  maxFreeResumes?: number
+  maxFreeAIUsage?: number
+  maxFreeExports?: number
+  maxFreeImports?: number
+  maxFreeATSChecks?: number
+  maxProResumes?: number
+  maxProAIUsage?: number
+  maxProExports?: number
+  maxProImports?: number
+  maxProATSChecks?: number
+  freeTemplates?: string[]
+  proTemplates?: string[]
+  photoUploadPlans?: string[]
+  proPlanPrice?: number
+  maintenanceMode?: boolean
 }
 
 export async function updateSystemSettings(data: SystemSettingsUpdateData) {

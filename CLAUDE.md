@@ -41,8 +41,14 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 
 ### Admin Dashboard
 - **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement
-- **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record
+- **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record, POST validated with Zod schema (partial updates supported)
 - **Subscription check**: GET (status) / POST (process expired → downgrade to FREE) `/api/subscriptions/check-expired`
+- **Stats API**: Revenue uses dynamic `proPlanPrice` from SystemSettings (not hardcoded)
+- **Payment review**: Approve/reject inside `$transaction` with PENDING check (race-condition safe), note max 1000 chars
+- **Admin auth** (`lib/admin.ts`): `isAdmin()` returns false for non-admins, throws on DB errors (callers handle 500 vs 403)
+- **Dashboard data loading**: Uses `Promise.allSettled()` for parallel fetch of stats + settings + subscription status, with error state UI + retry
+- **AdminSystemSettings**: Dirty state tracking (save disabled when pristine, "Unsaved changes" indicator), all inputs have id/htmlFor associations
+- **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
 
 ## Creating New Templates
 

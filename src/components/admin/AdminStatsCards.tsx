@@ -2,18 +2,7 @@
 
 import { Card } from '@/components/ui/card'
 import { Users, DollarSign, FileText, CreditCard } from 'lucide-react'
-
-interface Stats {
-  totalUsers: number
-  totalResumes: number
-  activeSubscriptions: number
-  revenue: number
-  payments?: {
-    pending: number
-    approved: number
-    rejected: number
-  }
-}
+import { Stats } from './types'
 
 interface AdminStatsCardsProps {
   stats: Stats | null
@@ -24,49 +13,54 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
     ? stats.payments.pending + stats.payments.approved + stats.payments.rejected
     : 0
 
+  const userCount = stats?.totalUsers ?? 0
+  const resumeCount = stats?.totalResumes ?? 0
+  const subCount = stats?.activeSubscriptions ?? 0
+  const revenueAmount = stats?.revenue ?? 0
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <Card className="p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" role="region" aria-label="Platform statistics">
+      <Card className="p-6" aria-label={`Total users: ${userCount}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Total Users</p>
-            <p className="text-2xl font-bold">{stats?.totalUsers || 0}</p>
+            <p className="text-2xl font-bold">{userCount}</p>
           </div>
           <Users className="h-8 w-8 text-blue-500" />
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-6" aria-label={`Total resumes: ${resumeCount}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Total Resumes</p>
-            <p className="text-2xl font-bold">{stats?.totalResumes || 0}</p>
+            <p className="text-2xl font-bold">{resumeCount}</p>
           </div>
           <FileText className="h-8 w-8 text-green-500" />
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-6" aria-label={`Pro subscriptions: ${subCount}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Pro Subscriptions</p>
-            <p className="text-2xl font-bold">{stats?.activeSubscriptions || 0}</p>
+            <p className="text-2xl font-bold">{subCount}</p>
           </div>
           <DollarSign className="h-8 w-8 text-purple-500" />
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-6" aria-label={`Monthly revenue: ${revenueAmount.toLocaleString()} IQD`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Monthly Revenue</p>
-            <p className="text-2xl font-bold">{(stats?.revenue || 0).toLocaleString()} IQD</p>
+            <p className="text-2xl font-bold">{revenueAmount.toLocaleString()} IQD</p>
           </div>
           <DollarSign className="h-8 w-8 text-yellow-500" />
         </div>
       </Card>
 
-      <Card className="p-6 lg:col-span-2">
+      <Card className="p-6 md:col-span-2 lg:col-span-2" aria-label={`Payments: ${totalPayments}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Payments</p>

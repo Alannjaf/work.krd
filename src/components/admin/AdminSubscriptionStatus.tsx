@@ -40,7 +40,18 @@ export function AdminSubscriptionStatus({
   checkingSubscriptions,
   onCheckExpired
 }: AdminSubscriptionStatusProps) {
-  if (!subscriptionStatus) return null
+  if (!subscriptionStatus) {
+    return (
+      <Card className="p-6 mb-8">
+        <div className="text-center text-gray-500">
+          <p>Unable to load subscription status</p>
+          <Button variant="outline" size="sm" className="mt-2" onClick={onCheckExpired}>
+            Retry
+          </Button>
+        </div>
+      </Card>
+    )
+  }
 
   return (
     <Card className="p-6 mb-8">
@@ -50,7 +61,12 @@ export function AdminSubscriptionStatus({
           Subscription Status
         </h2>
         <Button
-          onClick={onCheckExpired}
+          onClick={() => {
+            const count = (subscriptionStatus?.expired?.count || 0)
+            if (count === 0 || window.confirm(`This will downgrade ${count} expired subscription(s) to FREE. Continue?`)) {
+              onCheckExpired()
+            }
+          }}
           disabled={checkingSubscriptions}
           variant="outline"
           size="sm"
@@ -81,7 +97,8 @@ export function AdminSubscriptionStatus({
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {subscriptionStatus.expired.subscriptions.map((sub) => (
                 <div key={sub.userId} className="bg-red-50 p-3 rounded border border-red-200">
-                  <p className="font-medium text-sm">{sub.userEmail}</p>
+                  <p className="font-medium text-sm">{sub.userName || sub.userEmail}</p>
+                  {sub.userName && <p className="text-xs text-gray-500">{sub.userEmail}</p>}
                   <p className="text-xs text-gray-600">
                     {sub.plan} plan - {sub.daysOverdue} days overdue
                   </p>
@@ -106,7 +123,8 @@ export function AdminSubscriptionStatus({
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {subscriptionStatus.expiringSoon.subscriptions.map((sub) => (
                 <div key={sub.userId} className="bg-orange-50 p-3 rounded border border-orange-200">
-                  <p className="font-medium text-sm">{sub.userEmail}</p>
+                  <p className="font-medium text-sm">{sub.userName || sub.userEmail}</p>
+                  {sub.userName && <p className="text-xs text-gray-500">{sub.userEmail}</p>}
                   <p className="text-xs text-gray-600">
                     {sub.plan} plan - expires in {sub.daysUntilExpiry} days
                   </p>

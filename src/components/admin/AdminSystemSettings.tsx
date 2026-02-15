@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +12,7 @@ interface AdminSystemSettingsProps {
   setSettings: (settings: SystemSettings) => void
   availableTemplates: string[]
   saving: boolean
-  onSave: () => void
+  onSave: () => void | Promise<void>
   onRefresh: () => void
 }
 
@@ -23,6 +24,18 @@ export function AdminSystemSettings({
   onSave,
   onRefresh
 }: AdminSystemSettingsProps) {
+  const [isDirty, setIsDirty] = useState(false)
+
+  const handleSetSettings = (newSettings: SystemSettings) => {
+    setSettings(newSettings)
+    setIsDirty(true)
+  }
+
+  const handleSave = async () => {
+    await onSave()
+    setIsDirty(false)
+  }
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -44,8 +57,9 @@ export function AdminSystemSettings({
           exports={settings.maxFreeExports}
           imports={settings.maxFreeImports}
           atsChecks={settings.maxFreeATSChecks}
-          onChange={(field, value) => setSettings({ ...settings, [field]: value })}
+          onChange={(field, value) => handleSetSettings({ ...settings, [field]: value })}
           fieldPrefix="maxFree"
+          idPrefix="free"
         />
 
         <PlanLimitsSection
@@ -55,26 +69,32 @@ export function AdminSystemSettings({
           exports={settings.maxProExports}
           imports={settings.maxProImports}
           atsChecks={settings.maxProATSChecks}
-          onChange={(field, value) => setSettings({ ...settings, [field]: value })}
+          onChange={(field, value) => handleSetSettings({ ...settings, [field]: value })}
           fieldPrefix="maxPro"
+          idPrefix="pro"
           allowUnlimited
         />
 
         <TemplateAccessSection
           settings={settings}
-          setSettings={setSettings}
+          setSettings={handleSetSettings}
           availableTemplates={availableTemplates}
         />
 
-        <PhotoUploadSection settings={settings} setSettings={setSettings} />
+        <PhotoUploadSection settings={settings} setSettings={handleSetSettings} />
 
-        <PricingSection settings={settings} setSettings={setSettings} />
+        <PricingSection settings={settings} setSettings={handleSetSettings} />
 
-        <MaintenanceModeSection settings={settings} setSettings={setSettings} />
+        <MaintenanceModeSection settings={settings} setSettings={handleSetSettings} />
       </div>
 
-      <div className="mt-6 flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
+      <div className="mt-6 flex items-center justify-end gap-3">
+        {isDirty && (
+          <span className="text-sm text-amber-600 font-medium">
+            Unsaved changes
+          </span>
+        )}
+        <Button onClick={handleSave} disabled={saving || !isDirty}>
           {saving ? (
             <>
               <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
@@ -101,6 +121,7 @@ interface PlanLimitsSectionProps {
   atsChecks: number
   onChange: (field: string, value: number) => void
   fieldPrefix: string
+  idPrefix: string
   allowUnlimited?: boolean
 }
 
@@ -113,58 +134,84 @@ function PlanLimitsSection({
   atsChecks,
   onChange,
   fieldPrefix,
+  idPrefix,
   allowUnlimited
 }: PlanLimitsSectionProps) {
   const min = allowUnlimited ? -1 : 0
-  const suffix = allowUnlimited ? ' (-1 = Unlimited)' : ''
+  const hintId = allowUnlimited ? `${idPrefix}-unlimited-hint` : undefined
 
   return (
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">{title}</h3>
+      {allowUnlimited && (
+        <p id={hintId} className="text-xs text-gray-500 mb-3">
+          -1 = Unlimited
+        </p>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Max Resumes{suffix}</label>
+          <label htmlFor={`${idPrefix}-max-resumes`} className="block text-sm font-medium mb-2">
+            Max Resumes
+          </label>
           <Input
+            id={`${idPrefix}-max-resumes`}
             type="number"
             min={min}
             value={resumes}
             onChange={(e) => onChange(`${fieldPrefix}Resumes`, parseInt(e.target.value) || 0)}
+            aria-describedby={hintId}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Max AI Usage{suffix}</label>
+          <label htmlFor={`${idPrefix}-max-ai-usage`} className="block text-sm font-medium mb-2">
+            Max AI Usage
+          </label>
           <Input
+            id={`${idPrefix}-max-ai-usage`}
             type="number"
             min={min}
             value={aiUsage}
             onChange={(e) => onChange(`${fieldPrefix}AIUsage`, parseInt(e.target.value) || 0)}
+            aria-describedby={hintId}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Max Exports{suffix}</label>
+          <label htmlFor={`${idPrefix}-max-exports`} className="block text-sm font-medium mb-2">
+            Max Exports
+          </label>
           <Input
+            id={`${idPrefix}-max-exports`}
             type="number"
             min={min}
             value={exports}
             onChange={(e) => onChange(`${fieldPrefix}Exports`, parseInt(e.target.value) || 0)}
+            aria-describedby={hintId}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Max Imports{suffix}</label>
+          <label htmlFor={`${idPrefix}-max-imports`} className="block text-sm font-medium mb-2">
+            Max Imports
+          </label>
           <Input
+            id={`${idPrefix}-max-imports`}
             type="number"
             min={min}
             value={imports}
             onChange={(e) => onChange(`${fieldPrefix}Imports`, parseInt(e.target.value) || 0)}
+            aria-describedby={hintId}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Max ATS Checks{suffix}</label>
+          <label htmlFor={`${idPrefix}-max-ats-checks`} className="block text-sm font-medium mb-2">
+            Max ATS Checks
+          </label>
           <Input
+            id={`${idPrefix}-max-ats-checks`}
             type="number"
             min={min}
             value={atsChecks}
             onChange={(e) => onChange(`${fieldPrefix}ATSChecks`, parseInt(e.target.value) || 0)}
+            aria-describedby={hintId}
           />
         </div>
       </div>
@@ -192,11 +239,21 @@ function TemplateAccessSection({ settings, setSettings, availableTemplates }: Te
       <div className="space-y-4">
         {(['free', 'pro'] as const).map(plan => (
           <div key={plan}>
-            <label className="block text-sm font-medium mb-2 capitalize">{plan} Plan Templates</label>
-            <div className="space-y-2">
+            <div
+              id={`${plan}-tpl-group-label`}
+              className="block text-sm font-medium mb-2 capitalize"
+            >
+              {plan} Plan Templates
+            </div>
+            <div
+              role="group"
+              aria-labelledby={`${plan}-tpl-group-label`}
+              className="space-y-2"
+            >
               {availableTemplates.map(template => (
-                <label key={template} className="flex items-center space-x-2">
+                <label key={template} htmlFor={`${plan}-tpl-${template}`} className="flex items-center space-x-2">
                   <input
+                    id={`${plan}-tpl-${template}`}
                     type="checkbox"
                     checked={(settings[`${plan}Templates` as keyof SystemSettings] as string[]).includes(template)}
                     onChange={(e) => toggleTemplate(plan, template, e.target.checked)}
@@ -223,11 +280,14 @@ function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) 
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Profile Photo Upload Access</h3>
       <div>
-        <label className="block text-sm font-medium mb-2">Plans with Photo Upload Access</label>
-        <div className="space-y-2">
+        <div id="photo-upload-group-label" className="block text-sm font-medium mb-2">
+          Plans with Photo Upload Access
+        </div>
+        <div role="group" aria-labelledby="photo-upload-group-label" className="space-y-2">
           {['FREE', 'PRO'].map(plan => (
-            <label key={plan} className="flex items-center space-x-2">
+            <label key={plan} htmlFor={`photo-${plan}`} className="flex items-center space-x-2">
               <input
+                id={`photo-${plan}`}
                 type="checkbox"
                 checked={settings.photoUploadPlans.includes(plan)}
                 onChange={(e) => {
@@ -260,8 +320,9 @@ function PricingSection({ settings, setSettings }: PricingSectionProps) {
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Pricing Settings</h3>
       <div className="max-w-xs">
-        <label className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
+        <label htmlFor="pro-plan-price" className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
         <Input
+          id="pro-plan-price"
           type="number"
           min="0"
           value={settings.proPlanPrice}
@@ -285,8 +346,9 @@ function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectio
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">System Settings</h3>
       <div>
-        <label className="flex items-center space-x-2">
+        <label htmlFor="maintenance-mode" className="flex items-center space-x-2">
           <input
+            id="maintenance-mode"
             type="checkbox"
             checked={settings.maintenanceMode}
             onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
