@@ -26,9 +26,8 @@
       "languages": "Multi-language Support"
     },
     "socialProof": {
-      "trustedBy": "Trusted by professionals worldwide",
       "resumesCreated": "Resumes Created",
-      "successRate": "Success Rate",
+      "happyUsers": "Happy Users",
       "languages": "Languages"
     }
   },
@@ -81,32 +80,6 @@
       "step4": {
         "title": "Export & Apply",
         "description": "Download your resume as PDF or share it online. Start applying to your dream jobs!"
-      }
-    }
-  },
-  "testimonials": {
-    "title": "Loved by Professionals",
-    "subtitle": "See what our users are saying about Work.krd",
-    "items": {
-      "testimonial1": {
-        "name": "Sarah Johnson",
-        "role": "Software Engineer",
-        "content": "Work.krd helped me create a stunning resume that got me multiple interviews. The AI suggestions were incredibly helpful!"
-      },
-      "testimonial2": {
-        "name": "Ahmed Al-Mansoori",
-        "role": "Marketing Manager",
-        "content": "The multilingual support is amazing. I created resumes in both Arabic and English with ease. Highly recommended!"
-      },
-      "testimonial3": {
-        "name": "Lisa Chen",
-        "role": "Product Designer",
-        "content": "The templates are professional and ATS-friendly. Landed my dream job within weeks of using Work.krd!"
-      },
-      "testimonial4": {
-        "name": "Mohammed Hassan",
-        "role": "Data Analyst",
-        "content": "Best resume builder I've used. The AI optimization feature helped me identify and fix key issues."
       }
     }
   },
@@ -225,9 +198,9 @@
     "title": "About Work.krd",
     "subtitle": "We're on a mission to help job seekers in Kurdistan and the Middle East create professional resumes that stand out and land their dream jobs.",
     "stats": {
-      "users": "Active Users",
+      "users": "Users",
       "resumes": "Resumes Created",
-      "success": "Success Rate",
+      "languages": "Languages",
       "support": "Support"
     },
     "values": {

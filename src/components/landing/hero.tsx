@@ -14,49 +14,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Link from "next/link";
 import { TemplateThumbnail } from "@/components/resume-builder/TemplateThumbnail";
 
-// Animated counter hook
-function useCountUp(end: number, duration: number = 2000, start: number = 0) {
-  const [count, setCount] = useState(start);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasStarted) {
-          setHasStarted(true);
-          const startTime = Date.now();
-          const range = end - start;
-
-          const updateCount = () => {
-            const now = Date.now();
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-            setCount(Math.floor(start + range * easeOutQuart));
-
-            if (progress < 1) {
-              requestAnimationFrame(updateCount);
-            } else {
-              setCount(end);
-            }
-          };
-          updateCount();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const element = document.getElementById("stats-counter");
-    if (element) observer.observe(element);
-
-    return () => {
-      if (element) observer.unobserve(element);
-    };
-  }, [end, duration, start, hasStarted]);
-
-  return count;
-}
-
 // 3D Interactive Template Card Component
 interface InteractiveTemplateCardProps {
   templateId: string;
@@ -119,7 +76,7 @@ function InteractiveTemplateCard({
       <div
         ref={cardRef}
         className={`
-          relative w-56 md:w-64 h-72 md:h-80 
+          relative w-56 md:w-64 h-72 md:h-80
           rounded-xl shadow-2xl border
           transition-all duration-300 ease-out
           ${
@@ -133,8 +90,8 @@ function InteractiveTemplateCard({
         onMouseLeave={handleMouseLeave}
         style={{
           transform: `
-            rotateY(${baseRotation + rotateY}deg) 
-            rotateX(${rotateX}deg) 
+            rotateY(${baseRotation + rotateY}deg)
+            rotateX(${rotateX}deg)
             scale(${scale})
             translateZ(0)
           `,
@@ -166,8 +123,22 @@ function InteractiveTemplateCard({
 
 export function Hero() {
   const { t } = useLanguage();
-  const resumesCount = useCountUp(10000);
-  const successRate = useCountUp(95);
+  const [stats, setStats] = useState<{ resumeCount: number; userCount: number } | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/stats/public')
+      .then(res => res.json())
+      .then(data => {
+        setStats(data);
+        // Trigger fade-in after data loads
+        requestAnimationFrame(() => setVisible(true));
+      })
+      .catch(() => {
+        setStats({ resumeCount: 0, userCount: 0 });
+        setVisible(true);
+      });
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -176,7 +147,7 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50"></div>
 
         {/* Animated gradient orbs - optimized with will-change */}
-        <div 
+        <div
           className="absolute -top-40 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 opacity-20 blur-3xl animate-pulse"
           style={{ willChange: 'opacity' }}
         ></div>
@@ -281,18 +252,15 @@ export function Hero() {
               </SignedIn>
             </div>
 
-            {/* Enhanced Social proof with animated counters */}
+            {/* Real stats from DB with fade-in */}
             <div
-              id="stats-counter"
               className="mt-12 pt-8 border-t border-gray-200/50"
+              style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease-in' }}
             >
-              <p className="text-sm text-gray-500 mb-6 font-medium">
-                {t("hero.socialProof.trustedBy")}
-              </p>
               <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
                 <div className="text-center">
                   <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-1">
-                    {resumesCount.toLocaleString()}+
+                    {stats ? stats.resumeCount.toLocaleString() : '—'}
                   </div>
                   <div className="text-sm text-gray-500">
                     {t("hero.socialProof.resumesCreated")}
@@ -300,10 +268,10 @@ export function Hero() {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600 mb-1">
-                    {successRate}%
+                    {stats ? stats.userCount.toLocaleString() : '—'}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {t("hero.socialProof.successRate")}
+                    {t("hero.socialProof.happyUsers")}
                   </div>
                 </div>
                 <div className="text-center">

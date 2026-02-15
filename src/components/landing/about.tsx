@@ -1,15 +1,31 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Users, Target, Zap, CheckCircle } from 'lucide-react'
 
 export function About() {
   const { t } = useLanguage()
+  const [stats, setStats] = useState<{ resumeCount: number; userCount: number } | null>(null)
+  const [visible, setVisible] = useState(false)
 
-  const stats = [
-    { value: '10,000+', label: t('about.stats.users') },
-    { value: '50,000+', label: t('about.stats.resumes') },
-    { value: '95%', label: t('about.stats.success') },
+  useEffect(() => {
+    fetch('/api/stats/public')
+      .then(res => res.json())
+      .then(data => {
+        setStats(data)
+        requestAnimationFrame(() => setVisible(true))
+      })
+      .catch(() => {
+        setStats({ resumeCount: 0, userCount: 0 })
+        setVisible(true)
+      })
+  }, [])
+
+  const statItems = [
+    { value: stats ? stats.userCount.toLocaleString() : '—', label: t('about.stats.users') },
+    { value: stats ? stats.resumeCount.toLocaleString() : '—', label: t('about.stats.resumes') },
+    { value: '3', label: t('about.stats.languages') },
     { value: '24/7', label: t('about.stats.support') },
   ]
 
@@ -20,7 +36,7 @@ export function About() {
       description: t('about.values.community.description')},
     {
       icon: Target,
-      title: t('about.values.quality.title'), 
+      title: t('about.values.quality.title'),
       description: t('about.values.quality.description')},
     {
       icon: Zap,
@@ -45,8 +61,11 @@ export function About() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {stats.map((stat, index) => (
+        <div
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
+          style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease-in' }}
+        >
+          {statItems.map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
                 {stat.value}

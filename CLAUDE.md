@@ -252,6 +252,16 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **i18n keys**: `pages.onboarding.*` in all 3 locales (en, ar, ckb) — ~15 keys covering all 3 steps + errors
 - **Mobile-first**: Full-width cards, stacked vertically, `max-w-lg` for steps 1/3, `max-w-4xl` for step 2 (template grid)
 
+## Landing Page
+- **Components** in `src/components/landing/`: header, hero, features, how-it-works, pricing, about, contact, footer
+- **No testimonials section** — removed (was fake). Will add real testimonials later when available
+- **Hero stats**: Real-time from `/api/stats/public` (resumeCount, userCount, "3 Languages") — fetched client-side with fade-in on load
+- **About stats**: Same `/api/stats/public` endpoint (users, resumes, "3 Languages", "24/7 Support")
+- **Public stats API** (`/api/stats/public`): No auth required, returns `{ resumeCount, userCount }`, 5min `s-maxage` cache
+- **No useCountUp hook** — removed animated counter, replaced with simple fade-in via opacity transition
+- **i18n keys**: `hero.socialProof.*` (resumesCreated, happyUsers, languages), `about.stats.*` (users, resumes, languages, support)
+- **Gotcha**: Hero 3D cards reference `templateId="executive"` which doesn't exist in registry — should be fixed to use an actual template ID
+
 ## ATS Feature
 - **Shared utilities**: `src/lib/ats-utils.ts` — `stripHtml()`, `buildResumeText()`, Zod `resumeDataSchema`, `ATS_AI_CONFIG` (env vars), `withTimeout()`, `ATS_SCORE_THRESHOLDS`, `MAX_REQUEST_SIZE`
 - **Routes**: `src/app/api/ats/score/route.ts` and `src/app/api/ats/keywords/route.ts`
@@ -320,6 +330,7 @@ src/app/api/
   subscriptions/check-expired/# GET: status; POST: process expired
   ats/score/                  # POST: ATS score analysis (rate limited, atomic limits)
   ats/keywords/               # POST: keyword matching (rate limited, atomic limits, 10K max)
+  stats/public/               # GET: public stats (resumeCount, userCount) — 5min cache, no auth
   user/subscription-data/     # GET: subscription + permissions for client context
   user/onboarding-status/     # GET: check onboarding completion + resume count
   user/onboarding-complete/   # POST: create first resume + mark onboarding done
