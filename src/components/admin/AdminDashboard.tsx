@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AppHeader } from '@/components/shared/AppHeader'
+import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { getTemplateIds } from '@/lib/templates'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -207,6 +208,19 @@ export function AdminDashboard() {
         />
 
         <AdminQuickActions />
+
+        {/* Payment Management */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Payment Reviews</h3>
+              <p className="text-gray-600 mt-1">Review and manage payment submissions</p>
+            </div>
+            <Button onClick={() => window.location.href = '/admin/payments'}>
+              View Payments
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

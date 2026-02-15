@@ -1,0 +1,164 @@
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
+
+const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
+const VALID_PLANS = ['BASIC', 'PRO'] as const
+const PLAN_PRICES: Record<string, number> = {
+  BASIC: 3000,
+  PRO: 5000,
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
+      return authErrorResponse()
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: { id: true, name: true, email: true },
+    })
+
+    if (!user) {
+      return errorResponse('User not found', 404)
+    }
+
+    // Parse multipart form data
+    let formData: FormData
+    try {
+      formData = await req.formData()
+    } catch {
+      return validationErrorResponse('Invalid form data')
+    }
+
+    const plan = formData.get('plan') as string | null
+    const screenshot = formData.get('screenshot') as File | null
+
+    // Validate plan
+    if (!plan || !VALID_PLANS.includes(plan as typeof VALID_PLANS[number])) {
+      return validationErrorResponse('Plan must be BASIC or PRO')
+    }
+
+    // Validate screenshot
+    if (!screenshot || !(screenshot instanceof File)) {
+      return validationErrorResponse('Screenshot is required')
+    }
+
+    if (!screenshot.type.startsWith('image/')) {
+      return validationErrorResponse('Screenshot must be an image file')
+    }
+
+    if (screenshot.size > MAX_SCREENSHOT_SIZE) {
+      return validationErrorResponse('Screenshot must be under 5MB')
+    }
+
+    // Check for existing pending payment
+    const pendingPayment = await prisma.payment.findFirst({
+      where: {
+        userId: user.id,
+        status: 'PENDING',
+      },
+    })
+
+    if (pendingPayment) {
+      return validationErrorResponse('You already have a pending payment. Please wait for it to be reviewed.')
+    }
+
+    // Convert screenshot to Buffer
+    const arrayBuffer = await screenshot.arrayBuffer()
+    const screenshotBuffer = Buffer.from(arrayBuffer)
+    const screenshotType = screenshot.type
+
+    const amount = PLAN_PRICES[plan] || 5000
+
+    // Create payment record
+    const payment = await prisma.payment.create({
+      data: {
+        userId: user.id,
+        plan: plan as 'BASIC' | 'PRO',
+        amount,
+        screenshotData: screenshotBuffer,
+        screenshotType,
+        status: 'PENDING',
+      },
+    })
+
+    // Send Telegram notification (non-blocking)
+    sendTelegramNotification({
+      paymentId: payment.id,
+      userName: user.name || 'Unknown',
+      userEmail: user.email,
+      plan,
+      amount,
+      screenshotBuffer,
+      screenshotType,
+    }).catch((err) => {
+      console.error('[PaymentSubmit] Telegram notification failed:', err)
+    })
+
+    return successResponse({
+      success: true,
+      paymentId: payment.id,
+      message: 'Payment submitted successfully',
+    }, 201)
+  } catch (error) {
+    console.error('[PaymentSubmit] Failed to submit payment:', error)
+    return errorResponse('Failed to submit payment', 500)
+  }
+}
+
+async function sendTelegramNotification({
+  paymentId,
+  userName,
+  userEmail,
+  plan,
+  amount,
+  screenshotBuffer,
+  screenshotType,
+}: {
+  paymentId: string
+  userName: string
+  userEmail: string
+  plan: string
+  amount: number
+  screenshotBuffer: Buffer
+  screenshotType: string
+}) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
+
+  if (!botToken || !chatId) {
+    console.warn('[PaymentSubmit] Telegram credentials not configured')
+    return
+  }
+
+  const caption = [
+    `💳 New Payment Submission`,
+    ``,
+    `👤 Name: ${userName}`,
+    `📧 Email: ${userEmail}`,
+    `📋 Plan: ${plan}`,
+    `💰 Amount: ${amount.toLocaleString()} IQD`,
+    `🆔 Payment ID: ${paymentId}`,
+  ].join('\n')
+
+  // Determine file extension from MIME type
+  const ext = screenshotType.split('/')[1] || 'jpg'
+
+  const formData = new FormData()
+  formData.append('chat_id', chatId)
+  formData.append('caption', caption)
+  formData.append('photo', new Blob([screenshotBuffer], { type: screenshotType }), `payment-${paymentId}.${ext}`)
+
+  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Telegram API error: ${response.status} - ${text}`)
+  }
+}

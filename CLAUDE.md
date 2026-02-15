@@ -306,6 +306,19 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **i18n keys**: `pages.resumeBuilder.quickStart.*` (title, subtitle, startBlank, templates.{id}.name/description) + `pages.onboarding.step3.templateCard.*` in en/ar/ckb
 - **Template content**: English only (users will replace with their own info)
 
+## Manual Payment System (FIB)
+- **Flow**: User selects plan → `/billing/payment-instructions?plan=pro` → FIB transfer details + QR code → screenshot upload → `/api/payments/submit` → Telegram notification → admin reviews at `/admin/payments`
+- **DB model**: `Payment` table with `Bytes` field for screenshot binary storage, `PaymentStatus` enum (PENDING/APPROVED/REJECTED)
+- **Telegram notification**: Non-blocking `sendPhoto` via Bot API; env vars `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ADMIN_CHAT_ID`
+- **Admin review**: GET `/api/admin/payments/[id]/review` returns base64 screenshot data URL; POST approve (atomic `$transaction`: update payment + upsert subscription with 30-day endDate) or reject
+- **Payment status API**: GET `/api/payments/status` returns `{ payments: [...] }` array sorted by createdAt desc; billing page extracts latest payment for banner
+- **Duplicate payment guard**: Submit API checks for existing PENDING payment before creating new one
+- **Subscription upgrade on approve**: Upsert subscription with `plan`, `paymentMethod: 'FIB'`, `paymentId`, 30-day `endDate`
+- **i18n keys**: `billing.pay.*` (payment instructions page), `billing.paymentStatus.*` (billing page banners), `billing.howItWorks.*`, `billing.freePlan.feature1-5`, `billing.proPlan.feature1-8`
+- **QR code**: `qrcode.react` (`QRCodeSVG`) encoding phone number `07507702073`
+- **Screenshot storage**: `Bytes` field in Prisma = `Buffer` in Node.js; convert to base64 data URL for admin preview
+- **Gotcha**: `perMonth` locale values must NOT include leading `/` — the code adds it: `/{t('billing.proPlan.perMonth')}`
+
 ## File Map
 ```
 src/components/html-templates/
@@ -341,7 +354,7 @@ src/components/resume-builder/
   preview/                    # LivePreviewPanel, TemplateSwitcher, MobilePreviewSheet
   layout/CompletionProgressBar.tsx  # Overall resume completion bar (avg of 6 sections, color-coded, i18n)
 
-src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes)
+src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes, AdminPayments)
 src/contexts/SubscriptionContext.tsx  # Client provider for subscription + permissions
 src/hooks/useAutoSave.ts      # Refs-based debounced auto-save
 src/hooks/useDownloadPDF.ts   # PDF download with 403 → billing redirect
@@ -353,6 +366,10 @@ src/app/api/
   admin/stats/                # GET: platform metrics
   admin/users/                # GET: user listing; [userId]/upgrade POST
   subscriptions/check-expired/# GET: status; POST: process expired
+  payments/submit/            # POST: submit payment (multipart, Telegram notification)
+  payments/status/            # GET: user's payment history (array sorted by createdAt desc)
+  admin/payments/             # GET: paginated admin payment listing with status filter
+  admin/payments/[id]/review/ # GET: single payment + base64 screenshot; POST: approve/reject
   ats/score/                  # POST: ATS score analysis (rate limited, atomic limits)
   ats/keywords/               # POST: keyword matching (rate limited, atomic limits, 10K max)
   stats/public/               # GET: public stats (resumeCount, userCount) — 5min cache, no auth
@@ -363,4 +380,11 @@ src/app/api/
 
 src/app/onboarding/
   page.tsx                    # 3-step onboarding wizard (name → template → upload/scratch)
+
+src/app/billing/
+  page.tsx                    # Billing page (Free vs Pro pricing, payment status banners)
+  payment-instructions/page.tsx # FIB payment flow (QR code, copy fields, screenshot upload)
+
+src/app/admin/payments/
+  page.tsx                    # Server component with admin guard → AdminPayments
 ```

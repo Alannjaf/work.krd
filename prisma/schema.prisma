@@ -19,6 +19,7 @@ model User {
   role                 UserRole      @default(USER)
   resumes              Resume[]
   subscription         Subscription?
+  payments             Payment[]
 
   @@index([clerkId])
   @@index([email])
@@ -144,4 +145,28 @@ enum SubscriptionStatus {
   CANCELLED
   EXPIRED
   SUSPENDED
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  plan           SubscriptionPlan
+  amount         Int
+  screenshotData Bytes
+  screenshotType String
+  status         PaymentStatus @default(PENDING)
+  adminNote      String?
+  createdAt      DateTime      @default(now())
+  reviewedAt     DateTime?
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

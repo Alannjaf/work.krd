@@ -1,413 +1,458 @@
 'use client'
 
-import { useEffect, Suspense, useState } from 'react'
+import { useState, useRef, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { AppHeader } from '@/components/shared/AppHeader'
-import { Copy, CheckCircle, Info, Smartphone, Clock, HelpCircle, CheckCheck, ArrowRight } from 'lucide-react'
+import {
+  Copy,
+  CheckCircle,
+  Upload,
+  ImageIcon,
+  X,
+  Crown,
+  Loader2,
+  ArrowRight,
+  Check,
+} from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { translatePlanFeatures } from '@/lib/translate-features'
+import { QRCodeSVG } from 'qrcode.react'
+import toast from 'react-hot-toast'
 
-interface Plan {
-  name: string
-  price: number
-  priceIQD: number
-  description: string
-  features: string[]
-  buttonText: string
-  popular: boolean
-  available: boolean
-}
+const PAYMENT_PHONE = '0750 770 2073'
+const PAYMENT_PHONE_RAW = '07507702073'
+const PAYMENT_NAME = 'Alan Ahmed'
+const PAYMENT_AMOUNT = '5,000'
+const PAYMENT_AMOUNT_RAW = '5000'
 
-function PaymentInstructionsContent() {
+function PaymentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useUser()
   const { t } = useLanguage()
+
+  const plan = searchParams.get('plan') || 'pro'
+  const userEmail = user?.emailAddresses[0]?.emailAddress || ''
+  const reference = `work.krd ${plan.toUpperCase()} - ${userEmail}`
+
   const [copied, setCopied] = useState<string | null>(null)
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [loading, setLoading] = useState(true)
-  const planType = searchParams.get('plan') || 'basic'
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    const fetchPricing = async () => {
-      try {
-        const response = await fetch('/api/pricing')
-        if (response.ok) {
-          const data = await response.json()
-          setPlans(data.plans)
-        }
-      } catch (error) {
-        console.error('[PaymentInstructions] Failed to fetch pricing:', error);
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPricing()
-  }, [])
-
-  const selectedPlan = plans.find(p => p.name.toLowerCase() === planType) || plans.find(p => p.name === 'Basic')
-
-  const paymentInfo = {
-    bankName: 'First Iraqi Bank (FIB)',
-    accountName: 'Alan Jaf',
-    accountNumber: '07504910348',
-    notes: `ResumeAI ${selectedPlan?.name || 'Basic'} - ${user?.emailAddresses[0]?.emailAddress}`
-  }
-
-  const copyToClipboard = (text: string, field: string) => {
+  const copyToClipboard = useCallback((text: string, field: string) => {
     navigator.clipboard.writeText(text)
     setCopied(field)
     setTimeout(() => setCopied(null), 2000)
+  }, [])
+
+  const handleFileSelect = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('billing.pay.invalidFile'))
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t('billing.pay.fileTooLarge'))
+      return
+    }
+    setSelectedFile(file)
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
+  }, [t])
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (file) handleFileSelect(file)
+    },
+    [handleFileSelect]
+  )
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      const file = e.dataTransfer.files?.[0]
+      if (file) handleFileSelect(file)
+    },
+    [handleFileSelect]
+  )
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+  }, [])
+
+  const removeFile = useCallback(() => {
+    setSelectedFile(null)
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }, [previewUrl])
+
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      toast.error(t('billing.pay.noFile'))
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.append('plan', plan)
+      formData.append('screenshot', selectedFile)
+
+      const response = await fetch('/api/payments/submit', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to submit payment')
+      }
+
+      setSubmitted(true)
+      toast.success(t('billing.pay.submitSuccess'))
+    } catch (error) {
+      console.error('[Payment] Submit error:', error)
+      toast.error(
+        error instanceof Error ? error.message : t('billing.pay.submitError')
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // Success state after submission
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader
+          title={t('billing.pay.pageTitle')}
+          showBackButton={true}
+          backButtonText={t('billing.pay.backToBilling')}
+          backButtonHref="/billing"
+        />
+        <main className="max-w-lg mx-auto px-4 py-12 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {t('billing.pay.successTitle')}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {t('billing.pay.successDescription')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={() => router.push('/billing')}>
+              {t('billing.pay.backToBilling')}
+            </Button>
+            <Button onClick={() => router.push('/dashboard')}>
+              {t('billing.pay.goToDashboard')}
+            </Button>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        title={t('billing.paymentInstructions.pageTitle')}
+      <AppHeader
+        title={t('billing.pay.pageTitle')}
         showBackButton={true}
-        backButtonText={t('billing.paymentInstructions.buttons.backToBilling')}
+        backButtonText={t('billing.pay.backToBilling')}
         backButtonHref="/billing"
-      >
-        <Badge variant="secondary" className="flex items-center gap-1">
-          <Smartphone className="h-3 w-3" />
-          {t('billing.paymentInstructions.mobileBanking')}
-        </Badge>
-      </AppHeader>
+      />
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-gray-600">{t('billing.paymentInstructions.loading')}</p>
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-1.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
+              1
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-900 hidden sm:inline">
+              {t('billing.pay.planSummary')}
+            </span>
           </div>
-        ) : selectedPlan ? (
-          <>
-            {/* Progress Indicator */}
-            <div className="mb-8">
-              <div className="flex items-center justify-center space-x-4 mb-4">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    1
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-gray-900">{t('billing.paymentInstructions.progressSteps.review')}</span>
-                </div>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    2
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-gray-900">{t('billing.paymentInstructions.progressSteps.payment')}</span>
-                </div>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
-                    3
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-gray-600">{t('billing.paymentInstructions.progressSteps.activation')}</span>
-                </div>
+          <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
+              2
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-900 hidden sm:inline">
+              {t('billing.pay.step2Title')}
+            </span>
+          </div>
+          <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
+              3
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-500 hidden sm:inline">
+              {t('billing.pay.step3Title')}
+            </span>
+          </div>
+        </div>
+
+        {/* Step 1: Plan Summary */}
+        <Card className="p-4 sm:p-5 mb-4 sm:mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">
+              1
+            </div>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+              {t('billing.pay.planSummary')}
+            </h2>
+          </div>
+
+          <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Crown className="h-5 w-5 text-primary" />
               </div>
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {t('billing.paymentInstructions.upgradeTitle', { 
-                    plan: selectedPlan?.name === 'Free' ? t('pricing.plans.free.name') : 
-                          selectedPlan?.name === 'Basic' ? t('pricing.plans.basic.name') : 
-                          selectedPlan?.name === 'Pro' ? t('pricing.plans.pro.name') : selectedPlan?.name 
-                  })}
-                </h1>
-                <p className="text-gray-600">{t('billing.paymentInstructions.followSteps')}</p>
+              <div>
+                <h3 className="font-semibold text-gray-900">
+                  {t('billing.proPlan.title')}
+                </h3>
+                <p className="text-xs text-gray-600">
+                  {t('billing.pay.allFeaturesIncluded')}
+                </p>
               </div>
             </div>
-
-            {/* Step 1: Review Your Plan */}
-            <Card className="p-6 mb-6 border-l-4 border-l-primary">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">
-                  1
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">{t('billing.paymentInstructions.step1.title')}</h2>
+            <div className="text-right">
+              <div className="text-xl sm:text-2xl font-bold text-primary">
+                {t('billing.proPlan.price')}
               </div>
-              
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {t('billing.paymentInstructions.step1.planType', { 
-                        plan: selectedPlan.name === 'Free' ? t('pricing.plans.free.name') : 
-                              selectedPlan.name === 'Basic' ? t('pricing.plans.basic.name') : 
-                              selectedPlan.name === 'Pro' ? t('pricing.plans.pro.name') : selectedPlan.name 
-                      })}
-                    </h3>
-                    <p className="text-gray-600">{t('billing.paymentInstructions.step1.monthlySubscription')}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">{selectedPlan.priceIQD.toLocaleString()} IQD</div>
-                    <div className="text-sm text-gray-600">{t('billing.paymentInstructions.step1.perMonth')}</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {translatePlanFeatures(selectedPlan.features, t, 'pricing').map((feature, i) => (
-                    <div key={i} className="flex items-center text-sm text-gray-700">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
+              <div className="text-xs text-gray-500">
+                /{t('billing.proPlan.perMonth')}
               </div>
-            </Card>
+            </div>
+          </div>
+        </Card>
 
-            {/* Step 2: Make Your Payment */}
-            <Card className="p-6 mb-6 border-l-4 border-l-primary">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">
-                  2
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">{t('billing.paymentInstructions.step2.title')}</h2>
+        {/* Step 2: FIB Payment Details */}
+        <Card className="p-4 sm:p-5 mb-4 sm:mb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">
+              2
+            </div>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+              {t('billing.pay.step2Title')}
+            </h2>
+          </div>
+
+          {/* QR Code */}
+          <div className="flex justify-center mb-5">
+            <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-200">
+              <QRCodeSVG
+                value={PAYMENT_PHONE_RAW}
+                size={180}
+                level="H"
+                includeMargin={true}
+              />
+              <p className="text-xs text-center text-gray-500 mt-2">
+                {t('billing.pay.scanQR')}
+              </p>
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div className="space-y-3">
+            {/* Account Name */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t('billing.pay.accountName')}
+                </p>
+                <p className="font-medium text-gray-900">{PAYMENT_NAME}</p>
               </div>
-
-              {/* Integrated Payment Steps with Account Details */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                <div className="flex items-center mb-4">
-                  <Smartphone className="h-5 w-5 text-blue-600 mr-2" />
-                  <h3 className="font-semibold text-blue-900">{t('billing.paymentInstructions.step2.fibTitle')}</h3>
-                </div>
-
-                {/* Step 1: Open FIB App */}
-                <div className="space-y-6">
-                  <div className="bg-white rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-start space-x-3 mb-3">
-                      <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-blue-900">{t('billing.paymentInstructions.step2.step1Title')}</p>
-                        <p className="text-sm text-blue-700">{t('billing.paymentInstructions.step2.step1Desc')}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 2: Navigate to Transfer */}
-                  <div className="bg-white rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-start space-x-3 mb-3">
-                      <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">2</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-blue-900">{t('billing.paymentInstructions.step2.step2Title')}</p>
-                        <p className="text-sm text-blue-700">{t('billing.paymentInstructions.step2.step2Desc')}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 3: Enter Account Details */}
-                  <div className="bg-white rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-start space-x-3 mb-4">
-                      <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">3</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-blue-900">{t('billing.paymentInstructions.step2.step3Title')}</p>
-                        <p className="text-sm text-blue-700">{t('billing.paymentInstructions.step2.step3Desc')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3 ml-11">
-                      {/* Bank Name */}
-                      <div className="flex justify-between items-center p-3 bg-gray-50 rounded border">
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">{t('billing.paymentInstructions.step2.bankName')}</p>
-                          <p className="font-medium text-gray-900">{paymentInfo.bankName}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(paymentInfo.bankName, 'bank')}
-                        >
-                          {copied === 'bank' ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                      </div>
-
-                      {/* Account Name */}
-                      <div className="flex justify-between items-center p-3 bg-gray-50 rounded border">
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">{t('billing.paymentInstructions.step2.recipientName')}</p>
-                          <p className="font-medium text-gray-900">{paymentInfo.accountName}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(paymentInfo.accountName, 'name')}
-                        >
-                          {copied === 'name' ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                      </div>
-
-                      {/* Account Number */}
-                      <div className="flex justify-between items-center p-3 bg-gray-50 rounded border">
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">{t('billing.paymentInstructions.step2.accountNumber')}</p>
-                          <p className="font-medium text-lg text-gray-900">{paymentInfo.accountNumber}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(paymentInfo.accountNumber, 'number')}
-                        >
-                          {copied === 'number' ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                      </div>
-
-                      {/* Amount */}
-                      <div className="flex justify-between items-center p-3 bg-primary/10 rounded border border-primary/20">
-                        <div>
-                          <p className="text-xs text-primary/70 uppercase tracking-wide font-medium">{t('billing.paymentInstructions.step2.transferAmount')}</p>
-                          <p className="font-bold text-2xl text-primary">{selectedPlan.priceIQD.toLocaleString()} IQD</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(`${selectedPlan.priceIQD.toLocaleString()}`, 'amount')}
-                        >
-                          {copied === 'amount' ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 4: Add Reference */}
-                  <div className="bg-white rounded-lg p-4 border border-yellow-300">
-                    <div className="flex items-start space-x-3 mb-4">
-                      <span className="flex-shrink-0 w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">4</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-yellow-900">{t('billing.paymentInstructions.step2.step4Title')}</p>
-                        <p className="text-sm text-yellow-700">{t('billing.paymentInstructions.step2.step4Desc')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="ml-11">
-                      <div className="p-4 bg-yellow-50 rounded border border-yellow-200">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs text-yellow-600 uppercase tracking-wide font-medium mb-1 flex items-center">
-                              <Info className="h-3 w-3 mr-1" />
-                              {t('billing.paymentInstructions.step2.copyExactly')}
-                            </p>
-                            <p className="font-medium text-yellow-900 text-lg">{paymentInfo.notes}</p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyToClipboard(paymentInfo.notes, 'notes')}
-                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
-                          >
-                            {copied === 'notes' ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Final Step Summary */}
-                <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <p className="font-medium text-green-900">{t('billing.paymentInstructions.step2.doubleCheck')}</p>
-                  </div>
-                  <p className="text-sm text-green-700 mt-1 ml-7">{t('billing.paymentInstructions.step2.checkDetails')}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 3: Wait for Activation */}
-            <Card className="p-6 mb-6 border-l-4 border-l-gray-300">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold mr-3">
-                  3
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">{t('billing.paymentInstructions.step3.title')}</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Clock className="h-5 w-5 text-blue-600 mt-1" />
-                  <div>
-                    <p className="font-medium text-gray-900">{t('billing.paymentInstructions.step3.verify')}</p>
-                    <p className="text-sm text-gray-600">{t('billing.paymentInstructions.step3.verifyDesc')}</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCheck className="h-5 w-5 text-green-600 mt-1" />
-                  <div>
-                    <p className="font-medium text-gray-900">{t('billing.paymentInstructions.step3.activate')}</p>
-                    <p className="text-sm text-gray-600">{t('billing.paymentInstructions.step3.activateDesc')}</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <Info className="h-5 w-5 text-purple-600 mt-1" />
-                  <div>
-                    <p className="font-medium text-gray-900">{t('billing.paymentInstructions.step3.email')}</p>
-                    <p className="text-sm text-gray-600">
-                      {t('billing.paymentInstructions.step3.emailDesc', { 
-                        plan: selectedPlan.name === 'Free' ? t('pricing.plans.free.name') : 
-                              selectedPlan.name === 'Basic' ? t('pricing.plans.basic.name') : 
-                              selectedPlan.name === 'Pro' ? t('pricing.plans.pro.name') : selectedPlan.name 
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* FAQ Section */}
-            <Card className="p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-                <HelpCircle className="h-5 w-5 mr-2" />
-                {t('billing.paymentInstructions.faq.title')}
-              </h3>
-              <div className="space-y-4 text-sm">
-                <div>
-                  <p className="font-medium text-gray-900 mb-1">{t('billing.paymentInstructions.faq.q1')}</p>
-                  <p className="text-gray-600">{t('billing.paymentInstructions.faq.a1')}</p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 mb-1">{t('billing.paymentInstructions.faq.q2')}</p>
-                  <p className="text-gray-600">{t('billing.paymentInstructions.faq.a2')}</p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 mb-1">{t('billing.paymentInstructions.faq.q3')}</p>
-                  <p className="text-gray-600">{t('billing.paymentInstructions.faq.a3')}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                variant="outline"
-                onClick={() => router.push('/billing')}
-                className="order-2 sm:order-1"
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copyToClipboard(PAYMENT_NAME, 'name')}
+                className="flex-shrink-0 ml-2"
               >
-                {t('billing.paymentInstructions.buttons.backToPlans')}
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard')}
-                className="order-1 sm:order-2"
-              >
-                {t('billing.paymentInstructions.buttons.paymentSent')}
+                {copied === 'name' ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             </div>
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">{t('billing.paymentInstructions.planNotFound')}</p>
-            <Button 
-              className="mt-4"
-              onClick={() => router.push('/billing')}
+
+            {/* Phone Number */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t('billing.pay.phoneNumber')}
+                </p>
+                <p className="font-medium text-gray-900 text-lg tracking-wide">
+                  {PAYMENT_PHONE}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copyToClipboard(PAYMENT_PHONE, 'phone')}
+                className="flex-shrink-0 ml-2"
+              >
+                {copied === 'phone' ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Amount */}
+            <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-primary/70 uppercase tracking-wide font-medium">
+                  {t('billing.pay.amount')}
+                </p>
+                <p className="font-bold text-xl text-primary">
+                  {PAYMENT_AMOUNT} IQD
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copyToClipboard(PAYMENT_AMOUNT_RAW, 'amount')}
+                className="flex-shrink-0 ml-2"
+              >
+                {copied === 'amount' ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Reference */}
+            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-yellow-700 uppercase tracking-wide font-medium">
+                  {t('billing.pay.reference')}
+                </p>
+                <p className="font-medium text-yellow-900 text-sm break-all">
+                  {reference}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copyToClipboard(reference, 'reference')}
+                className="flex-shrink-0 ml-2"
+              >
+                {copied === 'reference' ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            {t('billing.pay.instructions')}
+          </p>
+        </Card>
+
+        {/* Step 3: Upload Screenshot */}
+        <Card className="p-4 sm:p-5 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">
+              3
+            </div>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+              {t('billing.pay.step3Title')}
+            </h2>
+          </div>
+
+          {/* Drop Zone */}
+          {!selectedFile ? (
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
             >
-              {t('billing.paymentInstructions.buttons.backToBilling')}
-            </Button>
-          </div>
-        )}
+              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                {t('billing.pay.dragDrop')}
+              </p>
+              <p className="text-xs text-gray-500">
+                {t('billing.pay.imageFormats')}
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="rounded-lg overflow-hidden border bg-gray-50">
+                {previewUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewUrl}
+                    alt="Payment screenshot preview"
+                    className="w-full max-h-64 object-contain"
+                  />
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-3 p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 min-w-0">
+                  <ImageIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 truncate">
+                    {selectedFile.name}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeFile}
+                  className="flex-shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <Button
+            className="w-full mt-4"
+            size="lg"
+            onClick={handleSubmit}
+            disabled={!selectedFile || submitting}
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t('billing.pay.submitting')}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {t('billing.pay.submitPayment')}
+              </>
+            )}
+          </Button>
+        </Card>
       </main>
     </div>
   )
@@ -415,12 +460,14 @@ function PaymentInstructionsContent() {
 
 export default function PaymentInstructionsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
-    }>
-      <PaymentInstructionsContent />
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      }
+    >
+      <PaymentContent />
     </Suspense>
   )
 }
