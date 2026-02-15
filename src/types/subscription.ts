@@ -1,4 +1,4 @@
-export type SubscriptionPlan = 'FREE' | 'BASIC' | 'PRO';
+export type SubscriptionPlan = 'FREE' | 'PRO';
 
 export interface SubscriptionData {
   plan: SubscriptionPlan;

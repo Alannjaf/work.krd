@@ -111,16 +111,10 @@ export interface SystemSettings {
   maxFreeExports: number
   maxFreeImports: number
   maxFreeATSChecks: number
-  maxBasicResumes: number
-  maxBasicAIUsage: number
-  maxBasicExports: number
-  maxBasicImports: number
-  maxBasicATSChecks: number
   maxProResumes: number
   maxProAIUsage: number
   maxProExports: number
   maxProImports: number
   maxProATSChecks: number
-  basicPlanPrice?: number
   proPlanPrice?: number
 }

@@ -3,9 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
-const VALID_PLANS = ['BASIC', 'PRO'] as const
+const VALID_PLANS = ['PRO'] as const
 const PLAN_PRICES: Record<string, number> = {
-  BASIC: 3000,
   PRO: 5000,
 }
 
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
 
     // Validate plan
     if (!plan || !VALID_PLANS.includes(plan as typeof VALID_PLANS[number])) {
-      return validationErrorResponse('Plan must be BASIC or PRO')
+      return validationErrorResponse('Plan must be PRO')
     }
 
     // Validate screenshot
@@ -77,7 +76,7 @@ export async function POST(req: Request) {
     const payment = await prisma.payment.create({
       data: {
         userId: user.id,
-        plan: plan as 'BASIC' | 'PRO',
+        plan: plan as 'PRO',
         amount,
         screenshotData: screenshotBuffer,
         screenshotType,

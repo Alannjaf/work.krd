@@ -23,24 +23,6 @@ export async function GET() {
         available: true
       },
       {
-        name: 'Basic',
-        price: settings.basicPlanPrice || 5000,
-        priceIQD: settings.basicPlanPrice || 5000,
-        description: 'Great for job seekers',
-        features: [
-          `${settings.maxBasicResumes !== null && settings.maxBasicResumes !== undefined ? settings.maxBasicResumes : 50} resumes per month`,
-          `${settings.maxBasicAIUsage !== null && settings.maxBasicAIUsage !== undefined ? settings.maxBasicAIUsage : 500} AI suggestions per month`,
-          `${settings.maxBasicExports !== null && settings.maxBasicExports !== undefined ? settings.maxBasicExports : 100} exports per month`,
-          'All template options',
-          'Advanced AI enhancement',
-          'PDF export',
-          'Priority support'
-        ],
-        buttonText: 'Upgrade Now',
-        popular: false,
-        available: true
-      },
-      {
         name: 'Pro',
         price: settings.proPlanPrice || 10000,
         priceIQD: settings.proPlanPrice || 10000,
@@ -73,16 +55,6 @@ export async function GET() {
         description: 'Perfect for getting started',
         features: ['10 resumes per month', '100 AI suggestions per month', '20 exports per month', 'Basic templates', 'PDF export'],
         buttonText: 'Get Started Free',
-        popular: false,
-        available: true
-      },
-      {
-        name: 'Basic',
-        price: 5000,
-        priceIQD: 5000,
-        description: 'Great for job seekers',
-        features: ['50 resumes per month', '500 AI suggestions per month', '100 exports per month', 'All template options', 'Advanced AI enhancement', 'PDF export', 'Priority support'],
-        buttonText: 'Upgrade Now',
         popular: false,
         available: true
       },

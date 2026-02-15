@@ -22,14 +22,11 @@ interface Plan {
 const translatePlan = (plan: Plan, t: (key: string, values?: Record<string, string | number>) => string) => {
   return {
     ...plan,
-    name: plan.name === 'Free' ? t('pricing.plans.free.name') : 
-          plan.name === 'Basic' ? t('pricing.plans.basic.name') : 
+    name: plan.name === 'Free' ? t('pricing.plans.free.name') :
           plan.name === 'Pro' ? t('pricing.plans.pro.name') : plan.name,
-    description: plan.name === 'Free' ? t('pricing.plans.free.description') : 
-                plan.name === 'Basic' ? t('pricing.plans.basic.description') : 
+    description: plan.name === 'Free' ? t('pricing.plans.free.description') :
                 plan.name === 'Pro' ? t('pricing.plans.pro.description') : plan.description,
-    buttonText: plan.name === 'Free' ? t('pricing.plans.free.buttonText') : 
-               plan.name === 'Basic' ? t('pricing.plans.basic.buttonText') : 
+    buttonText: plan.name === 'Free' ? t('pricing.plans.free.buttonText') :
                plan.name === 'Pro' ? t('pricing.plans.pro.buttonText') : plan.buttonText,
     features: translatePlanFeatures(plan.features, t, 'pricing')
   }
@@ -217,7 +214,7 @@ export function Pricing() {
             <p className="text-gray-600">{t('common.loading')}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {plans.map((plan, index) => (
               <PricingCard
                 key={index}

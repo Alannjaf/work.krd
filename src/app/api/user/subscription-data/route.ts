@@ -13,17 +13,11 @@ async function getSystemSettings() {
         "maxFreeExports",
         "maxFreeImports",
         "maxFreeATSChecks",
-        "maxBasicResumes",
-        "maxBasicAIUsage",
-        "maxBasicExports",
-        "maxBasicImports",
-        "maxBasicATSChecks",
         "maxProResumes",
         "maxProAIUsage",
         "maxProExports",
         "maxProImports",
         "maxProATSChecks",
-        "basicPlanPrice",
         "proPlanPrice"
       FROM "SystemSettings"
       ORDER BY id LIMIT 1
@@ -43,13 +37,6 @@ async function getSystemSettings() {
     maxFreeExports: 20,
     maxFreeImports: 1,
     maxFreeATSChecks: 0,
-
-    // Basic Plan Limits
-    maxBasicResumes: 50,
-    maxBasicAIUsage: 500,
-    maxBasicExports: 100,
-    maxBasicImports: 0,
-    maxBasicATSChecks: 5,
 
     // Pro Plan Limits
     maxProResumes: -1,
@@ -90,12 +77,6 @@ export async function GET() {
       exportLimit = settings.maxFreeExports !== null && settings.maxFreeExports !== undefined ? settings.maxFreeExports : 20
       importLimit = settings.maxFreeImports !== null && settings.maxFreeImports !== undefined ? settings.maxFreeImports : 1
       atsUsageLimit = settings.maxFreeATSChecks !== null && settings.maxFreeATSChecks !== undefined ? settings.maxFreeATSChecks : 0
-    } else if (plan === 'BASIC') {
-      resumesLimit = settings.maxBasicResumes !== null && settings.maxBasicResumes !== undefined ? settings.maxBasicResumes : 50
-      aiUsageLimit = settings.maxBasicAIUsage !== null && settings.maxBasicAIUsage !== undefined ? settings.maxBasicAIUsage : 500
-      exportLimit = settings.maxBasicExports !== null && settings.maxBasicExports !== undefined ? settings.maxBasicExports : 100
-      importLimit = settings.maxBasicImports !== null && settings.maxBasicImports !== undefined ? settings.maxBasicImports : 0
-      atsUsageLimit = settings.maxBasicATSChecks !== null && settings.maxBasicATSChecks !== undefined ? settings.maxBasicATSChecks : 5
     } else { // PRO
       resumesLimit = settings.maxProResumes !== null && settings.maxProResumes !== undefined ? settings.maxProResumes : -1
       aiUsageLimit = settings.maxProAIUsage !== null && settings.maxProAIUsage !== undefined ? settings.maxProAIUsage : -1

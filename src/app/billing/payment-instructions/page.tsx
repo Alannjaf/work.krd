@@ -21,8 +21,8 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { QRCodeSVG } from 'qrcode.react'
 import toast from 'react-hot-toast'
 
-const PAYMENT_PHONE = '0750 770 2073'
-const PAYMENT_PHONE_RAW = '07507702073'
+const PAYMENT_PHONE = '0750 491 0348'
+const PAYMENT_PHONE_RAW = '07504910348'
 const PAYMENT_NAME = 'Alan Ahmed'
 const PAYMENT_AMOUNT = '5,000'
 const PAYMENT_AMOUNT_RAW = '5000'
@@ -250,7 +250,7 @@ function PaymentContent() {
           <div className="flex justify-center mb-5">
             <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-200">
               <QRCodeSVG
-                value={PAYMENT_PHONE_RAW}
+                value="PHFG-BTN8-UJGJ"
                 size={180}
                 level="H"
                 includeMargin={true}

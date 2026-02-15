@@ -108,9 +108,9 @@ export async function deleteResume(resumeId: string, userId: string) {
       id: resumeId,
       userId}})
 
-  // Update user's resume count
-  await prisma.subscription.update({
-    where: { userId },
+  // Update user's resume count (only decrement if > 0 to prevent negative counts)
+  await prisma.subscription.updateMany({
+    where: { userId, resumeCount: { gt: 0 } },
     data: { resumeCount: { decrement: 1 } }})
 
   return resume
@@ -165,18 +165,12 @@ async function getSystemSettings() {
         maxFreeExports: true,
         maxFreeImports: true,
         maxFreeATSChecks: true,
-        maxBasicResumes: true,
-        maxBasicAIUsage: true,
-        maxBasicExports: true,
-        maxBasicImports: true,
-        maxBasicATSChecks: true,
         maxProResumes: true,
         maxProAIUsage: true,
         maxProExports: true,
         maxProImports: true,
         maxProATSChecks: true,
         freeTemplates: true,
-        basicTemplates: true,
         proTemplates: true,
         photoUploadPlans: true,
       }
@@ -195,9 +189,8 @@ async function getSystemSettings() {
       return {
         ...settings,
         freeTemplates: parseJsonArray(settings.freeTemplates, ['modern']),
-        basicTemplates: parseJsonArray(settings.basicTemplates, ['modern']),
         proTemplates: parseJsonArray(settings.proTemplates, ['modern']),
-        photoUploadPlans: parseJsonArray(settings.photoUploadPlans, ['BASIC', 'PRO']),
+        photoUploadPlans: parseJsonArray(settings.photoUploadPlans, ['PRO']),
       }
     }
   } catch (error) {
@@ -212,28 +205,20 @@ async function getSystemSettings() {
     maxFreeExports: 0,
     maxFreeImports: 1,
     maxFreeATSChecks: 0,
-    
-    // Basic Plan Limits
-    maxBasicResumes: 5,
-    maxBasicAIUsage: 100,
-    maxBasicExports: 10,
-    maxBasicImports: 0,
-    maxBasicATSChecks: 5,
-    
+
     // Pro Plan Limits
     maxProResumes: -1,
     maxProAIUsage: -1,
     maxProExports: -1,
     maxProImports: -1,
     maxProATSChecks: -1,
-    
+
     // Template Access Control
     freeTemplates: ['modern'],
-    basicTemplates: ['modern'],
     proTemplates: ['modern'],
-    
+
     // Profile Photo Upload Access Control
-    photoUploadPlans: ['BASIC', 'PRO']
+    photoUploadPlans: ['PRO']
   }
 }
 
@@ -313,30 +298,23 @@ export async function checkUserLimits(clerkUserId: string) {
   const systemSettings = await getSystemSettings()
 
   const limits = {
-    FREE: { 
-      resumes: systemSettings.maxFreeResumes ?? 10, 
-      ai: systemSettings.maxFreeAIUsage ?? 100, 
+    FREE: {
+      resumes: systemSettings.maxFreeResumes ?? 10,
+      ai: systemSettings.maxFreeAIUsage ?? 100,
       exports: systemSettings.maxFreeExports ?? 0,
       imports: systemSettings.maxFreeImports ?? 1,
       atsChecks: systemSettings.maxFreeATSChecks ?? 0
     },
-    BASIC: { 
-      resumes: systemSettings.maxBasicResumes ?? 50, 
-      ai: systemSettings.maxBasicAIUsage ?? 500, 
-      exports: systemSettings.maxBasicExports ?? 100,
-      imports: systemSettings.maxBasicImports ?? 5,
-      atsChecks: systemSettings.maxBasicATSChecks ?? 5
-    },
-    PRO: { 
-      resumes: systemSettings.maxProResumes ?? -1, 
-      ai: systemSettings.maxProAIUsage ?? -1, 
+    PRO: {
+      resumes: systemSettings.maxProResumes ?? -1,
+      ai: systemSettings.maxProAIUsage ?? -1,
       exports: systemSettings.maxProExports ?? -1,
       imports: systemSettings.maxProImports ?? -1,
       atsChecks: systemSettings.maxProATSChecks ?? -1
     }, // -1 means unlimited
   }
 
-  const userLimits = limits[subscription.plan]
+  const userLimits = limits[subscription.plan as keyof typeof limits] || limits.FREE
 
 
   // Helper to safely extract string array from potentially stringified JSON
@@ -349,7 +327,7 @@ export async function checkUserLimits(clerkUserId: string) {
   }
 
   // Check photo upload permission
-  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, ['BASIC', 'PRO'])
+  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, ['PRO'])
   const canUploadPhoto = photoUploadPlans.includes(subscription.plan)
 
   // Get available templates for user's plan
@@ -358,9 +336,6 @@ export async function checkUserLimits(clerkUserId: string) {
   switch (subscription.plan) {
     case 'FREE':
       availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
-      break
-    case 'BASIC':
-      availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.basicTemplates, ['modern'])])]
       break
     case 'PRO':
       // PRO always gets all registered templates plus any from settings
