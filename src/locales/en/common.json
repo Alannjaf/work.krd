@@ -8,6 +8,8 @@
     "pricing": "Pricing",
     "about": "About", 
     "contact": "Contact",
+    "templates": "Templates",
+    "howItWorks": "How It Works",
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "dashboard": "Dashboard",
@@ -901,6 +903,105 @@
         },
         "soon": "Soon",
         "workingOn": "We're actively working on integrating these payment methods to provide you with secure and convenient payment options."
+      }
+    },
+    "home": {
+      "hero": {
+        "title": "Build a Professional Resume in Minutes",
+        "subtitle": "AI-powered resume builder with ATS optimization. Free to start.",
+        "cta": "Build Your Resume — It's Free",
+        "secondaryCta": "See Templates",
+        "trust": "Trusted by {count}+ professionals in Kurdistan"
+      },
+      "templates": {
+        "title": "Choose from Professional Templates",
+        "subtitle": "Stand out with modern, ATS-optimized designs",
+        "viewAll": "View All Templates"
+      },
+      "howItWorks": {
+        "title": "3 Simple Steps to Your New Resume",
+        "step1": {
+          "title": "Choose a Template",
+          "desc": "Pick from our collection of professional, ATS-friendly designs"
+        },
+        "step2": {
+          "title": "Fill Your Details",
+          "desc": "AI helps you write compelling content for every section"
+        },
+        "step3": {
+          "title": "Download PDF",
+          "desc": "Get an ATS-optimized PDF ready to send to employers"
+        }
+      },
+      "features": {
+        "title": "Everything You Need",
+        "subtitle": "Powerful tools to help you land your dream job",
+        "ai": {
+          "title": "AI-Powered Writing",
+          "desc": "Smart suggestions for every section of your resume"
+        },
+        "ats": {
+          "title": "ATS Optimization",
+          "desc": "Pass automated screening systems with confidence"
+        },
+        "multilingual": {
+          "title": "Multilingual",
+          "desc": "Full support for Kurdish, Arabic & English"
+        },
+        "mobile": {
+          "title": "Mobile-Friendly",
+          "desc": "Build your resume from any device, anywhere"
+        },
+        "pdf": {
+          "title": "PDF Export",
+          "desc": "Download professional PDFs instantly"
+        },
+        "proTemplates": {
+          "title": "Pro Templates",
+          "desc": "Stand out with modern, professional designs"
+        }
+      },
+      "pricing": {
+        "title": "Simple, Affordable Pricing",
+        "subtitle": "Start free, upgrade when you need more",
+        "noCreditCard": "No credit card required for free plan",
+        "free": {
+          "name": "Free",
+          "price": "0",
+          "cta": "Get Started Free",
+          "f1": "Up to 10 resumes",
+          "f2": "Basic templates",
+          "f3": "100 AI suggestions",
+          "f4": "20 PDF exports",
+          "f5": "1 resume import"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "5,000",
+          "currency": "IQD",
+          "period": "month",
+          "cta": "Upgrade to Pro",
+          "popular": "Most Popular",
+          "f1": "Unlimited resumes",
+          "f2": "All premium templates",
+          "f3": "Unlimited AI suggestions",
+          "f4": "Unlimited PDF exports",
+          "f5": "Unlimited resume imports",
+          "f6": "ATS optimization",
+          "f7": "Profile photo upload",
+          "f8": "Priority support"
+        }
+      },
+      "finalCta": {
+        "title": "Ready to Land Your Dream Job?",
+        "subtitle": "Join thousands of professionals building better resumes",
+        "button": "Get Started Free"
+      },
+      "footer": {
+        "tagline": "AI-powered resume builder for Kurdistan & the Middle East",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "copyright": "© 2026 work.krd"
       }
     }
   },

@@ -1,152 +1,64 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
-import { FileText, Sparkles, Palette, Download, ArrowRight } from 'lucide-react'
+import { useRef, useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { Layout, PenTool, Download } from 'lucide-react'
 
-const getSteps = (t: (key: string) => string) => [
-  {
-    icon: FileText,
-    title: t('howItWorks.steps.step1.title'),
-    description: t('howItWorks.steps.step1.description'),
-    gradient: 'from-blue-500 to-blue-600',
-  },
-  {
-    icon: Sparkles,
-    title: t('howItWorks.steps.step2.title'),
-    description: t('howItWorks.steps.step2.description'),
-    gradient: 'from-purple-500 to-pink-600',
-  },
-  {
-    icon: Palette,
-    title: t('howItWorks.steps.step3.title'),
-    description: t('howItWorks.steps.step3.description'),
-    gradient: 'from-indigo-500 to-purple-600',
-  },
-  {
-    icon: Download,
-    title: t('howItWorks.steps.step4.title'),
-    description: t('howItWorks.steps.step4.description'),
-    gradient: 'from-green-500 to-emerald-600',
-  },
+const steps = [
+  { icon: Layout, key: 'step1', number: '1' },
+  { icon: PenTool, key: 'step2', number: '2' },
+  { icon: Download, key: 'step3', number: '3' },
 ]
-
-function StepCard({ step, index, isVisible, isLast }: { step: ReturnType<typeof getSteps>[0], index: number, isVisible: boolean, isLast: boolean }) {
-  return (
-    <div className="relative">
-      <div
-        className={`
-          relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100
-          transition-all duration-500 transform
-          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
-          hover:shadow-xl hover:scale-105
-          group
-        `}
-        style={{ transitionDelay: `${index * 150}ms` }}
-      >
-        {/* Step number */}
-        <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-to-br from-gray-900 to-gray-700 text-white flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
-          {index + 1}
-        </div>
-
-        {/* Icon */}
-        <div className={`
-          w-16 h-16 rounded-xl bg-gradient-to-br ${step.gradient}
-          flex items-center justify-center mb-6
-          shadow-lg group-hover:scale-110 group-hover:rotate-3
-          transition-transform duration-300
-        `}>
-          <step.icon className="h-8 w-8 text-white" />
-        </div>
-
-        {/* Content */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors">
-          {step.title}
-        </h3>
-        <p className="text-gray-600 leading-relaxed">
-          {step.description}
-        </p>
-
-        {/* Hover gradient background */}
-        <div className={`
-          absolute inset-0 bg-gradient-to-br ${step.gradient} 
-          opacity-0 group-hover:opacity-5 rounded-2xl
-          transition-opacity duration-300 pointer-events-none
-        `}></div>
-      </div>
-
-      {/* Connector arrow (not on last item) */}
-      {!isLast && (
-        <div className="hidden lg:block absolute top-1/2 -right-6 transform -translate-y-1/2 z-0">
-          <ArrowRight className="h-8 w-8 text-gray-300" />
-        </div>
-      )}
-    </div>
-  )
-}
 
 export function HowItWorks() {
   const { t } = useLanguage()
-  const steps = getSteps(t)
-  const [visibleSteps, setVisibleSteps] = useState<boolean[]>(new Array(steps.length).fill(false))
+  const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisibleSteps(new Array(steps.length).fill(true))
-          }
-        })
-      },
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true) },
       { threshold: 0.1 }
     )
-
-    const currentRef = sectionRef.current
-    if (currentRef) {
-      observer.observe(currentRef)
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef)
-      }
-    }
-  }, [steps.length])
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <section ref={sectionRef} className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-100/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-100/20 rounded-full blur-3xl"></div>
-      </div>
+    <section id="how-it-works" ref={sectionRef} className="py-20 sm:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className={`text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-12 sm:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          {t('pages.home.howItWorks.title')}
+        </h2>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900">
-              {t('howItWorks.title')}
-            </span>
-          </h2>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            {t('howItWorks.subtitle')}
-          </p>
-        </div>
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+          {/* Connecting line (desktop) */}
+          <div className="hidden md:block absolute top-16 left-[16.67%] right-[16.67%] h-0.5 bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200" />
 
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 relative">
-            {steps.map((step, index) => (
-              <StepCard
-                key={index}
-                step={step}
-                index={index}
-                isVisible={visibleSteps[index]}
-                isLast={index === steps.length - 1}
-              />
-            ))}
-          </div>
+          {steps.map((step, index) => {
+            const Icon = step.icon
+            return (
+              <div
+                key={step.key}
+                className={`relative text-center transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                style={{ transitionDelay: `${200 + index * 200}ms` }}
+              >
+                <div className="relative inline-flex items-center justify-center w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-blue-50 rounded-full" />
+                  <div className="relative flex flex-col items-center">
+                    <span className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">{step.number}</span>
+                    <Icon className="w-8 h-8 text-blue-600" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {t(`pages.home.howItWorks.${step.key}.title`)}
+                </h3>
+                <p className="text-gray-600 max-w-xs mx-auto leading-relaxed">
+                  {t(`pages.home.howItWorks.${step.key}.desc`)}
+                </p>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

@@ -1,10 +1,10 @@
 import { Header } from '@/components/landing/header'
 import { Hero } from '@/components/landing/hero'
-import { Features } from '@/components/landing/features'
+import { Templates } from '@/components/landing/templates'
 import { HowItWorks } from '@/components/landing/how-it-works'
+import { Features } from '@/components/landing/features'
 import { Pricing } from '@/components/landing/pricing'
-import { About } from '@/components/landing/about'
-import { Contact } from '@/components/landing/contact'
+import { FinalCTA } from '@/components/landing/final-cta'
 import { Footer } from '@/components/landing/footer'
 
 export default function Home() {
@@ -12,11 +12,11 @@ export default function Home() {
     <main>
       <Header />
       <Hero />
-      <Features />
+      <Templates />
       <HowItWorks />
+      <Features />
       <Pricing />
-      <About />
-      <Contact />
+      <FinalCTA />
       <Footer />
     </main>
   )

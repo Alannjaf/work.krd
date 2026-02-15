@@ -253,14 +253,23 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Mobile-first**: Full-width cards, stacked vertically, `max-w-lg` for steps 1/3, `max-w-4xl` for step 2 (template grid)
 
 ## Landing Page
-- **Components** in `src/components/landing/`: header, hero, features, how-it-works, pricing, about, contact, footer
-- **No testimonials section** — removed (was fake). Will add real testimonials later when available
-- **Hero stats**: Real-time from `/api/stats/public` (resumeCount, userCount, "3 Languages") — fetched client-side with fade-in on load
-- **About stats**: Same `/api/stats/public` endpoint (users, resumes, "3 Languages", "24/7 Support")
+- **Components** in `src/components/landing/`: header, hero, templates (NEW), how-it-works, features, pricing, final-cta (NEW), footer
+- **Removed sections**: about.tsx, contact.tsx — deleted in homepage redesign
+- **Page structure** (`src/app/page.tsx`): Header → Hero → Templates → HowItWorks → Features → Pricing → FinalCTA → Footer
+- **Hero**: Left text + right resume preview cards (SVG thumbnails), fade-in animation, trust line with real user count from `/api/stats/public`
+- **Templates section**: 5 template thumbnail grid (modern, elegant, bold, developer, creative) with hover effects
+- **How It Works**: 3 steps (Choose Template → Fill Details → Download PDF) with connecting line on desktop
+- **Features grid**: 6 items (AI, ATS, Multilingual, Mobile, PDF, Pro Templates) in 2x3 grid
+- **Pricing**: Free vs Pro (5,000 IQD/month) cards, Pro highlighted with "Most Popular" badge
+- **FinalCTA**: Blue gradient section with "Ready to Land Your Dream Job?" + CTA button
+- **Footer**: Minimal — logo text, tagline, privacy/terms links, language switcher, copyright
+- **Scroll animations**: CSS `transition-all` + IntersectionObserver (no framer-motion), staggered delays via `transitionDelay`
 - **Public stats API** (`/api/stats/public`): No auth required, returns `{ resumeCount, userCount }`, 5min `s-maxage` cache
-- **No useCountUp hook** — removed animated counter, replaced with simple fade-in via opacity transition
-- **i18n keys**: `hero.socialProof.*` (resumesCreated, happyUsers, languages), `about.stats.*` (users, resumes, languages, support)
-- **Gotcha**: Hero 3D cards reference `templateId="executive"` which doesn't exist in registry — should be fixed to use an actual template ID
+- **i18n keys**: All under `pages.home.*` namespace (hero, templates, howItWorks, features, pricing, finalCta, footer)
+- **Nav keys**: Added `nav.templates` and `nav.howItWorks` to all 3 locales
+- **Header**: Sticky, transparent→white on scroll, language switcher dropdown, Clerk auth buttons, mobile hamburger menu
+- **RTL**: Arrow icons flip via `isRTL ? 'rotate-180' : ''`, language dropdown positioned with `isRTL ? 'left-0' : 'right-0'`, floating cards position swaps
+- **No framer-motion** — all animations are pure CSS transitions + IntersectionObserver
 
 ## ATS Feature
 - **Shared utilities**: `src/lib/ats-utils.ts` — `stripHtml()`, `buildResumeText()`, Zod `resumeDataSchema`, `ATS_AI_CONFIG` (env vars), `withTimeout()`, `ATS_SCORE_THRESHOLDS`, `MAX_REQUEST_SIZE`

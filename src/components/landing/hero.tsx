@@ -1,369 +1,85 @@
-"use client";
+'use client'
 
-import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Sparkles,
-  Languages,
-  FileText,
-  ArrowRight,
-  ChevronDown,
-} from "lucide-react";
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { useLanguage } from "@/contexts/LanguageContext";
-import Link from "next/link";
-import { TemplateThumbnail } from "@/components/resume-builder/TemplateThumbnail";
-
-// 3D Interactive Template Card Component
-interface InteractiveTemplateCardProps {
-  templateId: string;
-  baseRotation: number;
-  shadowColor?: string;
-  isFeatured?: boolean;
-}
-
-function InteractiveTemplateCard({
-  templateId,
-  baseRotation,
-  shadowColor = "blue-500",
-  isFeatured = false,
-}: InteractiveTemplateCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
-
-    // Calculate rotation based on mouse position (max 15 degrees)
-    const maxRotation = 15;
-    const newRotateY = (mouseX / (rect.width / 2)) * maxRotation;
-    const newRotateX = -(mouseY / (rect.height / 2)) * maxRotation;
-
-    setRotateX(newRotateX);
-    setRotateY(newRotateY);
-  };
-
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-    setIsHovered(false);
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const scale = isHovered ? 1.1 : 1;
-  const shadowIntensity = isHovered ? 30 : 20;
-
-  return (
-    <div
-      className="relative card-3d-container"
-      style={{
-        perspective: "1000px",
-        perspectiveOrigin: "center center",
-      }}
-    >
-      <div
-        ref={cardRef}
-        className={`
-          relative w-56 md:w-64 h-72 md:h-80
-          rounded-xl shadow-2xl border
-          transition-all duration-300 ease-out
-          ${
-            isFeatured
-              ? "bg-gradient-to-br from-white to-blue-50/30 border-2 border-blue-200"
-              : "bg-white border border-gray-100"
-          }
-        `}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          transform: `
-            rotateY(${baseRotation + rotateY}deg)
-            rotateX(${rotateX}deg)
-            scale(${scale})
-            translateZ(0)
-          `,
-          transformStyle: "preserve-3d",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          willChange: isHovered ? 'transform' : 'auto',
-          boxShadow: isHovered
-            ? `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.1), 0 0 50px -10px rgba(59, 130, 246, ${shadowIntensity / 100})`
-            : "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        }}
-      >
-        <div
-          className="w-full h-full p-4 rounded-xl overflow-hidden"
-          style={{
-            transform: "translateZ(20px)",
-            transformStyle: "preserve-3d",
-          }}
-        >
-          <TemplateThumbnail
-            templateId={templateId}
-            className="w-full h-full rounded-lg"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
+import { useState, useEffect } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight, Users } from 'lucide-react'
 
 export function Hero() {
-  const { t } = useLanguage();
-  const [stats, setStats] = useState<{ resumeCount: number; userCount: number } | null>(null);
-  const [visible, setVisible] = useState(false);
+  const { t, isRTL } = useLanguage()
+  const [stats, setStats] = useState<{ userCount: number } | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    setIsVisible(true)
     fetch('/api/stats/public')
       .then(res => res.json())
-      .then(data => {
-        setStats(data);
-        // Trigger fade-in after data loads
-        requestAnimationFrame(() => setVisible(true));
-      })
-      .catch(() => {
-        setStats({ resumeCount: 0, userCount: 0 });
-        setVisible(true);
-      });
-  }, []);
+      .then(data => setStats(data))
+      .catch(() => {})
+  }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-      {/* Enhanced gradient mesh background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50"></div>
+    <section className="relative overflow-hidden pt-8 pb-16 sm:pt-16 sm:pb-24 lg:pt-20 lg:pb-32">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50 -z-10" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full opacity-20 blur-3xl -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-100 rounded-full opacity-20 blur-3xl -z-10" />
 
-        {/* Animated gradient orbs - optimized with will-change */}
-        <div
-          className="absolute -top-40 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 opacity-20 blur-3xl animate-pulse"
-          style={{ willChange: 'opacity' }}
-        ></div>
-        <div
-          className="absolute -bottom-40 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 opacity-20 blur-3xl animate-pulse"
-          style={{ animationDelay: "1s", willChange: 'opacity' }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-400 to-pink-400 opacity-10 blur-3xl animate-pulse"
-          style={{ animationDelay: "2s", willChange: 'opacity' }}
-        ></div>
-
-        {/* Animated particles - deterministic positions to avoid hydration mismatch */}
-        <div className="absolute inset-0" style={{ contentVisibility: 'auto' }}>
-          {[
-            { l: 12, t: 8, d: 0.2, dur: 3.5 },
-            { l: 85, t: 22, d: 1.1, dur: 4.8 },
-            { l: 34, t: 65, d: 2.4, dur: 5.2 },
-            { l: 67, t: 41, d: 0.7, dur: 3.9 },
-            { l: 91, t: 78, d: 1.8, dur: 6.1 },
-            { l: 23, t: 93, d: 2.9, dur: 4.3 },
-            { l: 56, t: 15, d: 0.4, dur: 5.7 },
-            { l: 78, t: 52, d: 1.5, dur: 3.2 },
-            { l: 45, t: 87, d: 2.1, dur: 6.5 },
-            { l: 8, t: 35, d: 0.9, dur: 4.6 },
-          ].map((p, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30 animate-float"
-              style={{
-                left: `${p.l}%`,
-                top: `${p.t}%`,
-                animationDelay: `${p.d}s`,
-                animationDuration: `${p.dur}s`,
-                willChange: 'transform',
-              }}
-            ></div>
-          ))}
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12 animate-fade-in-up">
-            {/* Main Heading with gradient text */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900">
-                {t("hero.title")}
-              </span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+          {/* Text */}
+          <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-tight">
+              {t('pages.home.hero.title')}
             </h1>
-
-            {/* Subtitle */}
-            <p className="text-xl sm:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-              {t("hero.subtitle")}
+            <p className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed max-w-xl">
+              {t('pages.home.hero.subtitle')}
             </p>
-
-            {/* Feature highlights with better styling */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-                <Sparkles className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  {t("hero.features.ai")}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  {t("hero.features.templates")}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-                <Languages className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  {t("hero.features.languages")}
-                </span>
-              </div>
-            </div>
-
-            {/* Enhanced CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <SignedOut>
                 <SignUpButton>
-                  <Button
-                    size="lg"
-                    className="text-base px-8 py-6 h-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-200 font-semibold"
-                  >
-                    {t("hero.cta.primary")}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                  <button type="button" className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all duration-200">
+                    {t('pages.home.hero.cta')}
+                    <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
+                  </button>
                 </SignUpButton>
               </SignedOut>
               <SignedIn>
-                <Link href="/dashboard">
-                  <Button
-                    size="lg"
-                    className="text-base px-8 py-6 h-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-200 font-semibold"
-                  >
-                    {t("hero.cta.primary")}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all duration-200">
+                  {t('nav.dashboard')}
+                  <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
                 </Link>
               </SignedIn>
+              <a href="#templates" className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all duration-200">
+                {t('pages.home.hero.secondaryCta')}
+              </a>
             </div>
+            {stats && stats.userCount > 0 && (
+              <div className="mt-8 flex items-center gap-2 text-sm text-gray-500">
+                <Users className="w-4 h-4 flex-shrink-0" />
+                <span>{t('pages.home.hero.trust', { count: String(stats.userCount) })}</span>
+              </div>
+            )}
+          </div>
 
-            {/* Real stats from DB with fade-in */}
-            <div
-              className="mt-12 pt-8 border-t border-gray-200/50"
-              style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease-in' }}
-            >
-              <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-                <div className="text-center">
-                  <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-1">
-                    {stats ? stats.resumeCount.toLocaleString() : '—'}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {t("hero.socialProof.resumesCreated")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600 mb-1">
-                    {stats ? stats.userCount.toLocaleString() : '—'}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {t("hero.socialProof.happyUsers")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-1">
-                    3
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {t("hero.socialProof.languages")}
-                  </div>
-                </div>
+          {/* Resume preview cards */}
+          <div className={`mt-12 lg:mt-0 transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="relative mx-auto max-w-md lg:max-w-none">
+              <div className="relative bg-white rounded-2xl shadow-2xl shadow-gray-200/60 overflow-hidden border border-gray-100 p-2">
+                <Image src="/thumbnails/modern.svg" alt="Resume template preview" width={300} height={400} className="w-full h-auto rounded-lg" priority />
+              </div>
+              <div className={`absolute -bottom-6 ${isRTL ? '-left-6 sm:-left-12' : '-right-6 sm:-right-12'} w-32 sm:w-40 bg-white rounded-xl shadow-xl border border-gray-100 p-1.5 transform rotate-3`}>
+                <Image src="/thumbnails/elegant.svg" alt="Resume template" width={150} height={200} className="w-full h-auto rounded-lg" />
+              </div>
+              <div className={`absolute -top-4 ${isRTL ? '-right-4 sm:-right-8' : '-left-4 sm:-left-8'} w-28 sm:w-36 bg-white rounded-xl shadow-xl border border-gray-100 p-1.5 transform -rotate-6`}>
+                <Image src="/thumbnails/creative.svg" alt="Resume template" width={150} height={200} className="w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>
-
-          {/* Enhanced 3D Interactive Resume Preview */}
-          <div className="mt-20 max-w-6xl mx-auto" style={{ contentVisibility: 'auto' }}>
-            <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-8 -space-x-4 lg:-space-x-8">
-              {/* Resume Card 1 - Modern Template (Left, rotated right) */}
-              <div className="relative z-0 hover:z-20 transition-z duration-300">
-                <InteractiveTemplateCard
-                  templateId="modern"
-                  baseRotation={12}
-                  shadowColor="blue-500"
-                />
-              </div>
-
-              {/* Resume Card 2 - Creative Template (Center, Featured) */}
-              <div className="relative z-10 hover:z-30 transition-z duration-300">
-                <InteractiveTemplateCard
-                  templateId="creative"
-                  baseRotation={0}
-                  shadowColor="purple-500"
-                  isFeatured={true}
-                />
-              </div>
-
-              {/* Resume Card 3 - Executive Template (Right, rotated left) */}
-              <div className="relative z-0 hover:z-20 transition-z duration-300">
-                <InteractiveTemplateCard
-                  templateId="executive"
-                  baseRotation={-12}
-                  shadowColor="indigo-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="h-6 w-6 text-gray-400" />
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px) translateX(0px);
-            opacity: 0.3;
-          }
-          50% {
-            transform: translateY(-20px) translateX(10px);
-            opacity: 0.6;
-          }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out;
-        }
-
-        /* Enhanced 3D card rendering */
-        @supports (transform-style: preserve-3d) {
-          .card-3d-container {
-            transform-style: preserve-3d;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-          }
-        }
-      `}</style>
     </section>
-  );
+  )
 }
