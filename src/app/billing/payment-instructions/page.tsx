@@ -56,7 +56,7 @@ function PaymentContent() {
   const { user } = useUser()
   const { t } = useLanguage()
 
-  const plan = searchParams.get('plan') || 'pro'
+  const plan = (searchParams.get('plan') || 'PRO').toUpperCase()
   const userEmail = user?.emailAddresses[0]?.emailAddress || ''
 
   const [currentStep, setCurrentStep] = useState(1)

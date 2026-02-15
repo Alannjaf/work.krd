@@ -307,15 +307,16 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Template content**: English only (users will replace with their own info)
 
 ## Manual Payment System (FIB)
-- **Flow**: User selects plan → `/billing/payment-instructions?plan=pro` → FIB transfer details + QR code → screenshot upload → `/api/payments/submit` → Telegram notification → admin reviews at `/admin/payments`
+- **Flow**: User selects plan → `/billing/payment-instructions?plan=pro` → 4-step wizard (plan details → FIB transfer instructions → screenshot upload → success) → `/api/payments/submit` → Telegram notification → admin reviews at `/admin/payments`
 - **DB model**: `Payment` table with `Bytes` field for screenshot binary storage, `PaymentStatus` enum (PENDING/APPROVED/REJECTED)
 - **Telegram notification**: Non-blocking `sendPhoto` via Bot API; env vars `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ADMIN_CHAT_ID`
 - **Admin review**: GET `/api/admin/payments/[id]/review` returns base64 screenshot data URL; POST approve (atomic `$transaction`: update payment + upsert subscription with 30-day endDate) or reject
 - **Payment status API**: GET `/api/payments/status` returns `{ payments: [...] }` array sorted by createdAt desc; billing page extracts latest payment for banner
 - **Duplicate payment guard**: Submit API checks for existing PENDING payment before creating new one
 - **Subscription upgrade on approve**: Upsert subscription with `plan`, `paymentMethod: 'FIB'`, `paymentId`, 30-day `endDate`
-- **i18n keys**: `billing.pay.*` (payment instructions page), `billing.paymentStatus.*` (billing page banners), `billing.howItWorks.*`, `billing.freePlan.feature1-5`, `billing.proPlan.feature1-8`
-- **QR code**: `qrcode.react` (`QRCodeSVG`) encoding phone number `07507702073`
+- **i18n keys**: `billing.pay.*` (payment instructions page), `billing.pay.wizard.*` (wizard step titles/subtitles/nav), `billing.paymentStatus.*` (billing page banners), `billing.howItWorks.*`, `billing.freePlan.feature1-5`, `billing.proPlan.feature1-8`
+- **Payment wizard**: 4-step onboarding-style flow with ProgressDots, fade transitions (goToStep pattern from onboarding page), mobile-first (max-w-lg, h-12 buttons)
+- **Phone number**: `0750 491 0348` (Alan Ahmed) — NO QR code (removed `qrcode.react` dependency)
 - **Screenshot storage**: `Bytes` field in Prisma = `Buffer` in Node.js; convert to base64 data URL for admin preview
 - **Gotcha**: `perMonth` locale values must NOT include leading `/` — the code adds it: `/{t('billing.proPlan.perMonth')}`
 
