@@ -699,6 +699,59 @@
         "saveFailed": "فشل في حفظ التقدم",
         "loadFailed": "فشل في تحميل السيرة الذاتية",
         "titleRequired": "عنوان السيرة الذاتية مطلوب"
+      },
+      "ats": {
+        "title": "تحسين ATS",
+        "subtitle": "{used} / {limit} فحوصات مستخدمة",
+        "subtitleUnlimited": "فحوصات غير محدودة",
+        "tabs": {
+          "score": "تحليل النتيجة",
+          "keywords": "مطابقة الكلمات المفتاحية"
+        },
+        "score": {
+          "emptyTitle": "حلّل سيرتك الذاتية",
+          "emptyDescription": "احصل على نتيجة توافق ATS وملاحظات مفصلة حول كيفية تحسين سيرتك الذاتية لأنظمة تتبع المتقدمين.",
+          "analyzeButton": "تحليل نتيجة ATS",
+          "analyzing": "جارٍ التحليل...",
+          "reanalyze": "إعادة التحليل",
+          "scoreLabel": "نتيجة توافق ATS",
+          "strengths": "نقاط القوة",
+          "issues": "مشاكل يجب إصلاحها",
+          "suggestions": "اقتراحات للتحسين",
+          "edit": "تعديل",
+          "limitReached": "تم الوصول إلى حد فحوصات ATS. يرجى ترقية خطتك."
+        },
+        "keywords": {
+          "pasteLabel": "الصق وصف الوظيفة",
+          "placeholder": "الصق وصف الوظيفة هنا لمقارنته بسيرتك الذاتية...",
+          "charCount": "{count} حرف (الحد الأدنى 50)",
+          "charCountMax": "{count} / 10,000 حرف (الحد الأدنى 50)",
+          "matchButton": "مطابقة الكلمات المفتاحية",
+          "matchScore": "نتيجة مطابقة الكلمات المفتاحية",
+          "matched": "كلمات مفتاحية متطابقة ({count})",
+          "missing": "كلمات مفتاحية مفقودة ({count})",
+          "suggestions": "اقتراحات",
+          "add": "إضافة",
+          "minChars": "يرجى إدخال وصف الوظيفة (الحد الأدنى 50 حرف)",
+          "tooLong": "وصف الوظيفة طويل جداً (الحد الأقصى 10,000 حرف)"
+        },
+        "importance": {
+          "critical": "حرج",
+          "important": "مهم",
+          "niceToHave": "مستحسن"
+        },
+        "upgrade": {
+          "title": "الترقية مطلوبة",
+          "description": "لقد وصلت إلى حد فحوصات ATS الخاص بك",
+          "button": "ترقية الآن"
+        },
+        "toast": {
+          "scoreSuccess": "اكتمل تحليل ATS!",
+          "keywordSuccess": "اكتملت مطابقة الكلمات المفتاحية!",
+          "scoreFailed": "فشل تحليل نتيجة ATS",
+          "keywordFailed": "فشل مطابقة الكلمات المفتاحية",
+          "rateLimited": "طلبات كثيرة جداً. يرجى المحاولة لاحقاً."
+        }
       }
     },
     "billing": {
