@@ -15,11 +15,18 @@ const tokenStore = new Map<string, StoredToken>()
 
 /**
  * Generate a CSRF token for a given admin user and return it.
- * Old tokens for the same user are replaced.
+ * If the user already has a valid (non-expired) token, return it instead
+ * of replacing it. This prevents race conditions when multiple GET
+ * requests fire in parallel — they all return the same token.
  */
 export function generateCsrfToken(userId: string): string {
   // Clean up expired tokens periodically
   pruneExpiredTokens()
+
+  const existing = tokenStore.get(userId)
+  if (existing && Date.now() <= existing.expiresAt) {
+    return existing.token
+  }
 
   const token = randomBytes(32).toString('hex')
   tokenStore.set(userId, {

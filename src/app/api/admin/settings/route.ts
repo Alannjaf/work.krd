@@ -120,11 +120,15 @@ export async function POST(req: NextRequest) {
       updatedFields: Object.keys(parsed.data),
     })
 
-    return successResponse({
+    const response = successResponse({
       success: true,
       settings: savedSettings,
       ...(snapshotWarning ? { warning: snapshotWarning } : {}),
     })
+
+    // Issue a fresh CSRF token so subsequent saves work
+    // (the old token was consumed during validation above)
+    return attachCsrfToken(response, adminId)
   } catch (error) {
     if (error instanceof Error && error.message === 'Unauthorized: Admin access required') {
       return forbiddenResponse('Unauthorized')
