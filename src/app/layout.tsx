@@ -13,12 +13,59 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Work.krd - Create Professional Resumes with AI',
-  description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English.',
+  metadataBase: new URL('https://work.krd'),
+  title: {
+    default: 'Work.krd - Create Professional Resumes with AI',
+    template: '%s | Work.krd',
+  },
+  description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English. Choose from professional templates, optimize for ATS, and download your resume instantly.',
+  keywords: ['resume builder', 'CV creator', 'Kurdish resume', 'Arabic resume', 'ATS optimization', 'professional resume', 'AI resume builder'],
+  authors: [{ name: 'Work.krd' }],
+  creator: 'Work.krd',
+  publisher: 'Work.krd',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    alternateLocale: ['ar_AR', 'ku_IQ'],
+    url: 'https://work.krd',
+    title: 'Work.krd - Create Professional Resumes with AI',
+    description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English. Choose from professional templates, optimize for ATS, and download your resume instantly.',
+    siteName: 'Work.krd',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Work.krd - Professional Resume Builder',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Work.krd - Create Professional Resumes with AI',
+    description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English.',
+    images: ['/og-image.png'],
+    creator: '@workkrd',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    // Add verification tokens when available
+    // google: 'your-google-verification-code',
   },
 }
 
