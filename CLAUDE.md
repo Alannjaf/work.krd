@@ -293,11 +293,13 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Mobile-first**: Full-width cards, stacked vertically, `max-w-lg` for steps 1/3, `max-w-4xl` for step 2 (template grid)
 
 ## Landing Page
-- **Components** in `src/components/landing/`: header, hero, templates (NEW), how-it-works, features, pricing, final-cta (NEW), footer
-- **Removed sections**: about.tsx, contact.tsx — deleted in homepage redesign
-- **Page structure** (`src/app/page.tsx`): Header → Hero → Templates → HowItWorks → Features → Pricing → FinalCTA → Footer
-- **Hero**: Left text + right resume preview cards (SVG thumbnails), fade-in animation, trust line with real user count from `/api/stats/public`
-- **Templates section**: 5 template thumbnail grid (modern, elegant, bold, developer, creative) with hover effects
+- **Components** in `src/components/landing/`: header, hero, stats-bar (NEW), templates, how-it-works, features, pricing, final-cta, footer
+- **Removed sections**: about.tsx, contact.tsx — deleted in earlier homepage redesign
+- **Page structure** (`src/app/page.tsx`): Header → Hero → StatsBar → Templates → HowItWorks → Features → Pricing → FinalCTA → Footer
+- **Hero (redesigned)**: Two-column layout — left: headline with blue-highlighted phrase (titleBefore + titleHighlight + titleAfter), subtitle, dual CTAs (Create my resume + Upload my resume), trust indicators (trustStat + user count). Right: floating resume card (modern.svg) with 4 absolutely-positioned animated badges (Resume Score SVG ring, ATS Perfect pill, Skills card, AI Coach bar). Badges fade in with staggered delays + `animate-float` (3s infinite). Skills + AI Coach hidden on mobile (`hidden sm:block`)
+- **StatsBar** (NEW): `src/components/landing/stats-bar.tsx` — animated counter (useCountUp hook) + 4 feature cards. Fetches resumeCount from `/api/stats/public`. Counter uses IntersectionObserver-triggered rAF animation with ease-out-cubic. `Intl.NumberFormat` handles Eastern Arabic numerals for AR/CKB
+- **useCountUp hook** (NEW): `src/hooks/useCountUp.ts` — takes target number + options (duration, locale, enabled). Returns `{ ref, displayValue }`. CKB locale maps to 'ar' for Intl. Server-renders "0" (no hydration mismatch)
+- **Templates section**: 5 template thumbnail grid (modern, elegant, bold, developer, creative) with hover effects, `bg-white` + `border-t border-gray-100`
 - **How It Works**: 3 steps (Choose Template → Fill Details → Download PDF) with connecting line on desktop
 - **Features grid**: 6 items (AI, ATS, Multilingual, Mobile, PDF, Pro Templates) in 2x3 grid
 - **Pricing**: Free vs Pro (5,000 IQD/month) cards, Pro highlighted with "Most Popular" badge
@@ -305,7 +307,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Footer**: Minimal — logo text, tagline, privacy/terms links, language switcher, copyright
 - **Scroll animations**: CSS `transition-all` + IntersectionObserver (no framer-motion), staggered delays via `transitionDelay`
 - **Public stats API** (`/api/stats/public`): No auth required, returns `{ resumeCount, userCount }`, 5min `s-maxage` cache
-- **i18n keys**: All under `pages.home.*` namespace (hero, templates, howItWorks, features, pricing, finalCta, footer)
+- **i18n keys**: All under `pages.home.*` namespace (hero, statsBar, templates, howItWorks, features, pricing, finalCta, footer)
 - **Nav keys**: Added `nav.templates` and `nav.howItWorks` to all 3 locales
 - **Header**: Sticky, transparent→white on scroll, language switcher dropdown, Clerk auth buttons, mobile hamburger menu
 - **RTL**: Arrow icons flip via `isRTL ? 'rotate-180' : ''`, language dropdown positioned with `isRTL ? 'left-0' : 'right-0'`, floating cards position swaps

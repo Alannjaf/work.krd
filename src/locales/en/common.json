@@ -907,10 +907,38 @@
     "home": {
       "hero": {
         "title": "Build a Professional Resume in Minutes",
+        "titleBefore": "The #1 AI Resume Builder",
+        "titleHighlight": " — Land Your Dream Job",
+        "titleAfter": "",
         "subtitle": "AI-powered resume builder with ATS optimization. Free to start.",
-        "cta": "Build Your Resume — It's Free",
+        "cta": "Create my resume",
+        "uploadCta": "Upload my resume",
         "secondaryCta": "See Templates",
-        "trust": "Trusted by {count}+ professionals in Kurdistan"
+        "trust": "Trusted by {count}+ professionals in Kurdistan",
+        "trustStat": "{percent}% more likely to get hired",
+        "resumeScore": "Resume Score",
+        "atsReady": "ATS Perfect",
+        "addSkill": "+ Add a skill",
+        "aiCoach": "Ask AI coach anything..."
+      },
+      "statsBar": {
+        "resumesCreated": "resumes created on work.krd",
+        "feature1": {
+          "title": "Ready in 10 Minutes",
+          "desc": "Our guided builder helps you create a professional resume fast"
+        },
+        "feature2": {
+          "title": "Error-Free Formatting",
+          "desc": "Perfect layout every time with our professional templates"
+        },
+        "feature3": {
+          "title": "ATS-Optimized",
+          "desc": "Pass automated screening systems used by top employers"
+        },
+        "feature4": {
+          "title": "Kurdish, Arabic & English",
+          "desc": "Full RTL support with multilingual resume building"
+        }
       },
       "templates": {
         "title": "Choose from Professional Templates",

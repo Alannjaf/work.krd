@@ -1,5 +1,6 @@
 import { Header } from '@/components/landing/header'
 import { Hero } from '@/components/landing/hero'
+import { StatsBar } from '@/components/landing/stats-bar'
 import { Templates } from '@/components/landing/templates'
 import { HowItWorks } from '@/components/landing/how-it-works'
 import { Features } from '@/components/landing/features'
@@ -56,6 +57,7 @@ export default function Home() {
       <main>
         <Header />
         <Hero />
+        <StatsBar />
         <Templates />
         <HowItWorks />
         <Features />

@@ -48,8 +48,8 @@ export function Features() {
                 className={`group bg-white rounded-xl p-6 sm:p-8 border border-gray-100 hover:border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                 style={{ transitionDelay: `${200 + index * 100}ms` }}
               >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.color} mb-4`}>
-                  <Icon className="w-6 h-6" />
+                <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.color} mb-4`}>
+                  <Icon className="w-7 h-7" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {t(`pages.home.features.${feature.key}.title`)}
