@@ -1,4 +1,4 @@
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SystemSettings } from '@/types/api'
@@ -57,42 +57,36 @@ export async function GET() {
       return authErrorResponse()
     }
 
-    let user = await getCurrentUser()
+    const user = await getCurrentUser()
     if (!user || !user.subscription) {
-      // Auto-create user if webhook hasn't fired yet
-      let email = ''
-      let name = ''
-      try {
-        const client = await clerkClient()
-        const clerkUser = await client.users.getUser(userId)
-        email = clerkUser.emailAddresses?.[0]?.emailAddress || ''
-        name = clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : ''
-      } catch { /* fallback */ }
-
-      user = await prisma.user.upsert({
-        where: { clerkId: userId },
-        update: {},
-        create: {
-          clerkId: userId,
-          email,
-          name,
-          subscription: {
-            create: {
-              plan: PLAN_NAMES.FREE,
-              resumeCount: 0,
-              aiUsageCount: 0,
-              exportCount: 0,
-              importCount: 0,
-              atsUsageCount: 0,
-            }
-          }
+      // User not yet in DB (webhook may not have fired) — return free plan defaults
+      const settings = await getSystemSettings()
+      return successResponse({
+        subscription: {
+          currentPlan: PLAN_NAMES.FREE,
+          resumesUsed: 0,
+          resumesLimit: settings.maxFreeResumes ?? 10,
+          aiUsageCount: 0,
+          aiUsageLimit: settings.maxFreeAIUsage ?? 100,
+          exportCount: 0,
+          exportLimit: settings.maxFreeExports ?? 20,
+          importCount: 0,
+          importLimit: settings.maxFreeImports ?? 1,
+          atsUsageCount: 0,
+          atsUsageLimit: settings.maxFreeATSChecks ?? 0,
         },
-        include: { subscription: true }
+        permissions: {
+          canCreateResume: true,
+          canUseAI: true,
+          canExport: true,
+          canImport: true,
+          canUploadPhoto: true,
+          canUseATS: false,
+          availableTemplates: ['modern', 'minimal', 'professional'],
+          canAccessProTemplates: false,
+          canExportToPDF: true,
+        },
       })
-
-      if (!user.subscription) {
-        return notFoundResponse('User subscription not found')
-      }
     }
 
     // Get both subscription data and permissions in parallel

@@ -1,4 +1,4 @@
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
@@ -29,19 +29,13 @@ export async function POST(req: Request) {
 
     if (!user) {
       // Create user + subscription if webhook hasn't fired yet
-      // Fetch email from Clerk since webhook may not have delivered it
-      let email = ''
-      try {
-        const client = await clerkClient()
-        const clerkUser = await client.users.getUser(userId)
-        email = clerkUser.emailAddresses?.[0]?.emailAddress || ''
-      } catch { /* fallback to empty */ }
-
-      user = await prisma.user.create({
-        data: {
+      user = await prisma.user.upsert({
+        where: { clerkId: userId },
+        update: { name: fullName.trim() },
+        create: {
           clerkId: userId,
           name: fullName.trim(),
-          email,
+          email: '',
           subscription: {
             create: {
               plan: PLAN_NAMES.FREE,
