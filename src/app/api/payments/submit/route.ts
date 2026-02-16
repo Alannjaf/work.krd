@@ -174,13 +174,31 @@ async function sendTelegramNotification({
   formData.append('caption', caption)
   formData.append('photo', new Blob([screenshotBuffer], { type: screenshotType }), `payment-${paymentId}.${ext}`)
 
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-    method: 'POST',
-    body: formData,
-  })
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+      method: 'POST',
+      body: formData,
+    })
 
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Telegram API error: ${response.status} - ${text}`)
+    if (!response.ok) {
+      throw new Error(`Photo send failed: ${response.status}`)
+    }
+  } catch (photoError) {
+    // Fallback: send text-only notification if photo fails (e.g. serverless Blob issues)
+    console.warn('[PaymentSubmit] Photo notification failed, sending text fallback:', photoError)
+    const textResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `${caption}\n\n⚠️ Screenshot could not be attached`,
+        parse_mode: 'HTML',
+      }),
+    })
+
+    if (!textResponse.ok) {
+      const text = await textResponse.text()
+      throw new Error(`Telegram text fallback failed: ${textResponse.status} - ${text}`)
+    }
   }
 }
