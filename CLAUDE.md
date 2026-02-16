@@ -40,8 +40,9 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Template access**: `freeTemplates`, `basicTemplates`, `proTemplates` arrays in SystemSettings (Prisma Json fields — pass arrays directly, never JSON.stringify)
 
 ### Admin Dashboard
-- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement, PaymentItem, PaymentList, PaymentApprovalForm, AdminAnalytics, DeleteConfirmModal, AuditLogPanel, AdminErrorBoundary
-- **Layout**: `src/app/admin/layout.tsx` — wraps all admin pages with skip-to-content link (`<a href="#main-content">`) + `<main id="main-content">`
+- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement, PaymentItem, PaymentList, PaymentApprovalForm, AdminAnalytics, DeleteConfirmModal, AuditLogPanel, AdminErrorBoundary, AdminThemeToggle
+- **Layout**: `src/app/admin/layout.tsx` — wraps all admin pages with skip-to-content link, theme toggle (fixed top-right), flash prevention script (reads localStorage synchronously before paint)
+- **Dark mode**: `darkMode: 'class'` in tailwind.config.js. `AdminThemeToggle` toggles `.dark` on `<html>`, persists to `localStorage('admin-theme')`. shadcn components (Card, Button, Input, Badge) auto-adapt via CSS variables in globals.css `.dark` block. Non-shadcn elements need manual `dark:` variants (bg-gray-50→dark:bg-gray-900, text-gray-900→dark:text-gray-100, border-gray-200→dark:border-gray-700)
 - **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record, POST validated with Zod schema (partial updates supported). Auto-snapshots settings before each save (last 5 kept)
 - **Settings history**: GET/POST `/api/admin/settings/history` — list last 5 snapshots / revert to a snapshot. `SettingsSnapshot` Prisma model stores JSON data + savedBy + createdAt
 - **Settings cache**: `getSystemSettings()` has 5-min TTL in-memory cache, invalidated by `invalidateSettingsCache()` on POST save
@@ -54,12 +55,16 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Dashboard flow**: Stats Cards → Analytics → Subscription Status → System Settings → Quick Actions → Audit Log
 - **AdminSystemSettings**: Dirty state tracking, "Saved!" toast on success (auto-dismiss 3s), history panel with restore buttons, tooltip hints on limit inputs (`cursor-help`)
 - **AdminStatsCards**: Loading skeleton with animated pulse bars (including sub-stats for Payments card)
-- **UserManagement**: Server-side pagination (20/page), search (debounced 500ms), plan filter (FREE/PRO), date range filter — uses `Pagination` component from `@/components/ui/Pagination`
+- **UserManagement**: Server-side pagination (20/page), search (debounced 500ms), plan filter (FREE/PRO), date range filter, bulk actions (upgrade/downgrade/delete), CSV export — uses `Pagination` component from `@/components/ui/Pagination`
+- **AuditLogPanel**: Server-side pagination (20/page), action type filter (8 actions), date range filter, CSV export. API at `/api/admin/audit-log` supports `?action=&dateFrom=&dateTo=&page=&limit=`
+- **Bulk user API**: POST `/api/admin/users/bulk` — supports `upgrade`, `downgrade`, `delete` actions. Skips admin users on delete. Processes in Prisma transaction, logs to audit trail
+- **aria-live**: `aria-live="polite"` on AdminDashboard error banner for screen reader announcements
 - **AdminPayments refactored**: Split into `PaymentItem.tsx` (single card + shared types/helpers), `PaymentList.tsx` (list + filters + pagination), `PaymentApprovalForm.tsx` (review modal). `AdminPayments.tsx` is now a thin wrapper (AppHeader + PaymentList)
 - **ResumeTable**: Sortable column headers (opt-in via `sortBy`/`sortOrder`/`onSort` props, defaults to client-side sort). API already supports `sortBy` + `sortOrder` query params
 - **DeleteConfirmModal**: Reusable modal with warning icon, item details, "cannot be undone" text, red delete button, Escape key, focus-on-cancel. Used by ResumeManagement (replaces native `confirm()`)
 - **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs return `hasNextPage`/`hasPrevPage` in response
-- **Pagination constants**: `ADMIN_PAGINATION` in `src/lib/constants.ts` — `{ PAYMENTS: 20, RESUMES: 10, USERS: 20, MAX_LIMIT: 100 }`
+- **Pagination constants**: `ADMIN_PAGINATION` in `src/lib/constants.ts` — `{ PAYMENTS: 20, RESUMES: 10, USERS: 20, AUDIT_LOGS: 20, MAX_LIMIT: 100 }`
+- **CSV export pattern**: Build CSV string with proper escaping (double quotes), create Blob, trigger download via temporary anchor element. Used in UserManagement and AuditLogPanel
 - **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
 
 ## Creating New Templates
