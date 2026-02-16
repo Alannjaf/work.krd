@@ -32,7 +32,6 @@ export async function POST(req: Request) {
         user: {
           select: {
             id: true,
-            email: true,
             name: true
           }
         }
@@ -147,7 +146,6 @@ export async function GET() {
         user: {
           select: {
             id: true,
-            email: true,
             name: true
           }
         }
@@ -170,19 +168,18 @@ export async function GET() {
         user: {
           select: {
             id: true,
-            email: true,
             name: true
           }
         }
       }
     })
 
+    // Return user IDs and names for admin display — avoid exposing emails in API responses
     const response = NextResponse.json({
       expired: {
         count: expiredSubscriptions.length,
         subscriptions: expiredSubscriptions.map(sub => ({
           userId: sub.userId,
-          userEmail: sub.user.email,
           userName: sub.user.name,
           plan: sub.plan,
           endDate: sub.endDate,
@@ -193,7 +190,6 @@ export async function GET() {
         count: expiringSoon.length,
         subscriptions: expiringSoon.map(sub => ({
           userId: sub.userId,
-          userEmail: sub.user.email,
           userName: sub.user.name,
           plan: sub.plan,
           endDate: sub.endDate,

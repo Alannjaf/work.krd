@@ -231,7 +231,8 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Skip creating a thumbnail SVG — every template MUST have `public/thumbnails/{id}.svg` (300×400) with accurate colors/layout
 
 ## PDF Pipeline
-- `renderHtml.ts`: React SSR → full HTML document with embedded fonts (Inter LTR + Noto Sans Arabic RTL via base64)
+- `renderHtml.ts`: React SSR → full HTML document with ALL fonts embedded as base64 (Inter 400+700 for LTR + Noto Sans Arabic 400+700 for RTL). NO CDN dependencies — works offline
+- `fontData.ts`: `getBase64Fonts()` (Arabic) + `getInterBase64Fonts()` (LTR) — both cached after first load via `loadFontPair()` helper. Font files in `public/fonts/`
 - `generatePdf.ts`: Puppeteer (`puppeteer-core`) → A4 PDF; waits for `document.fonts.ready`
 - Page margins: `@page { size: A4; margin: 0; }` in `renderHtml.ts` — zero margin so `position: fixed` backgrounds extend edge-to-edge
 - Content spacing handled by template padding + `box-decoration-break: clone` on sidebar/main divs — padding repeats on every page fragment (Chrome 130+)
@@ -260,7 +261,10 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Prisma Json fields**: Pass arrays directly (`proTemplates: ['modern']`), never `JSON.stringify()` — causes double-encoding
 - **PRO template access**: `checkUserLimits` always includes all `getTemplateIds()` for PRO, regardless of DB settings
 - **Export tracking**: Only `action: 'download'` increments `exportCount`; preview doesn't count
-- **Two getSystemSettings()**: Private one in `db.ts` (parses JSON arrays, used by `checkUserLimits`) and exported one in `system-settings.ts` (raw Prisma result, used by admin API). The exported one has 5-min TTL cache
+- **Two getSystemSettings()**: Private one in `db.ts` (parses JSON arrays, 30s TTL, used by `checkUserLimits`) and exported one in `system-settings.ts` (raw Prisma result, 60s TTL, used by admin API)
+- **Env validation**: `src/lib/env-validation.ts` — `validateEnvVars()` called at module load in `db.ts`, checks CLERK_SECRET_KEY, DATABASE_URL, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+- **Resume upload utils**: `src/lib/resume-upload-utils.ts` — extracted `convertDateFormat`, `isCurrentDate`, `normalizeLanguage`, `normalizeSkill`, `cleanJsonResponse` from upload route
+- **JSON parsing shared**: `src/lib/json-utils.ts` — `parseJsonArray()` used by both `db.ts` and `system-settings.ts`
 - **Subscription expiry**: Manual via admin button, not scheduled — downgrades to FREE, preserves usage counts
 - **Auto-save refs pattern**: `formDataRef`, `resumeIdRef`, `templateRef` — prevents stale closures in debounced saves
 - Buttons without `type="button"` cause page refresh
@@ -404,11 +408,15 @@ src/lib/
   constants.ts                # Plan names, default limits, ADMIN_PAGINATION, subscription duration
   admin-utils.ts              # formatAdminDate, formatAdminDateFull, devError — shared admin utilities
   db.ts                       # getCurrentUser, checkUserLimits, duplicateResume (private getSystemSettings)
-  system-settings.ts          # getSystemSettings (cached, 5-min TTL), updateSystemSettings, invalidateSettingsCache
+  system-settings.ts          # getSystemSettings (cached, 60s TTL), updateSystemSettings, invalidateSettingsCache
   rtl.ts                      # isRTLText(), isResumeRTL() — Arabic/Kurdish detection
   ats-utils.ts                # Shared ATS utilities: stripHtml, buildResumeText, Zod schema, AI config, timeout
   quick-start-templates.ts    # 5 role-based pre-filled resume data for quick-start feature
-  pdf/renderHtml.ts           # React SSR → HTML with embedded fonts
+  json-utils.ts               # parseJsonArray() — shared JSON array parsing for Prisma Json fields
+  env-validation.ts           # validateEnvVars() — startup check for required env vars
+  resume-upload-utils.ts      # Extracted upload utilities: date conversion, language/skill normalization, JSON cleaning
+  pdf/fontData.ts             # getBase64Fonts() (Arabic) + getInterBase64Fonts() (LTR) — cached base64 font loading
+  pdf/renderHtml.ts           # React SSR → HTML with ALL fonts embedded as base64 (no CDN)
   pdf/generatePdf.ts          # Puppeteer HTML → PDF buffer
 
 src/components/resume-builder/

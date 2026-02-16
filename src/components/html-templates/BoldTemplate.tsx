@@ -24,7 +24,7 @@ function getSkillPercent(level?: string): number {
 function BoldSidebarTitle({ children, isRtl }: { children: React.ReactNode; isRtl: boolean }) {
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{
+      <div role="heading" aria-level={2} style={{
         fontSize: 12,
         fontWeight: 'bold',
         color: SIDEBAR_TEXT,
@@ -125,7 +125,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
         }
       `}} />
 
-      {watermark && <Watermark />}
+      {watermark && <Watermark isRTL={isRtl} />}
 
       {/* Print background: sidebar on every page */}
       <div className="bold-sidebar-bg" />

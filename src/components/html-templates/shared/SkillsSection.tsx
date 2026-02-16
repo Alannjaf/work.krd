@@ -1,3 +1,7 @@
+/**
+ * Each individual skill chip is wrapped with className="resume-entry" for page break control.
+ * The section wrapper contains the title and flex container for skill chips.
+ */
 import React from 'react';
 import type { Skill } from '@/types/resume';
 
@@ -25,9 +29,9 @@ export function SkillsSection({
   return (
     <div style={{ marginBottom: 24 }}>
       {title !== undefined ? (
-        title && <div style={titleStyle}>{title}</div>
+        title && <div role="heading" aria-level={2} style={titleStyle}>{title}</div>
       ) : (
-        <div style={titleStyle}>{defaultTitle}</div>
+        <div role="heading" aria-level={2} style={titleStyle}>{defaultTitle}</div>
       )}
       <div
         style={{

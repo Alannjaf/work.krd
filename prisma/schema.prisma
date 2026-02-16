@@ -139,6 +139,9 @@ enum SubscriptionStatus {
   SUSPENDED
 }
 
+// TODO: Add unique constraint on userId + status for PENDING payments to prevent duplicates
+// e.g., @@unique([userId, status], where: { status: "PENDING" }) — Prisma doesn't support
+// partial unique indexes natively; use a raw migration: CREATE UNIQUE INDEX ... WHERE status = 'PENDING'
 model Payment {
   id             String        @id @default(cuid())
   userId         String

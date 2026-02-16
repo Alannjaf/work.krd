@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AppHeader } from '@/components/shared/AppHeader'
+import { DeleteConfirmModal } from '@/components/admin/DeleteConfirmModal'
 import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText, Copy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{id: string, title: string} | null>(null)
 
   // Fetch user's resumes + check onboarding status
   useEffect(() => {
@@ -86,71 +88,33 @@ export default function Dashboard() {
     }
   }
 
-  const handleDeleteResume = async (resumeId: string) => {
-    // TODO: Migrate to DeleteConfirmModal (admin pattern) for consistent UX with proper focus management
-    // Show a warning toast with confirmation
-    toast.custom(
-      (toastData) => (
-        <div className={`${
-          toastData.visible ? 'animate-enter' : 'animate-leave'
-        } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
-          <div className="flex-1 w-0 p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 pt-0.5">
-                <div className="h-10 w-10 flex items-center justify-center rounded-full bg-red-100">
-                  <Trash2 className="h-5 w-5 text-red-600" />
-                </div>
-              </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {t('pages.dashboard.resumes.deleteConfirm.title')}
-                </p>
-                <p className="mt-1 text-sm text-gray-500">
-                  {t('pages.dashboard.resumes.deleteConfirm.description')}
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={async () => {
-                      toast.dismiss(toastData.id)
-                      setDeletingId(resumeId)
-                      try {
-                        const response = await fetch(`/api/resumes/${resumeId}`, {
-                          method: 'DELETE'
-                        })
+  const handleDeleteResume = (resumeId: string) => {
+    const resume = resumes.find(r => r.id === resumeId)
+    setDeleteTarget({ id: resumeId, title: resume?.title || 'Resume' })
+  }
 
-                        if (response.ok) {
-                          setResumes(resumes.filter(resume => resume.id !== resumeId))
-                          toast.success(t('pages.dashboard.resumes.messages.deleteSuccess'))
-                        } else {
-                          toast.error(t('pages.dashboard.resumes.messages.deleteError'))
-                        }
-                      } catch (error) {
-                        console.error('[Dashboard] Failed to delete resume:', error);
-                        toast.error(t('pages.dashboard.resumes.messages.deleteErrorGeneric'))
-                      } finally {
-                        setDeletingId(null)
-                      }
-                    }}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    {t('pages.dashboard.resumes.deleteConfirm.confirm')}
-                  </button>
-                  <button
-                    onClick={() => toast.dismiss(toastData.id)}
-                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    {t('pages.dashboard.resumes.deleteConfirm.cancel')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-      {
-        duration: 10000,
-        position: 'top-center'}
-    )
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    const resumeId = deleteTarget.id
+    setDeletingId(resumeId)
+    try {
+      const response = await fetch(`/api/resumes/${resumeId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setResumes(prev => prev.filter(resume => resume.id !== resumeId))
+        toast.success(t('pages.dashboard.resumes.messages.deleteSuccess'))
+      } else {
+        toast.error(t('pages.dashboard.resumes.messages.deleteError'))
+      }
+    } catch (error) {
+      console.error('[Dashboard] Failed to delete resume:', error);
+      toast.error(t('pages.dashboard.resumes.messages.deleteErrorGeneric'))
+    } finally {
+      setDeletingId(null)
+      setDeleteTarget(null)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -326,6 +290,16 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      <DeleteConfirmModal
+        isOpen={deleteTarget !== null}
+        title={t('pages.dashboard.resumes.deleteConfirm.title')}
+        message={t('pages.dashboard.resumes.deleteConfirm.description')}
+        detail={deleteTarget?.title}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        confirming={deletingId !== null}
+      />
     </div>
   )
 }

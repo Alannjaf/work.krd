@@ -1,3 +1,7 @@
+/**
+ * Contact info items are wrapped with className="resume-entry" as a single block.
+ * Links use unicodeBidi: 'isolate' to prevent RTL text reordering of URLs and brand names.
+ */
 import React from 'react';
 import type { PersonalInfo } from '@/types/resume';
 
@@ -60,7 +64,7 @@ export function ContactInfo({
             href={link.href}
             style={{ textDecoration: 'none', color: 'inherit', ...itemStyle }}
           >
-            {link.label}
+            <span style={{ unicodeBidi: 'isolate' as const }}>{link.label}</span>
           </a>
         </React.Fragment>
       ))}

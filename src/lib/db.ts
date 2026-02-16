@@ -4,6 +4,10 @@ import type { InputJsonValue } from '@prisma/client/runtime/library'
 import { getTemplateIds } from './templates'
 import { PLAN_NAMES } from './constants'
 import { parseJsonArray } from './json-utils'
+import { validateEnvVars } from './env-validation'
+
+// Fail fast if required env vars are missing — runs once at module load
+validateEnvVars()
 
 export async function getCurrentUser() {
   const { userId } = await auth()
@@ -315,6 +319,12 @@ export async function duplicateResume(resumeId: string, userId: string, clerkId:
   return newResume
 }
 
+/**
+ * Check user's subscription limits and permissions.
+ * Note: This function is intentionally NOT cached (beyond the 30s settings cache)
+ * because stale permission data could allow users to exceed their plan limits.
+ * The system settings it depends on are cached in getSystemSettings() with a 30s TTL.
+ */
 export async function checkUserLimits(clerkUserId: string) {
   // First get the database user from Clerk ID
   const user = await prisma.user.findUnique({

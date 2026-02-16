@@ -1,3 +1,7 @@
+/**
+ * Each individual certification entry is wrapped with className="resume-entry" for page break control.
+ * The section wrapper uses className="resume-section" for heading orphan prevention.
+ */
 import React from 'react';
 import type { Certification } from '@/types/resume';
 
@@ -36,9 +40,9 @@ export function CertificationsSection({
   return (
     <div style={{ marginBottom: 24 }}>
       {title !== undefined ? (
-        title && <div style={titleStyle}>{title}</div>
+        title && <div role="heading" aria-level={2} style={titleStyle}>{title}</div>
       ) : (
-        <div style={titleStyle}>{defaultTitle}</div>
+        <div role="heading" aria-level={2} style={titleStyle}>{defaultTitle}</div>
       )}
       {certifications.map((cert) => (
         <div

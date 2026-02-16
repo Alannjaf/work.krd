@@ -1,3 +1,7 @@
+/**
+ * Each individual language entry is wrapped with className="resume-entry" for page break control.
+ * The section wrapper contains the title and list of language items.
+ */
 import React from 'react';
 import type { Language } from '@/types/resume';
 
@@ -27,9 +31,9 @@ export function LanguagesSection({
   return (
     <div style={{ marginBottom: 24 }}>
       {title !== undefined ? (
-        title && <div style={titleStyle}>{title}</div>
+        title && <div role="heading" aria-level={2} style={titleStyle}>{title}</div>
       ) : (
-        <div style={titleStyle}>{defaultTitle}</div>
+        <div role="heading" aria-level={2} style={titleStyle}>{defaultTitle}</div>
       )}
       {languages.map((language) => (
         <div

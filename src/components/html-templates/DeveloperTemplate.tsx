@@ -18,7 +18,7 @@ const sidebarPct = (SIDEBAR_WIDTH / 794 * 100).toFixed(3);
 function SidebarSectionTitle({ children, isRtl }: { children: React.ReactNode; isRtl: boolean }) {
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{
+      <div role="heading" aria-level={2} style={{
         fontSize: 11,
         fontWeight: 'bold',
         color: GREEN,
@@ -112,7 +112,7 @@ export function DeveloperTemplate({ data, watermark }: HtmlTemplateProps) {
         }
       `}} />
 
-      {watermark && <Watermark />}
+      {watermark && <Watermark isRTL={isRtl} />}
 
       {/* Print background: fixed div repeats on every page */}
       <div className="developer-bg" />

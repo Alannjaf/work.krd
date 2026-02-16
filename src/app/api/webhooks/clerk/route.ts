@@ -128,8 +128,8 @@ export async function POST(req: Request) {
       
       // User sync completed successfully
     } catch (error) {
-      // Database error
-      return new Response(`Error syncing user: ${error}`, { status: 500 })
+      devError('[Webhook] Database error syncing user:', error)
+      return new Response('Error syncing user', { status: 500 })
     }
   }
 
@@ -152,8 +152,8 @@ export async function POST(req: Request) {
         // User not found for deletion
       }
     } catch (error) {
-      // Error deleting user
-      return new Response(`Error deleting user: ${error}`, { status: 500 })
+      devError('[Webhook] Error deleting user:', error)
+      return new Response('Error deleting user', { status: 500 })
     }
   }
 

@@ -1,3 +1,7 @@
+/**
+ * Each individual project entry is wrapped with className="resume-entry" for page break control.
+ * The section wrapper uses className="resume-section" for heading orphan prevention.
+ */
 import React from 'react';
 import type { Project } from '@/types/resume';
 
@@ -31,9 +35,9 @@ export function ProjectsSection({
   return (
     <div style={{ marginBottom: 24 }}>
       {title !== undefined ? (
-        title && <div style={titleStyle}>{title}</div>
+        title && <div role="heading" aria-level={2} style={titleStyle}>{title}</div>
       ) : (
-        <div style={titleStyle}>{defaultTitle}</div>
+        <div role="heading" aria-level={2} style={titleStyle}>{defaultTitle}</div>
       )}
       {projects.map((project) => (
         <div

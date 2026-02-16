@@ -129,8 +129,24 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { ids } = await req.json();
-    if (!ids || !Array.isArray(ids)) {
-      return validationErrorResponse('Invalid request');
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return validationErrorResponse('Invalid request: ids must be a non-empty array');
+    }
+
+    // Cap the number of IDs to prevent abuse
+    if (ids.length > 100) {
+      return validationErrorResponse('Cannot delete more than 100 resumes at once');
+    }
+
+    // Verify all IDs exist before deletion — prevent silent no-ops
+    const existingCount = await prisma.resume.count({
+      where: { id: { in: ids } },
+    });
+
+    if (existingCount !== ids.length) {
+      return validationErrorResponse(
+        `Found ${existingCount} of ${ids.length} requested resumes. Some IDs may be invalid.`
+      );
     }
 
     // Audit log the IDs being deleted before performing the deletion
@@ -140,9 +156,10 @@ export async function DELETE(req: NextRequest) {
     });
 
     await prisma.resume.deleteMany({
-      where: { id: { in: ids } }});
+      where: { id: { in: ids } },
+    });
 
-    return successResponse({ success: true });
+    return successResponse({ success: true, deleted: existingCount });
   } catch (error) {
     if (error instanceof Error && error.message.includes('Admin access required')) {
       return errorResponse('Unauthorized', 403);

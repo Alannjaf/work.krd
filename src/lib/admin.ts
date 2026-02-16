@@ -23,17 +23,27 @@ export async function requireAdmin() {
 
 /**
  * Like requireAdmin but returns the Clerk userId for use with CSRF tokens.
+ * Always either returns a valid userId string or throws — never returns undefined.
  */
 export async function requireAdminWithId(): Promise<string> {
-  const { userId } = await auth()
-  if (!userId) throw new Error('Unauthorized: Admin access required')
+  let userId: string | null = null
+  try {
+    const authResult = await auth()
+    userId = authResult.userId
+  } catch {
+    throw new Error('Unauthorized: Admin access required')
+  }
+
+  if (!userId || typeof userId !== 'string') {
+    throw new Error('Unauthorized: Admin access required')
+  }
 
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
     select: { role: true },
   })
 
-  if (user?.role !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     throw new Error('Unauthorized: Admin access required')
   }
 

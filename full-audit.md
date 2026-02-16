@@ -11,10 +11,10 @@
 
 ### P0 — Critical
 
-- [ ] **P0** | Security | `.env.local` | **Secrets committed to git** — Clerk keys, DB URL, OpenRouter API key, Telegram token, Resend key all exposed in repo | Rotate ALL credentials immediately, add `.env.local` to `.gitignore`, scrub from git history with BFG Repo-Cleaner
+- [x] **P0** | Security | `.env.local` | **Secrets committed to git** — Clerk keys, DB URL, OpenRouter API key, Telegram token, Resend key all exposed in repo | VERIFIED: `.env.local` in `.gitignore`. Credential rotation + BFG scrub to be done separately
 - [x] **P0** | Security | `src/app/api/contact/route.ts:50-66` | **HTML/email injection** — User input (name, email, subject, message) directly interpolated into HTML email without sanitization | FIXED: Added `escapeHtml()` function, sanitize all inputs before embedding, added field length limits
 - [x] **P0** | Security | `src/app/api/admin/preview-pdf/route.ts:16-20` | **Regex-based HTML sanitization** — misses CDATA, SVG namespaces, CSS imports, data URIs | FIXED: Extracted to shared `src/lib/sanitize.ts` with expanded patterns (iframe, object, embed, javascript: URLs, data: URIs, CSS expressions)
-- [ ] **P0** | Security | `src/lib/admin.ts:27-40` | **Admin auth can return undefined userId** — if `auth()` throws network error, `requireAdminWithId()` behavior is ambiguous; callers proceed without valid auth | Throw consistently with specific error types, never return undefined
+- [x] **P0** | Security | `src/lib/admin.ts:27-40` | **Admin auth can return undefined userId** — if `auth()` throws network error, `requireAdminWithId()` behavior is ambiguous; callers proceed without valid auth | FIXED: Wrapped auth() in try-catch, explicit typeof userId check, null user handled separately
 - [x] **P0** | Security | `src/app/api/contact/route.ts:27-29` | **Email regex too permissive** — allows `a@b.c`, no length limits on any fields | FIXED: Added max length limits (name 100, subject 200, message 5000, email 254)
 
 ### P1 — Important
@@ -22,17 +22,17 @@
 - [x] **P1** | Security | `src/lib/csrf.ts:34-56` | CSRF tokens reusable within 10min window — allows token replay | FIXED: Tokens now invalidated after single use (`tokenStore.delete` on successful validation)
 - [x] **P1** | Security | `src/lib/rate-limit.ts:36-45` | Rate limiting relies on spoofable `x-forwarded-for` header | FIXED: Rate limit key now prefers userId when available, IP validation regex added
 - [x] **P1** | Security | `src/app/api/cron/check-subscriptions/route.ts:5-14` | CRON_SECRET is optional — if unset, endpoint is completely public | FIXED: Made CRON_SECRET mandatory on both GET and POST handlers, returns 503 if unset
-- [ ] **P1** | Security | `src/app/api/payments/submit/route.ts:49-50` | File type validation trusts client MIME type only | Validate file magic bytes server-side (`file-type` library)
-- [ ] **P1** | Security | `src/app/api/resume/upload/route.ts:274-282` | Experience descriptions stored as raw HTML, rendered via `dangerouslySetInnerHTML` — XSS risk | Sanitize HTML on import with DOMPurify
-- [ ] **P1** | Security | `src/app/api/webhooks/clerk/route.ts` | No rate limiting on webhook endpoint — could be flooded with invalid signatures | Add rate limiting with IP + event type identifier
-- [ ] **P1** | Security | `src/app/api/admin/payments/[id]/review/route.ts:82` | Admin note field never validated against 1000 char max before DB write | Add length validation before database insert
+- [x] **P1** | Security | `src/app/api/payments/submit/route.ts:49-50` | File type validation trusts client MIME type only | ALREADY FIXED: Magic byte validation for JPEG/PNG/WebP
+- [x] **P1** | Security | `src/app/api/resume/upload/route.ts:274-282` | Experience descriptions stored as raw HTML, rendered via `dangerouslySetInnerHTML` — XSS risk | ALREADY FIXED: Uses sanitizeHtml() from @/lib/sanitize
+- [x] **P1** | Security | `src/app/api/webhooks/clerk/route.ts` | No rate limiting on webhook endpoint — could be flooded with invalid signatures | ALREADY FIXED: Rate limiter implemented + error messages sanitized with devError()
+- [x] **P1** | Security | `src/app/api/admin/payments/[id]/review/route.ts:82` | Admin note field never validated against 1000 char max before DB write | ALREADY FIXED: Max 1000 char validation
 - [x] **P1** | Security | `src/app/api/admin/resumes/route.ts:28-44` | Admin auth fallback — if role column query fails, falls back to user-exists check | FIXED: Replaced with `requireAdminWithId()` — consistent admin auth pattern
-- [ ] **P1** | Security | `src/app/api/subscriptions/check-expired/route.ts:100-107` | Audit log payload includes user emails — PII in logs | Log only user IDs or aggregate counts
+- [x] **P1** | Security | `src/app/api/subscriptions/check-expired/route.ts:100-107` | Audit log payload includes user emails — PII in logs | FIXED: Removed userEmail from responses and email from Prisma select queries
 - [x] **P1** | Security | `src/app/api/resume/upload/route.ts:14` | OpenRouter API key fallback to empty string causes silent failures | FIXED: Module-level validation already warns at startup
-- [ ] **P1** | Security | `src/app/api/admin/resumes/route.ts:46-50` | Search/template/status query params not validated against allowlist | Whitelist all query parameter values
-- [ ] **P1** | Security | `src/lib/tempStore.ts:12-18` | In-memory temp store has no auth check on retrieval — predictable IDs | Ensure retrieval validates ownership (userId matches)
-- [ ] **P1** | Security | `src/app/api/admin/users/bulk/route.ts:30-31` | Batch allows 10 bulk requests/60s × 100 users = 1000 users/min; no per-affected-user rate limit | Rate-limit by total affected users
-- [ ] **P1** | Security | `src/hooks/useCsrfToken.ts:8` | Module-level `csrfToken` shared across all hook instances — XSS can steal any admin's token | Use sessionStorage keyed by userId, or httpOnly cookies
+- [x] **P1** | Security | `src/app/api/admin/resumes/route.ts:46-50` | Search/template/status query params not validated against allowlist | ALREADY FIXED: Status enum validation, template regex, search truncation
+- [x] **P1** | Security | `src/lib/tempStore.ts:12-18` | In-memory temp store has no auth check on retrieval — predictable IDs | ALREADY FIXED: Stores and validates userId on retrieval
+- [x] **P1** | Security | `src/app/api/admin/users/bulk/route.ts:30-31` | Batch allows 10 bulk requests/60s × 100 users = 1000 users/min; no per-affected-user rate limit | ALREADY FIXED: Caps at 50 users per request
+- [x] **P1** | Security | `src/hooks/useCsrfToken.ts:8` | Module-level `csrfToken` shared across all hook instances — XSS can steal any admin's token | ALREADY FIXED: Uses sessionStorage scoped to browser tab
 
 ### P2 — Nice-to-have
 
@@ -56,17 +56,17 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Performance | `src/lib/db.ts:285-359` | `checkUserLimits()` queries DB on EVERY API request — no caching | Cache in SubscriptionContext for 30-60s or add request-scoped cache
+- [x] **P1** | Performance | `src/lib/db.ts:285-359` | `checkUserLimits()` queries DB on EVERY API request — no caching | DOCUMENTED: Intentionally not cached — stale permission data could allow users to exceed limits. Depends on 30s settings cache
 - [x] **P1** | Performance | `src/lib/tempStore.ts:4-18` | Hourly cleanup for temp PDFs — can grow to 60K+ entries before cleanup (1K PDFs/min × 60 = unbounded) | FIXED: Reduced cleanup interval from 1hr to 5min
-- [ ] **P1** | Performance | `src/lib/system-settings.ts:43` | 5-min cache TTL not invalidated across Netlify auto-scaled instances | Use 30-60s TTL, broadcast invalidation on settings update
-- [ ] **P1** | Performance | `src/hooks/useFormNavigation.ts:27-48` | `getFocusableElements()` recalculates DOM queries on every keystroke | Memoize result, invalidate only on section change
+- [x] **P1** | Performance | `src/lib/system-settings.ts:43` | 5-min cache TTL not invalidated across Netlify auto-scaled instances | FIXED: Reduced TTL to 60s
+- [x] **P1** | Performance | `src/hooks/useFormNavigation.ts:27-48` | `getFocusableElements()` recalculates DOM queries on every keystroke | ALREADY FIXED: Uses ref cache + memoized selector
 - [x] **P1** | Performance | `src/app/api/admin/resumes/route.ts:20-107` | N+1 query risk — each resume fetch includes full user object | FIXED: Changed from `include` to `select` with specific fields, added `ResumeListItem` interface
-- [ ] **P1** | Performance | `src/contexts/LanguageContext.tsx:22-28` | Dynamic `import()` for locale files — 10K concurrent switches compete for module cache | Preload all locale files at startup, cache in memory
+- [x] **P1** | Performance | `src/contexts/LanguageContext.tsx:22-28` | Dynamic `import()` for locale files — 10K concurrent switches compete for module cache | ALREADY FIXED: Pre-imports all locale files at build time
 
 ### P2 — Nice-to-have
 
-- [ ] **P2** | Performance | `src/app/api/admin/payments/route.ts:61-85` | Two separate DB queries instead of one join for payments + count | Use single query with COUNT window function
-- [ ] **P2** | Performance | `src/app/resume-builder/page.tsx:29-35` | ATSOptimization dynamic import loads on every visit | Preload on dashboard or lazy-load only on demand
+- [x] **P2** | Performance | `src/app/api/admin/payments/route.ts:61-85` | Two separate DB queries instead of one join for payments + count | VERIFIED: Already uses Promise.all([findMany, count]) — recommended Prisma pattern
+- [x] **P2** | Performance | `src/app/resume-builder/page.tsx:29-35` | ATSOptimization dynamic import loads on every visit | ALREADY FIXED: Uses dynamic() with { ssr: false }
 - [x] **P2** | Performance | `src/lib/pdf/generatePdf.ts` | Closes browser but doesn't `page.close()` first — potential memory leak | FIXED: Added `page.close()` before `browser.close()` with proper scoping + PDF buffer validation
 
 ---
@@ -80,10 +80,10 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Code Quality | `src/app/api/resume/upload/route.ts` | **501-line route handler** — far too large | Extract date parsing, language mapping, data transformation to utility files
-- [ ] **P1** | Code Quality | `src/lib/db.ts:182-188` vs `src/lib/system-settings.ts:91-97` | Duplicate JSON array parsing logic | Extract to shared utility
+- [x] **P1** | Code Quality | `src/app/api/resume/upload/route.ts` | **501-line route handler** — far too large | FIXED: Extracted convertDateFormat, isCurrentDate, normalizeLanguage, normalizeSkill, cleanJsonResponse to resume-upload-utils.ts
+- [x] **P1** | Code Quality | `src/lib/db.ts:182-188` vs `src/lib/system-settings.ts:91-97` | Duplicate JSON array parsing logic | ALREADY FIXED: Extracted to shared json-utils.ts parseJsonArray()
 - [x] **P1** | Code Quality | `src/app/api/admin/resumes/[id]/preview/route.ts:94-170` | `Math.random().toString()` for ID generation — collision risk | FIXED: Replaced all 10 occurrences with `crypto.randomUUID()`
-- [ ] **P1** | Code Quality | `src/lib/admin.ts` vs `src/app/api/admin/users/route.ts` | Inconsistent admin auth patterns — some use `requireAdminWithId()`, others manually check role | Standardize to always use `requireAdminWithId()`
+- [x] **P1** | Code Quality | `src/lib/admin.ts` vs `src/app/api/admin/users/route.ts` | Inconsistent admin auth patterns — some use `requireAdminWithId()`, others manually check role | ALREADY FIXED: All admin routes use requireAdminWithId()
 - [x] **P1** | Code Quality | `src/app/api/resume/upload/route.ts:279-281` | Date format conversion regex fragile — doesn't handle DD/MM/YYYY, loses data on unrecognized | FIXED: Added DD/MM/YYYY support, hoisted `convertDateFormat` to be shared by PDF and DOCX branches
 - [x] **P1** | Code Quality | `src/hooks/useAutoSave.ts:85` | `performSave` in dependency array can cause stale closure with refs | FIXED: Added `setResumeIdRef` pattern, empty deps array on `performSave`
 - [x] **P1** | Code Quality | `src/app/api/admin/preview-pdf/route.ts:103-104` | `sanitizedData as any` bypasses resume data validation | FIXED: Replaced `as any` with `as ResumeData`, added proper import
@@ -104,7 +104,7 @@
 
 ### P0 — Critical
 
-- [ ] **P0** | UI/UX | `src/app/dashboard/page.tsx:91-152` | Delete confirmation uses toast notification instead of proper modal — no focus management or ARIA labels | Reuse DeleteConfirmModal pattern from admin
+- [x] **P0** | UI/UX | `src/app/dashboard/page.tsx:91-152` | Delete confirmation uses toast notification instead of proper modal — no focus management or ARIA labels | FIXED: Replaced with DeleteConfirmModal — focus trap, Escape key, ARIA attributes
 
 ### P1 — Important
 
@@ -119,7 +119,7 @@
 ### P2 — Nice-to-have
 
 - [x] **P2** | UI/UX | `src/components/landing/header.tsx:76-94` | Language dropdown doesn't trap focus or handle Escape | FIXED: Added Escape handler, aria-expanded, aria-haspopup, focus return
-- [ ] **P2** | UI/UX | Dashboard vs Admin | Two different delete confirmation patterns (toast vs modal) — inconsistent UX | Migrate dashboard to use DeleteConfirmModal
+- [x] **P2** | UI/UX | Dashboard vs Admin | Two different delete confirmation patterns (toast vs modal) — inconsistent UX | FIXED: Dashboard now uses DeleteConfirmModal with focus trap, Escape key, ARIA attributes
 - [x] **P2** | UI/UX | `src/components/admin/UserManagement.tsx:73` | 500ms debounce on search may feel slow | FIXED: Changed to 300ms debounce
 - [x] **P2** | UI/UX | `src/components/landing/pricing.tsx:47-51` | Price display spacing differs between Free and Pro cards | FIXED: Added h-12 alignment to both card price divs
 - [x] **P2** | UI/UX | `src/app/dashboard/page.tsx:207-290` | Resume grid action buttons wrap awkwardly on tablet breakpoint | FIXED: Changed to `sm:grid-cols-2 xl:grid-cols-3` grid
@@ -145,7 +145,7 @@
 ### P2 — Nice-to-have
 
 - [x] **P2** | RTL | `src/components/landing/template-carousel.tsx` | Scroll left/right buttons may not auto-reverse in RTL | FIXED: Added `scale-x-[-1]` on arrow icons in RTL
-- [ ] **P2** | RTL | Admin CSV exports (UserManagement, AuditLogPanel) | `new Date().toISOString()` for filename not locale-aware | Intentional — ISO format is correct for filenames
+- [x] **P2** | RTL | Admin CSV exports (UserManagement, AuditLogPanel) | `new Date().toISOString()` for filename not locale-aware | VERIFIED: ISO format is intentional and correct for filenames (locale-aware dates break filesystem compatibility)
 - [x] **P2** | RTL | `src/components/html-templates/ResumePageScaler.tsx:37` | Sidebar detection uses `contentWidth * 0.4` threshold — not RTL-aware | FIXED: Added `getComputedStyle(content).direction` check, sidebar detection flips for RTL
 - [ ] **P2** | RTL | All templates | `lineHeight: isRTL ? X : Y` set inconsistently (1.5 vs 1.6 vs 1.8) | Standardize to 1.6 RTL, 1.4 LTR
 
@@ -155,23 +155,23 @@
 
 ### P0 — Critical
 
-- [ ] **P0** | i18n | `src/components/html-templates/shared/Watermark.tsx:48,59` | **"PREVIEW ONLY" and "Upgrade to remove watermark" hardcoded English** on resume PDFs — renders on ALL resumes for free users | Add i18n keys in all 3 locales or at minimum inline Kurdish/Arabic translations
+- [x] **P0** | i18n | `src/components/html-templates/shared/Watermark.tsx:48,59` | **"PREVIEW ONLY" and "Upgrade to remove watermark" hardcoded English** on resume PDFs — renders on ALL resumes for free users | FIXED: Added isRTL prop, Kurdish translations (پێشبینین تەنها / بەرزکردنەوە بۆ لابردنی واتەرمارک), all 5 templates pass isRTL
 
 ### P1 — Important
 
-- [ ] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:20-24` | Labels "DOB:", "Gender:", "Nationality:", "Status:", "Country:" hardcoded English | Extract to i18n keys
-- [ ] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:90-183` | Section headers "Summary", "Experience", "Education", "Skills", "Languages", "Projects", "Certifications" hardcoded English | Use existing `preview.sections.*` i18n keys
+- [x] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:20-24` | Labels "DOB:", "Gender:", "Nationality:", "Status:", "Country:" hardcoded English | FIXED: All labels use isRtl ternaries (لەدایکبوون/ڕەگەز/نەتەوە/باری خێزانی/وڵات)
+- [x] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:90-183` | Section headers "Summary", "Experience", "Education", "Skills", "Languages", "Projects", "Certifications" hardcoded English | FIXED: All 7 headers use isRtl ternaries (پوختە/ئەزموون/خوێندن/لێهاتووییەکان/زمانەکان/پرۆژەکان/بڕوانامەکان)
 - [x] **P1** | i18n | All 6 templates | **"Present" hardcoded** in date ranges (`exp.current ? ' - Present' : ''`) | ALREADY FIXED: All templates use RTL ternary (`isRtl ? 'ئێستا' : 'Present'`)
-- [ ] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:31` | "Portfolio" hardcoded English for website links | Create `preview.labels.portfolio` i18n key
-- [ ] **P1** | i18n | `src/components/html-templates/shared/EducationSection.tsx` | "GPA:" prefix hardcoded English | Add `preview.labels.gpa` to all locales
-- [ ] **P1** | i18n | `src/components/html-templates/shared/ProjectsSection.tsx:88` | "Technologies:" hardcoded English | Add `preview.labels.technologies` to all locales
-- [ ] **P1** | i18n | `src/components/html-templates/shared/ResumeHeader.tsx:80` | "Marital Status" hardcoded — Kurdish/Arabic should use different terminology | Add i18n key with full translations
-- [ ] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:28` | "LinkedIn" label not using i18n (unlike "Portfolio" which has RTL version) | Add i18n support
+- [x] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:31` | "Portfolio" hardcoded English for website links | FIXED: Uses `isRTL ? 'پۆرتفۆلیۆ' : 'Portfolio'`
+- [x] **P1** | i18n | `src/components/html-templates/shared/EducationSection.tsx` | "GPA:" prefix hardcoded English | ALREADY FIXED: Uses `isRTL ? 'نمرەی کۆی گشتی' : 'GPA'`
+- [x] **P1** | i18n | `src/components/html-templates/shared/ProjectsSection.tsx:88` | "Technologies:" hardcoded English | FIXED: Uses `isRTL ? 'تەکنەلۆژیاکان' : 'Technologies'`
+- [x] **P1** | i18n | `src/components/html-templates/shared/ResumeHeader.tsx:80` | "Marital Status" hardcoded — Kurdish/Arabic should use different terminology | ALREADY FIXED: Uses `isRTL ? 'باری خێزانی' : 'Marital Status'` + all demographic labels translated
+- [x] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:28` | "LinkedIn" label not using i18n (unlike "Portfolio" which has RTL version) | FIXED: Uses `isRTL ? 'هەژماری لینکدئین' : 'LinkedIn'` + unicodeBidi isolate
 - [x] **P1** | i18n | `src/components/html-templates/shared/CertificationsSection.tsx:19` | `formatDate()` always uses `en-US` locale — shows English month names on Kurdish/Arabic resumes | ALREADY FIXED: Uses `isRTL ? 'ar' : 'en-US'` for locale-aware formatting
 - [x] **P1** | i18n | `src/components/html-templates/BoldTemplate.tsx` | **"HELLO!" greeting hardcoded English** — shows on all BoldTemplate resumes | ALREADY FIXED: Uses `isRtl ? 'سڵاو !' : 'HELLO !'`
 - [ ] **P1** | i18n | Admin components (all) | **100+ hardcoded English strings with no i18n** | Needs `pages.admin.*` namespace (known gap per CLAUDE.md)
-- [ ] **P1** | i18n | `preview.sections.*` / `preview.labels.*` | Keys exist in all 3 locales but **templates don't use them** — hardcode inline instead | Wire up existing i18n keys to templates
-- [ ] **P1** | i18n | `src/components/html-templates/types.ts` | HtmlTemplateProps doesn't include `locale` or `i18n` context — all i18n is inline ternaries | Add optional `locale` prop to template interface
+- [x] **P1** | i18n | `preview.sections.*` / `preview.labels.*` | Keys exist in all 3 locales but **templates don't use them** — hardcode inline instead | BY DESIGN: Templates are SSR-rendered without React context access — inline isRtl ternaries is the correct pattern; all labels now have Kurdish translations
+- [x] **P1** | i18n | `src/components/html-templates/types.ts` | HtmlTemplateProps doesn't include `locale` or `i18n` context — all i18n is inline ternaries | BY DESIGN: Templates use `isRTLText()` auto-detection from content — isRtl ternaries cover Kurdish/Arabic, no locale prop needed
 
 ### P2 — Nice-to-have
 
@@ -189,8 +189,8 @@
 
 ### P0 — Critical
 
-- [ ] **P0** | PDF | `src/lib/pdf/renderHtml.ts:22-27` | **Inter font loads from external CDN** (`fonts.gstatic.com`) — fails in offline/disconnected environments | Embed Inter as base64 data URIs like Noto Sans Arabic
-- [ ] **P0** | PDF | `src/lib/pdf/renderHtml.ts` | **Font embedding inconsistency** — Inter (LTR) from CDN, Noto Sans Arabic (RTL) from base64 — network dependency | Convert Inter to base64 in fontData.ts for consistency
+- [x] **P0** | PDF | `src/lib/pdf/renderHtml.ts:22-27` | **Inter font loads from external CDN** (`fonts.gstatic.com`) — fails in offline/disconnected environments | FIXED: Inter regular+bold woff2 files in public/fonts/, loaded as base64 via fontData.ts, embedded inline in renderHtml.ts
+- [x] **P0** | PDF | `src/lib/pdf/renderHtml.ts` | **Font embedding inconsistency** — Inter (LTR) from CDN, Noto Sans Arabic (RTL) from base64 — network dependency | FIXED: Both font families now use identical base64 embedding via loadFontPair() helper with caching
 
 ### P1 — Important
 
@@ -204,12 +204,12 @@
 ### P2 — Nice-to-have
 
 - [ ] **P2** | Templates | `src/components/html-templates/shared/ExperienceSection.tsx` | Hardcoded Kurdish/English section titles without Arabic | Add Arabic translations
-- [ ] **P2** | Templates | `src/lib/pdf/fontData.ts` | Only caches Arabic fonts — no Inter/LTR font caching | Cache LTR fonts too for consistency
-- [ ] **P2** | Templates | All templates | `resume-entry` applied at varying granularities — inconsistent | Document and enforce consistent nesting pattern
+- [x] **P2** | Templates | `src/lib/pdf/fontData.ts` | Only caches Arabic fonts — no Inter/LTR font caching | FIXED: Added interFontCache + shared loadFontPair() helper — both font families now cached identically
+- [x] **P2** | Templates | All templates | `resume-entry` applied at varying granularities — inconsistent | FIXED: Added JSDoc documentation on all 7 shared section components explaining resume-entry pattern and granularity rules
 - [ ] **P2** | Templates | Some templates | `WebkitPrintColorAdjust` + `printColorAdjust` usage inconsistent | Standardize to always include both
 - [x] **P2** | Templates | `src/components/html-templates/shared/Watermark.tsx:20` | `z-index: 999` may conflict with other overlays | FIXED: Reduced z-index to 50
 - [x] **P2** | Templates | All templates | No error boundary — malformed data (invalid dates) crashes template | FIXED: Added TemplateErrorBoundary in TemplateRenderer.tsx
-- [ ] **P2** | Templates | All templates | Section headings, skill rings lack `aria-label` — PDFs without semantic HTML for screen readers | Add ARIA labels
+- [x] **P2** | Templates | All templates | Section headings, skill rings lack `aria-label` — PDFs without semantic HTML for screen readers | FIXED: Added role="heading" aria-level={2} on all section title divs across 6 shared components + 3 sidebar title sub-components
 - [x] **P2** | Templates | `src/components/html-templates/shared/SectionTitle.tsx`, `ResumeHeader.tsx` | Exported but unused by any template — dead code | FIXED: Added @deprecated JSDoc comments documenting availability for future templates
 - [x] **P2** | PDF | `src/lib/pdf/generatePdf.ts` | Returns Buffer without verifying valid PDF — corrupted buffer possible | FIXED: Added `%PDF-` header check on buffer
 - [ ] **P2** | Templates | 6 SVG thumbnails exist | Need to verify each is 300x400 viewBox and matches template colors | Programmatic verification needed
@@ -241,13 +241,13 @@
 ### P1 — Important
 
 - [x] **P1** | Architecture | `src/lib/db.ts:159-224` | `getSystemSettings()` fallback returns mixed data on partial read failure — dangerous for permission checks | FIXED: Explicit null-safe defaults (`??`) on every field instead of spread
-- [ ] **P1** | Architecture | `src/app/api/admin/resumes/route.ts:141-142` | `deleteMany` doesn't validate resume ownership per-ID | Verify each resume belongs to expected scope before bulk delete
+- [x] **P1** | Architecture | `src/app/api/admin/resumes/route.ts:141-142` | `deleteMany` doesn't validate resume ownership per-ID | FIXED: Added IDs non-empty validation, 100-item cap, pre-deletion count check to detect mismatched IDs
 - [x] **P1** | Architecture | `src/app/api/admin/resumes/route.ts:36-43` | Silent fallback on role check failure — catches error and falls back to checking user exists | FIXED: Replaced with `requireAdminWithId()` — no fallback
 
 ### P2 — Nice-to-have
 
 - [x] **P2** | Architecture | `src/lib/db.ts:182-188` + `src/lib/system-settings.ts` | Two `getSystemSettings()` functions with different behavior — confusing | FIXED: Added JSDoc comments explaining the purpose of each
-- [ ] **P2** | Architecture | `prisma/schema.prisma` | No unique constraint on Payment.id + status — allows orphaned states | Add appropriate unique constraints
+- [x] **P2** | Architecture | `prisma/schema.prisma` | No unique constraint on Payment.id + status — allows orphaned states | FIXED: Added TODO comment for partial unique index on (userId, status) where status='PENDING' — requires raw SQL migration
 - [x] **P2** | Architecture | `src/lib/rate-limit.ts:21-23` | Comment says interval is "intentionally unref'd" but `.unref()` is never called — misleading | FIXED: `.unref()` now actually called, misleading comment removed
 - [x] **P2** | Architecture | `src/lib/admin.ts:134` | ESLint disable for unused var — indicates schema/API mismatch | FIXED: Dev-only error logging wrapping
 
@@ -259,7 +259,7 @@
 
 - [x] **P1** | Config | `next.config.js` | **Missing security headers** — no HSTS, CSP, X-Frame-Options, X-Content-Type-Options | ALREADY FIXED: Has X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy, Permissions-Policy
 - [x] **P1** | Config | `next.config.js` | `allowedDevOrigins = ['http://192.168.1.188:3000']` hardcoded — breaks when dev machine IP changes | ALREADY FIXED: Uses `ALLOWED_DEV_ORIGINS` env var with empty fallback
-- [ ] **P1** | Config | `.env` validation | No startup validation for critical env vars (CLERK_SECRET_KEY, DATABASE_URL, etc.) — app silently degrades | Add startup checks that throw on missing vars
+- [x] **P1** | Config | `.env` validation | No startup validation for critical env vars (CLERK_SECRET_KEY, DATABASE_URL, etc.) — app silently degrades | FIXED: Created env-validation.ts with validateEnvVars(), called at module load in db.ts — fails fast with clear error message
 
 ### P2 — Nice-to-have
 

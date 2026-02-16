@@ -1,5 +1,9 @@
 import React from 'react';
 
+interface WatermarkProps {
+  isRTL?: boolean;
+}
+
 const watermarkPositions = [
   { top: '10%', left: '5%' },
   { top: '30%', left: '35%' },
@@ -8,7 +12,7 @@ const watermarkPositions = [
   { top: '75%', left: '30%' },
 ];
 
-export function Watermark() {
+export function Watermark({ isRTL = false }: WatermarkProps) {
   return (
     <div
       style={{
@@ -45,7 +49,7 @@ export function Watermark() {
               letterSpacing: 2,
             }}
           >
-            PREVIEW ONLY
+            {isRTL ? 'پێشبینین تەنها' : 'PREVIEW ONLY'}
           </span>
           <span
             style={{
@@ -56,7 +60,7 @@ export function Watermark() {
               marginTop: 4,
             }}
           >
-            Upgrade to remove watermark
+            {isRTL ? 'بەرزکردنەوە بۆ لابردنی واتەرمارک' : 'Upgrade to remove watermark'}
           </span>
         </div>
       ))}

@@ -13,15 +13,15 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
   const sectionHeading: React.CSSProperties = { fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #E5E7EB', paddingBottom: '4px', marginBottom: '8px', textAlign };
   const contactItems = [data.personal.email, data.personal.phone, data.personal.location].filter(Boolean);
   const linkItems = [
-    data.personal.linkedin ? `${isRtl ? 'لينكدإن' : 'LinkedIn'}: ${data.personal.linkedin}` : null,
-    data.personal.website ? `${isRtl ? 'الموقع' : 'Web'}: ${data.personal.website}` : null,
+    data.personal.linkedin ? `LinkedIn: ${data.personal.linkedin}` : null,
+    data.personal.website ? `${isRtl ? 'پۆرتفۆلیۆ' : 'Web'}: ${data.personal.website}` : null,
   ].filter(Boolean);
   const demographicItems = [
-    data.personal.dateOfBirth ? `${isRtl ? 'تاريخ الميلاد' : 'DOB'}: ${data.personal.dateOfBirth}` : null,
-    data.personal.gender ? `${isRtl ? 'الجنس' : 'Gender'}: ${data.personal.gender}` : null,
-    data.personal.nationality ? `${isRtl ? 'الجنسية' : 'Nationality'}: ${data.personal.nationality}` : null,
-    data.personal.maritalStatus ? `${isRtl ? 'الحالة' : 'Status'}: ${data.personal.maritalStatus}` : null,
-    data.personal.country ? `${isRtl ? 'البلد' : 'Country'}: ${data.personal.country}` : null,
+    data.personal.dateOfBirth ? `${isRtl ? 'لەدایکبوون:' : 'DOB:'} ${data.personal.dateOfBirth}` : null,
+    data.personal.gender ? `${isRtl ? 'ڕەگەز:' : 'Gender:'} ${data.personal.gender}` : null,
+    data.personal.nationality ? `${isRtl ? 'نەتەوە:' : 'Nationality:'} ${data.personal.nationality}` : null,
+    data.personal.maritalStatus ? `${isRtl ? 'باری خێزانی:' : 'Status:'} ${data.personal.maritalStatus}` : null,
+    data.personal.country ? `${isRtl ? 'وڵات:' : 'Country:'} ${data.personal.country}` : null,
   ].filter(Boolean);
 
   return (
@@ -87,20 +87,20 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.summary && (
         <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'الملخص' : 'Summary'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'پوختە' : 'Summary'}</h2>
           <p style={{ fontSize: '13px', lineHeight: 1.6, textAlign }}>{data.summary}</p>
         </div>
       )}
 
       {data.experience && data.experience.length > 0 && (
         <div className="resume-section" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'الخبرات' : 'Experience'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'ئەزموون' : 'Experience'}</h2>
           {data.experience.map((exp, i) => (
             <div key={i} className="resume-entry" style={{ marginBottom: '16px' }}>
               <div style={flexRow}>
                 <strong style={{ fontSize: '14px' }}>{exp.jobTitle}</strong>
                 <span style={{ fontSize: '12px', color: '#6B7280' }}>
-                  {exp.startDate}{exp.endDate ? ` - ${exp.endDate}` : exp.current ? ` - ${isRtl ? 'حاضر' : 'Present'}` : ''}
+                  {exp.startDate}{exp.endDate ? ` - ${exp.endDate}` : exp.current ? ` - ${isRtl ? 'ئێستا' : 'Present'}` : ''}
                 </span>
               </div>
               <p style={{ fontSize: '13px', color: '#6B7280', textAlign }}>{exp.company}{exp.location ? `, ${exp.location}` : ''}</p>
@@ -114,7 +114,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.education && data.education.length > 0 && (
         <div className="resume-section" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'التعليم' : 'Education'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'خوێندن' : 'Education'}</h2>
           {data.education.map((edu, i) => (
             <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>
@@ -124,7 +124,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
                 </span>
               </div>
               <p style={{ fontSize: '13px', color: '#6B7280', textAlign }}>{edu.school}{edu.location ? `, ${edu.location}` : ''}</p>
-              {edu.gpa && <p style={{ fontSize: '12px', color: '#6B7280', textAlign }}>{isRtl ? 'المعدل' : 'GPA'}: {edu.gpa}</p>}
+              {edu.gpa && <p style={{ fontSize: '12px', color: '#6B7280', textAlign }}>{isRtl ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}</p>}
               {edu.achievements && <p style={{ fontSize: '12px', marginTop: '4px', lineHeight: 1.5, textAlign }}>{edu.achievements}</p>}
             </div>
           ))}
@@ -133,7 +133,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.skills && data.skills.length > 0 && (
         <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'المهارات' : 'Skills'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'لێهاتووییەکان' : 'Skills'}</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', direction: dir }}>
             {data.skills.map((skill, i) => (
               <span key={i} style={{ fontSize: '12px', backgroundColor: '#F3F4F6', padding: '2px 10px', borderRadius: '4px' }}>
@@ -146,7 +146,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.languages && data.languages.length > 0 && (
         <div className="resume-section resume-entry" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'اللغات' : 'Languages'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'زمانەکان' : 'Languages'}</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', direction: dir }}>
             {data.languages.map((lang, i) => (
               <span key={i} style={{ fontSize: '13px' }}>
@@ -159,7 +159,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.projects && data.projects.length > 0 && (
         <div className="resume-section" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'المشاريع' : 'Projects'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'پرۆژەکان' : 'Projects'}</h2>
           {data.projects.map((proj, i) => (
             <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>
@@ -180,7 +180,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
 
       {data.certifications && data.certifications.length > 0 && (
         <div className="resume-section" style={{ marginBottom: '24px' }}>
-          <h2 style={sectionHeading}>{isRtl ? 'الشهادات' : 'Certifications'}</h2>
+          <h2 style={sectionHeading}>{isRtl ? 'بڕوانامەکان' : 'Certifications'}</h2>
           {data.certifications.map((cert, i) => (
             <div key={i} className="resume-entry" style={{ marginBottom: '12px' }}>
               <div style={flexRow}>

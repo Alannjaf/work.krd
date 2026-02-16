@@ -88,7 +88,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
         }
       `}} />
 
-      {watermark && <Watermark />}
+      {watermark && <Watermark isRTL={isRtl} />}
 
       {/* Print background: full-width gradient fixed on every page */}
       <div className="elegant-bg" />

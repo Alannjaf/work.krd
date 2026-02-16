@@ -28,7 +28,7 @@ function SidebarSectionTitle({ children, isRtl }: { children: React.ReactNode; i
         backgroundColor: ACCENT,
         flexShrink: 0,
       }} />
-      <div style={{
+      <div role="heading" aria-level={2} style={{
         fontSize: 12,
         fontWeight: 'bold',
         color: SIDEBAR_TEXT,
@@ -136,7 +136,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
         }
       `}} />
 
-      {watermark && <Watermark />}
+      {watermark && <Watermark isRTL={isRtl} />}
 
       {/* Sidebar background: position:fixed repeats on every print page (needs @page margin:0) */}
       <div className="modern-sidebar-bg" />

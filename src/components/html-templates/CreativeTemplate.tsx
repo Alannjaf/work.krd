@@ -215,7 +215,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
         }
       `}} />
 
-      {watermark && <Watermark />}
+      {watermark && <Watermark isRTL={isRtl} />}
       <div className="creative-sidebar-bg" />
 
       <div style={{ display: 'flex', flexDirection: 'row', position: 'relative', zIndex: 1 }}>

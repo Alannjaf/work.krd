@@ -1,3 +1,7 @@
+/**
+ * Each individual experience entry is wrapped with className="resume-entry" for page break control.
+ * The section wrapper uses className="resume-section" for heading orphan prevention.
+ */
 import React from 'react';
 import type { WorkExperience } from '@/types/resume';
 
@@ -61,9 +65,9 @@ export function ExperienceSection({
   return (
     <div style={{ marginBottom: 24 }}>
       {title !== undefined ? (
-        title && <div style={titleStyle}>{title}</div>
+        title && <div role="heading" aria-level={2} style={titleStyle}>{title}</div>
       ) : (
-        <div style={titleStyle}>{defaultTitle}</div>
+        <div role="heading" aria-level={2} style={titleStyle}>{defaultTitle}</div>
       )}
       {experiences.map((exp, index) => (
         <div
