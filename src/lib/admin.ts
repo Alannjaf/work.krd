@@ -55,7 +55,7 @@ export async function logAdminAction(
         adminId,
         action,
         target,
-        details: details ?? undefined,
+        details: details ? (details as any) : null,
       },
     })
   } catch (error) {

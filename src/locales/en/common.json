@@ -548,7 +548,7 @@
         "countryPlaceholder": "e.g., Iraq, Kurdistan Region"
       },
       "photoUpgrade": {
-        "title": "Profile photo upload is available for BASIC and PRO plans",
+        "title": "Profile photo upload is available for PRO plan",
         "description": "Upgrade your plan to add a professional profile photo"
       },
       "uploadPhoto": "Upload Photo",
@@ -597,7 +597,6 @@
     },
     "tiers": {
       "free": "Free",
-      "basic": "Basic", 
       "pro": "Pro"
     }
   },
@@ -1175,11 +1174,6 @@
         "name": "Free",
         "description": "Perfect for getting started",
         "buttonText": "Get Started Free"
-      },
-      "basic": {
-        "name": "Basic",
-        "description": "Great for job seekers",
-        "buttonText": "Upgrade Now"
       },
       "pro": {
         "name": "Pro",

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
+import { PLAN_NAMES, SUBSCRIPTION_DURATION_MS } from '@/lib/constants'
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('action must be "upgrade" or "downgrade"')
     }
 
-    const plan = action === 'upgrade' ? 'PRO' : 'FREE'
+    const plan = action === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE
     let successCount = 0
     let failureCount = 0
 
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
                 plan,
                 status: 'ACTIVE',
                 startDate: new Date(),
-                endDate: plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
               }
             })
           } else {
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
                 plan,
                 status: 'ACTIVE',
                 startDate: new Date(),
-                endDate: plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
               }
             })
           }

@@ -549,7 +549,7 @@ export function UserManagement() {
               <p className="text-sm text-gray-600 mb-2">
                 Are you sure you want to {bulkAction === 'upgrade' ? 'upgrade' : 'downgrade'}{' '}
                 <strong>{selectedIds.length}</strong> user(s) to{' '}
-                <strong>{bulkAction === 'upgrade' ? 'PRO' : 'FREE'}</strong>?
+                <strong>{bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE}</strong>?
               </p>
 
               {bulkAction === 'upgrade' && (
