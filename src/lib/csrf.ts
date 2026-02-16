@@ -1,80 +1,59 @@
-import { randomBytes } from 'crypto'
+import { createHmac, randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 
 const CSRF_HEADER = 'x-csrf-token'
-const TOKEN_EXPIRY_MS = 10 * 60 * 1000 // 10 minutes
+const TOKEN_EXPIRY_MS = 30 * 60 * 1000 // 30 minutes
 
-interface StoredToken {
-  token: string
-  expiresAt: number
+// Use CLERK_SECRET_KEY as HMAC secret (always available in server environment)
+function getSecret(): string {
+  const secret = process.env.CLERK_SECRET_KEY || process.env.CRON_SECRET || 'fallback-dev-secret'
+  return secret
 }
 
-// In-memory token store keyed by admin userId
-// Each admin gets one active token at a time
-const tokenStore = new Map<string, StoredToken>()
-
 /**
- * Generate a CSRF token for a given admin user and return it.
- * If the user already has a valid (non-expired) token, return it instead
- * of replacing it. This prevents race conditions when multiple GET
- * requests fire in parallel — they all return the same token.
+ * Generate a signed CSRF token for a given admin user.
+ * Format: timestamp.nonce.signature
+ * Stateless — no server-side storage needed (works on serverless).
  */
 export function generateCsrfToken(userId: string): string {
-  // Clean up expired tokens periodically
-  pruneExpiredTokens()
-
-  const existing = tokenStore.get(userId)
-  if (existing && Date.now() <= existing.expiresAt) {
-    return existing.token
-  }
-
-  const token = randomBytes(32).toString('hex')
-  tokenStore.set(userId, {
-    token,
-    expiresAt: Date.now() + TOKEN_EXPIRY_MS,
-  })
-  return token
+  const timestamp = Date.now().toString()
+  const nonce = randomBytes(16).toString('hex')
+  const payload = `${userId}:${timestamp}:${nonce}`
+  const signature = createHmac('sha256', getSecret()).update(payload).digest('hex')
+  return `${timestamp}.${nonce}.${signature}`
 }
 
 /**
- * Validate a CSRF token from the request header against the stored token for a user.
- * Returns true if valid, false otherwise. Tokens are invalidated after single use
- * to prevent replay attacks.
+ * Validate a signed CSRF token. Stateless — verifies signature and expiry.
  */
 export function validateCsrfToken(userId: string, token: string | null): boolean {
   if (!token) return false
 
-  // Prune expired tokens on every validation to prevent unbounded growth
-  pruneExpiredTokens()
+  const parts = token.split('.')
+  if (parts.length !== 3) return false
 
-  const stored = tokenStore.get(userId)
-  if (!stored) return false
+  const [timestamp, nonce, signature] = parts
 
   // Check expiration
-  if (Date.now() > stored.expiresAt) {
-    tokenStore.delete(userId)
-    return false
-  }
+  const tokenAge = Date.now() - parseInt(timestamp, 10)
+  if (isNaN(tokenAge) || tokenAge > TOKEN_EXPIRY_MS || tokenAge < 0) return false
 
-  // Constant-time comparison to prevent timing attacks
-  if (token.length !== stored.token.length) return false
+  // Verify signature
+  const payload = `${userId}:${timestamp}:${nonce}`
+  const expected = createHmac('sha256', getSecret()).update(payload).digest('hex')
+
+  // Constant-time comparison
+  if (signature.length !== expected.length) return false
   let mismatch = 0
-  for (let i = 0; i < token.length; i++) {
-    mismatch |= token.charCodeAt(i) ^ stored.token.charCodeAt(i)
-  }
-  const isValid = mismatch === 0
-
-  // Invalidate token after use to prevent replay attacks
-  if (isValid) {
-    tokenStore.delete(userId)
+  for (let i = 0; i < signature.length; i++) {
+    mismatch |= signature.charCodeAt(i) ^ expected.charCodeAt(i)
   }
 
-  return isValid
+  return mismatch === 0
 }
 
 /**
- * Attach a CSRF token to a GET response for an admin user.
- * The client reads this header and sends it back on POST/DELETE requests.
+ * Attach a CSRF token to a response for an admin user.
  */
 export function attachCsrfToken(response: NextResponse, userId: string): NextResponse {
   const token = generateCsrfToken(userId)
@@ -87,18 +66,6 @@ export function attachCsrfToken(response: NextResponse, userId: string): NextRes
  */
 export function getCsrfTokenFromRequest(request: Request): string | null {
   return request.headers.get(CSRF_HEADER)
-}
-
-/**
- * Remove expired tokens from the store.
- */
-function pruneExpiredTokens(): void {
-  const now = Date.now()
-  for (const [userId, stored] of tokenStore) {
-    if (now > stored.expiresAt) {
-      tokenStore.delete(userId)
-    }
-  }
 }
 
 export { CSRF_HEADER }
