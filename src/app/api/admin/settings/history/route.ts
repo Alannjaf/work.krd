@@ -5,6 +5,7 @@ import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-hel
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { getCsrfTokenFromRequest, validateCsrfToken, attachCsrfToken } from '@/lib/csrf'
 import { prisma } from '@/lib/prisma'
+import { devError } from '@/lib/admin-utils'
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
     const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-settings-history' })
     if (!success) return rateLimitResponse(resetIn)
 
-    const snapshots = await (prisma as any).settingsSnapshot.findMany({
+    const snapshots = await prisma.settingsSnapshot.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: { id: true, savedBy: true, createdAt: true }
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     if (error instanceof Error && error.message === 'Unauthorized: Admin access required') {
       return forbiddenResponse('Unauthorized')
     }
-    console.error('[AdminSettings] Failed to load settings history:', error)
+    devError('[AdminSettings] Failed to load settings history:', error)
     return errorResponse('Failed to load settings history', 500)
   }
 }
@@ -45,13 +46,13 @@ export async function POST(req: NextRequest) {
     const { snapshotId } = await req.json()
     if (!snapshotId) return errorResponse('Missing snapshotId', 400)
 
-    const snapshot = await (prisma as any).settingsSnapshot.findUnique({
+    const snapshot = await prisma.settingsSnapshot.findUnique({
       where: { id: snapshotId }
     })
     if (!snapshot) return errorResponse('Snapshot not found', 404)
 
     // Restore settings from snapshot
-    await updateSystemSettings(snapshot.data)
+    await updateSystemSettings(snapshot.data as Record<string, unknown>)
     invalidateSettingsCache()
 
     await logAdminAction(adminId, 'REVERT_SETTINGS', 'system_settings', {
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error && error.message === 'Unauthorized: Admin access required') {
       return forbiddenResponse('Unauthorized')
     }
-    console.error('[AdminSettings] Failed to revert settings:', error)
+    devError('[AdminSettings] Failed to revert settings:', error)
     return errorResponse('Failed to revert settings', 500)
   }
 }
