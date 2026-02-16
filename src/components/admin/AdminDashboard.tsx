@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppHeader } from '@/components/shared/AppHeader'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { getTemplateIds } from '@/lib/templates'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { useRouter } from 'next/navigation'
 import { AdminStatsCards } from './AdminStatsCards'
 import { AdminSubscriptionStatus } from './AdminSubscriptionStatus'
 import { AdminSystemSettings } from './AdminSystemSettings'
 import { AdminQuickActions } from './AdminQuickActions'
+import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { Stats, SubscriptionStatus, SystemSettings } from './types'
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -34,6 +36,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
 export function AdminDashboard() {
   const { t } = useLanguage()
   const { csrfFetch } = useCsrfToken()
+  const router = useRouter()
   const availableTemplates = getTemplateIds()
   const [stats, setStats] = useState<Stats | null>(null)
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
@@ -49,6 +52,38 @@ export function AdminDashboard() {
     settings?: string;
     subscriptions?: string;
   }>({})
+  const [settingsDirty, setSettingsDirty] = useState(false)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const settingsDirtyRef = useRef(false)
+
+  const handleSettingsDirtyChange = useCallback((dirty: boolean) => {
+    setSettingsDirty(dirty)
+    settingsDirtyRef.current = dirty
+  }, [])
+
+  // Warn on browser close/refresh with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (settingsDirtyRef.current) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  const handleBackClick = () => {
+    if (settingsDirty) {
+      setShowUnsavedDialog(true)
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedDialog(false)
+    router.push('/dashboard')
+  }
 
   useEffect(() => {
     const loadAll = async () => {
@@ -174,14 +209,6 @@ export function AdminDashboard() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
-    )
-  }
-
   const hasErrors = Object.keys(errors).length > 0
 
   return (
@@ -190,7 +217,7 @@ export function AdminDashboard() {
         title="Admin Dashboard"
         showBackButton={true}
         backButtonText={t('pages.resumeBuilder.backToDashboard')}
-        backButtonHref="/dashboard"
+        onBackClick={handleBackClick}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -229,7 +256,7 @@ export function AdminDashboard() {
           </div>
         )}
 
-        {errors.stats ? null : <AdminStatsCards stats={stats} />}
+        {errors.stats ? null : <AdminStatsCards stats={stats} loading={loading && !stats} />}
 
         {errors.subscriptions ? null : (
           <AdminSubscriptionStatus
@@ -247,11 +274,18 @@ export function AdminDashboard() {
             saving={saving}
             onSave={saveSettings}
             onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
+            onDirtyChange={handleSettingsDirtyChange}
           />
         )}
 
         <AdminQuickActions />
       </div>
+
+      <UnsavedChangesDialog
+        open={showUnsavedDialog}
+        onCancel={() => setShowUnsavedDialog(false)}
+        onDiscard={handleConfirmDiscard}
+      />
     </div>
   )
 }

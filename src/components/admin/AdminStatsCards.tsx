@@ -6,9 +6,36 @@ import { Stats } from './types'
 
 interface AdminStatsCardsProps {
   stats: Stats | null
+  loading?: boolean
 }
 
-export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
+function StatSkeleton({ colSpan }: { colSpan?: string }) {
+  return (
+    <Card className={`p-6 ${colSpan ?? ''}`}>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-7 w-16 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
+      </div>
+    </Card>
+  )
+}
+
+export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" role="region" aria-label="Platform statistics loading">
+        <StatSkeleton />
+        <StatSkeleton />
+        <StatSkeleton />
+        <StatSkeleton />
+        <StatSkeleton colSpan="md:col-span-2 lg:col-span-2" />
+      </div>
+    )
+  }
+
   const totalPayments = stats?.payments
     ? stats.payments.pending + stats.payments.approved + stats.payments.rejected
     : 0

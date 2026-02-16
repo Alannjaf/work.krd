@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ interface AdminSystemSettingsProps {
   saving: boolean
   onSave: () => void | Promise<void>
   onRefresh: () => void
+  onDirtyChange?: (dirty: boolean) => void
 }
 
 export function AdminSystemSettings({
@@ -22,9 +23,14 @@ export function AdminSystemSettings({
   availableTemplates,
   saving,
   onSave,
-  onRefresh
+  onRefresh,
+  onDirtyChange
 }: AdminSystemSettingsProps) {
   const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const handleSetSettings = (newSettings: SystemSettings) => {
     setSettings(newSettings)
