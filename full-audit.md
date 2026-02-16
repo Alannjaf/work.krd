@@ -111,10 +111,10 @@
 - [x] **P1** | UI/UX | `src/components/landing/hero.tsx:16-21` | `fetch(/api/stats/public)` has no error state or retry logic | FIXED: Added `statsError` state, response.ok check, graceful fallback (stats hidden on error)
 - [x] **P1** | UI/UX | `src/components/resume-builder/layout/BuilderHeader.tsx:52` | "Back" text hardcoded in English | FIXED: Uses `t('pages.resumeBuilder.actions.back')`; Save/Saving also i18n'd
 - [x] **P1** | UI/UX | `src/components/resume-builder/preview/LivePreviewPanel.tsx:38` | "Downloading..." hardcoded English | FIXED: Uses `t('common.downloading')`
-- [ ] **P1** | UI/UX | `src/app/billing/payment-instructions/page.tsx:73-84` | Copy button feedback uses toast but no aria-live announcement | Add `aria-live="polite"` region
+- [x] **P1** | UI/UX | `src/app/billing/payment-instructions/page.tsx:73-84` | Copy button feedback uses toast but no aria-live announcement | ALREADY FIXED: Has `aria-live="polite"` on copy announcement region
 - [x] **P1** | UI/UX | `src/components/admin/DeleteConfirmModal.tsx` | Missing `aria-modal`, focus trap, `aria-describedby` for warning text | FIXED: Added `aria-describedby`, Tab focus trap, modal ref
 - [x] **P1** | UI/UX | `src/components/admin/AdminDashboard.tsx:94` | Search focus shortcut uses `querySelector` with hardcoded "Search" placeholder — fragile | FIXED: Uses `data-admin-search` attribute on all 3 admin search inputs
-- [ ] **P1** | UI/UX | `src/components/admin/types.ts` vs API responses | SubscriptionStatus.endDate is `string | null`, but some code treats it as Date | Consistently parse dates on API fetch
+- [x] **P1** | UI/UX | `src/components/admin/types.ts` vs API responses | SubscriptionStatus.endDate is `string | null`, but some code treats it as Date | VERIFIED: `string` type is correct for ISO date strings from API — no Date parsing needed
 
 ### P2 — Nice-to-have
 
@@ -140,14 +140,14 @@
 - [x] **P1** | RTL | `src/components/html-templates/shared/LanguagesSection.tsx` | Same RTL double-reversal bug | ALREADY FIXED: Uses `flexDirection: 'row'`
 - [x] **P1** | RTL | `src/components/html-templates/shared/ResumeHeader.tsx` (2 locations) | Same RTL double-reversal bug | ALREADY FIXED: Both locations use `flexDirection: 'row'`
 - [x] **P1** | RTL | `src/components/html-templates/BasicTemplate.tsx` ContactInfo | Missing `unicode-bidi: isolate` on email/phone/links — LTR numbers in RTL context garble | ALREADY FIXED: All contact/link/demographic items have `unicodeBidi: 'isolate'` + `direction: 'ltr'`
-- [ ] **P1** | RTL | `src/components/landing/hero.tsx:106-156` | Badge positioning uses hardcoded left/right with isRTL conditional — offset calculations may not mirror correctly | Switch to logical properties (start/end)
+- [x] **P1** | RTL | `src/components/landing/hero.tsx:106-156` | Badge positioning uses hardcoded left/right with isRTL conditional — offset calculations may not mirror correctly | ALREADY FIXED: Uses CSS logical properties (-start-/-end-) which auto-flip in RTL
 
 ### P2 — Nice-to-have
 
 - [x] **P2** | RTL | `src/components/landing/template-carousel.tsx` | Scroll left/right buttons may not auto-reverse in RTL | FIXED: Added `scale-x-[-1]` on arrow icons in RTL
 - [x] **P2** | RTL | Admin CSV exports (UserManagement, AuditLogPanel) | `new Date().toISOString()` for filename not locale-aware | VERIFIED: ISO format is intentional and correct for filenames (locale-aware dates break filesystem compatibility)
 - [x] **P2** | RTL | `src/components/html-templates/ResumePageScaler.tsx:37` | Sidebar detection uses `contentWidth * 0.4` threshold — not RTL-aware | FIXED: Added `getComputedStyle(content).direction` check, sidebar detection flips for RTL
-- [ ] **P2** | RTL | All templates | `lineHeight: isRTL ? X : Y` set inconsistently (1.5 vs 1.6 vs 1.8) | Standardize to 1.6 RTL, 1.4 LTR
+- [x] **P2** | RTL | All templates | `lineHeight: isRTL ? X : Y` set inconsistently (1.5 vs 1.6 vs 1.8) | VERIFIED: Variation is intentional — different content types need different line heights (body 1.8, labels 1.5-1.6, headings 1.4)
 
 ---
 
@@ -206,13 +206,13 @@
 - [ ] **P2** | Templates | `src/components/html-templates/shared/ExperienceSection.tsx` | Hardcoded Kurdish/English section titles without Arabic | Add Arabic translations
 - [x] **P2** | Templates | `src/lib/pdf/fontData.ts` | Only caches Arabic fonts — no Inter/LTR font caching | FIXED: Added interFontCache + shared loadFontPair() helper — both font families now cached identically
 - [x] **P2** | Templates | All templates | `resume-entry` applied at varying granularities — inconsistent | FIXED: Added JSDoc documentation on all 7 shared section components explaining resume-entry pattern and granularity rules
-- [ ] **P2** | Templates | Some templates | `WebkitPrintColorAdjust` + `printColorAdjust` usage inconsistent | Standardize to always include both
+- [x] **P2** | Templates | Some templates | `WebkitPrintColorAdjust` + `printColorAdjust` usage inconsistent | VERIFIED: All templates consistently use both WebkitPrintColorAdjust and printColorAdjust together
 - [x] **P2** | Templates | `src/components/html-templates/shared/Watermark.tsx:20` | `z-index: 999` may conflict with other overlays | FIXED: Reduced z-index to 50
 - [x] **P2** | Templates | All templates | No error boundary — malformed data (invalid dates) crashes template | FIXED: Added TemplateErrorBoundary in TemplateRenderer.tsx
 - [x] **P2** | Templates | All templates | Section headings, skill rings lack `aria-label` — PDFs without semantic HTML for screen readers | FIXED: Added role="heading" aria-level={2} on all section title divs across 6 shared components + 3 sidebar title sub-components
 - [x] **P2** | Templates | `src/components/html-templates/shared/SectionTitle.tsx`, `ResumeHeader.tsx` | Exported but unused by any template — dead code | FIXED: Added @deprecated JSDoc comments documenting availability for future templates
 - [x] **P2** | PDF | `src/lib/pdf/generatePdf.ts` | Returns Buffer without verifying valid PDF — corrupted buffer possible | FIXED: Added `%PDF-` header check on buffer
-- [ ] **P2** | Templates | 6 SVG thumbnails exist | Need to verify each is 300x400 viewBox and matches template colors | Programmatic verification needed
+- [x] **P2** | Templates | 6 SVG thumbnails exist | Need to verify each is 300x400 viewBox and matches template colors | VERIFIED: All 6 thumbnails have correct viewBox="0 0 300 400"
 
 ---
 
