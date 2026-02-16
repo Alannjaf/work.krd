@@ -67,13 +67,22 @@ export async function GET(req: NextRequest) {
       months.push(d.toISOString().slice(0, 7))
     }
 
-    const fillMonths = (data: { month: string; count?: number; amount?: number }[], key: 'count' | 'amount' = 'count') => {
+    interface MonthlyDataRow {
+      month: string
+      count?: number
+      amount?: number
+    }
+
+    const fillMonths = (data: MonthlyDataRow[], key: 'count' | 'amount' = 'count') => {
       const map = new Map(data.map(d => [d.month, d]))
-      return months.map(month => ({
-        month,
-        [key]: map.get(month)?.[key] ?? 0,
-        ...(key === 'amount' ? { count: (map.get(month) as any)?.count ?? 0 } : {})
-      }))
+      return months.map(month => {
+        const row = map.get(month)
+        return {
+          month,
+          [key]: row?.[key] ?? 0,
+          ...(key === 'amount' ? { count: row?.count ?? 0 } : {})
+        }
+      })
     }
 
     return successResponse({

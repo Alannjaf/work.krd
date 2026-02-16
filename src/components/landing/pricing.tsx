@@ -44,7 +44,7 @@ export function Pricing() {
             <h3 className="text-xl font-semibold text-gray-900">
               {t('pages.home.pricing.free.name')}
             </h3>
-            <div className="mt-4 flex items-baseline gap-1">
+            <div className="mt-4 flex items-baseline gap-1 h-12">
               <span className="text-4xl font-bold text-gray-900">
                 {t('pages.home.pricing.free.price')}
               </span>
@@ -87,7 +87,7 @@ export function Pricing() {
             <h3 className="text-xl font-semibold text-gray-900">
               {t('pages.home.pricing.pro.name')}
             </h3>
-            <div className="mt-4 flex items-baseline gap-1">
+            <div className="mt-4 flex items-baseline gap-1 h-12">
               <span className="text-4xl font-bold text-gray-900">
                 {t('pages.home.pricing.pro.price')}
               </span>

@@ -18,6 +18,8 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // CORS: Next.js same-origin default is intentional — single-domain SaaS, no subdomain API access needed.
+  // If subdomain access is ever required, add explicit CORS headers here.
   async headers() {
     return [
       {

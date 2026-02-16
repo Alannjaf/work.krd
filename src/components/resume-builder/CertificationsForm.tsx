@@ -19,7 +19,7 @@ export function CertificationsForm({ certifications, onChange }: CertificationsF
   
   const addCertification = () => {
     const newCertification: Certification = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: '',
       issuer: '',
       date: '',

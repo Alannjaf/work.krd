@@ -76,10 +76,15 @@ export async function POST(req: NextRequest) {
     const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-settings' })
     if (!success) return rateLimitResponse(resetIn)
 
+    let snapshotWarning: string | undefined
     const body = await req.json()
     const parsed = settingsSchema.safeParse(body)
     if (!parsed.success) {
-      return errorResponse('Invalid settings: ' + parsed.error.issues.map(i => i.message).join(', '), 400)
+      // Hide Zod validation details in production — could reveal schema structure
+      const detail = process.env.NODE_ENV === 'production'
+        ? 'Invalid settings data'
+        : 'Invalid settings: ' + parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
+      return errorResponse(detail, 400)
     }
 
     // Snapshot current settings before saving
@@ -103,8 +108,9 @@ export async function POST(req: NextRequest) {
         })
       }
     } catch (snapshotError) {
-      // Log but don't block the save — snapshots are best-effort
+      // Log and warn admin — snapshots are best-effort but admin should know
       devError('[AdminSettings] Failed to create snapshot:', snapshotError)
+      snapshotWarning = 'Settings snapshot failed — changes saved but no rollback point created.'
     }
 
     const savedSettings = await updateSystemSettings(parsed.data)
@@ -116,7 +122,8 @@ export async function POST(req: NextRequest) {
 
     return successResponse({
       success: true,
-      settings: savedSettings
+      settings: savedSettings,
+      ...(snapshotWarning ? { warning: snapshotWarning } : {}),
     })
   } catch (error) {
     if (error instanceof Error && error.message === 'Unauthorized: Admin access required') {

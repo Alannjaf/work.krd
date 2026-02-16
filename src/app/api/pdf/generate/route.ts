@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { ResumeData } from '@/types/resume';
 import React from 'react';
 import { errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
+import { devError } from '@/lib/admin-utils';
 import { PDFDocument } from 'pdf-lib';
 import { getHtmlTemplate } from '@/components/html-templates/registry';
 import { renderResumeToHtml } from '@/lib/pdf/renderHtml';
@@ -88,13 +89,13 @@ export async function POST(request: NextRequest) {
     if (action === 'download') {
       // Block download for restricted templates - user must upgrade
       if (!hasAccess) {
-        console.error(`[PDF] Template access denied: template="${template}", plan="${limits.subscription.plan}", availableTemplates=${JSON.stringify(limits.availableTemplates)}`);
+        devError(`[PDF] Template access denied: template="${template}", plan="${limits.subscription.plan}", availableTemplates=${JSON.stringify(limits.availableTemplates)}`);
         return forbiddenResponse('Upgrade required to download this template. Please upgrade your plan.');
       }
 
       // Check export limits
       if (!limits.canExport) {
-        console.error(`[PDF] Export limit reached: plan="${limits.subscription.plan}", exportCount=${limits.subscription.exportCount}`);
+        devError(`[PDF] Export limit reached: plan="${limits.subscription.plan}", exportCount=${limits.subscription.exportCount}`);
         return forbiddenResponse('Export limit reached. Please upgrade your plan to download more resumes.');
       }
 
@@ -162,12 +163,12 @@ export async function POST(request: NextRequest) {
       const html = await renderResumeToHtml(element, isRTL);
       pdfBuffer = await generatePdfFromHtml(html);
     } catch (pdfError) {
-      console.error('Error during PDF generation step:', pdfError);
+      devError('Error during PDF generation step:', pdfError);
       const pdfErrorMessage = pdfError instanceof Error ? pdfError.message : 'Unknown PDF generation error';
       const pdfErrorStack = pdfError instanceof Error ? pdfError.stack : undefined;
-      console.error('PDF generation error message:', pdfErrorMessage);
+      devError('PDF generation error message:', pdfErrorMessage);
       if (pdfErrorStack) {
-        console.error('PDF generation error stack:', pdfErrorStack);
+        devError('PDF generation error stack:', pdfErrorStack);
       }
       throw pdfError;
     }
@@ -195,22 +196,22 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('PDF generation error (top level):', error);
+    devError('PDF generation error (top level):', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     const errorName = error instanceof Error ? error.name : 'Error';
 
-    console.error('Error details:', {
+    devError('Error details:', {
       name: errorName,
       message: errorMessage,
       hasStack: !!errorStack,
     });
 
     if (errorStack) {
-      console.error('Full error stack:', errorStack);
+      devError('Full error stack:', errorStack);
     }
 
-    console.error('Error string representation:', String(error));
+    devError('Error string representation:', String(error));
 
     return errorResponse('Failed to generate PDF', 500);
   }

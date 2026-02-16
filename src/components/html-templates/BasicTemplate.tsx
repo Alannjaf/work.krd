@@ -54,7 +54,7 @@ export function BasicTemplate({ data }: HtmlTemplateProps) {
           </div>
         )}
         <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>
-          {data.personal.fullName || 'Your Name'}
+          {data.personal.fullName || (isRtl ? 'ناوی تەواو' : 'Your Name')}
         </h1>
         {data.personal.title && (
           <p style={{ fontSize: '16px', color: '#6B7280', marginBottom: '12px' }}>

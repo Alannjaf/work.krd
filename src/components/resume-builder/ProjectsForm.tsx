@@ -20,7 +20,7 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
   
   const addProject = () => {
     const newProject: Project = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: '',
       description: '',
       technologies: '',

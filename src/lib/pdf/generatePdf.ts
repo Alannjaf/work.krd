@@ -63,8 +63,9 @@ export async function generatePdfFromHtml(html: string): Promise<Buffer> {
     protocol: 'cdp',
   });
 
+  let page: Awaited<ReturnType<typeof browser.newPage>> | null = null;
   try {
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
 
     // Wait for fonts to be loaded (with 10s timeout to avoid hanging on slow CDN)
@@ -80,8 +81,17 @@ export async function generatePdfFromHtml(html: string): Promise<Buffer> {
       timeout: 30000,
     });
 
-    return Buffer.from(pdfBuffer);
+    const buffer = Buffer.from(pdfBuffer);
+
+    // Validate PDF header magic bytes
+    if (buffer.length < 5 || buffer.subarray(0, 5).toString() !== '%PDF-') {
+      throw new Error('Generated PDF buffer is invalid — missing %PDF- header');
+    }
+
+    return buffer;
   } finally {
+    // Close page before browser to prevent memory leaks
+    if (page) { try { await page.close(); } catch { /* page may already be closed */ } }
     await browser.close();
   }
 }

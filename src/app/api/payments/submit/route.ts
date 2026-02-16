@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
 const VALID_PLANS = [...PAID_PLANS] as const
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
       screenshotBuffer,
       screenshotType,
     }).catch((err) => {
-      console.error('[PaymentSubmit] Telegram notification failed:', err)
+      devError('[PaymentSubmit] Telegram notification failed:', err)
     })
 
     return successResponse({
@@ -120,7 +121,7 @@ export async function POST(req: Request) {
       message: 'Payment submitted successfully',
     }, 201)
   } catch (error) {
-    console.error('[PaymentSubmit] Failed to submit payment:', error)
+    devError('[PaymentSubmit] Failed to submit payment:', error)
     return errorResponse('Failed to submit payment', 500)
   }
 }

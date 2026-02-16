@@ -25,7 +25,7 @@ export function SkillsLanguagesSection({
 
   const addSkill = (name: string) => {
     onSkillsChange([...skills, {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       name,
       level: 'Intermediate'
     }])
@@ -41,7 +41,7 @@ export function SkillsLanguagesSection({
 
   const addSkillsFromAI = (aiSkills: Array<{ name: string; level: string }>) => {
     const newSkills = aiSkills.map(skill => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       name: skill.name,
       level: skill.level
     }))
@@ -50,7 +50,7 @@ export function SkillsLanguagesSection({
 
   const addLanguage = (name: string) => {
     onLanguagesChange([...languages, {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       name,
       proficiency: 'Conversational'
     }])

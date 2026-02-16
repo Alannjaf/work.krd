@@ -35,7 +35,7 @@ export function EducationSection({ education, onChange }: EducationSectionProps)
 
   const addEducation = () => {
     onChange([...education, {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       degree: '', field: '', school: '',
       location: '', startDate: '', endDate: ''
     }])

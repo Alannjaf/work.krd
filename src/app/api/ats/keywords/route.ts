@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { resumeDataSchema, MAX_REQUEST_SIZE } from '@/lib/ats-utils'
+import { devError } from '@/lib/admin-utils'
 
 export async function POST(request: NextRequest) {
   // Check request size (Issue #12)
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('[ATS Keywords]', error)
+    devError('[ATS Keywords]', error)
     return errorResponse('Failed to match keywords', 500)
   }
 }

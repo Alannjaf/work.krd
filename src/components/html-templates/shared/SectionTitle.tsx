@@ -1,3 +1,7 @@
+/**
+ * @deprecated Currently unused — templates define their own section title styles inline.
+ * Available for future templates that want a standardized section heading.
+ */
 import React from 'react';
 
 interface SectionTitleProps {

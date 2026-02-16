@@ -43,10 +43,10 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
       if (!d) return '';
       const date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return date.toLocaleDateString(isRtl ? 'ar' : 'en-US', { month: 'short', year: 'numeric' });
     };
     if (isRtl) {
-      return `${current ? '\u0626\u06CE\u0633\u062A\u0627' : fmt(end)} - ${fmt(start)}`;
+      return `${current ? 'ئێستا' : fmt(end)} - ${fmt(start)}`;
     }
     return `${fmt(start)} - ${current ? 'Present' : fmt(end)}`;
   };
@@ -127,7 +127,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.summary && (
             <div className="resume-section resume-entry" style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u067E\u0695\u06C6\u0641\u0627\u06CC\u0644\u06CC \u067E\u06CC\u0634\u06D5\u06CC\u06CC' : 'Professional Profile'}
+                {isRtl ? 'پڕۆفایلی پیشەیی' : 'Professional Profile'}
               </ElegantSectionTitle>
               <p style={{
                 fontSize: 10,
@@ -144,12 +144,12 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Contact */}
           <div style={{ marginBottom: 24 }}>
             <ElegantSectionTitle isRtl={isRtl}>
-              {isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}
+              {isRtl ? 'پەیوەندی' : 'Contact'}
             </ElegantSectionTitle>
             {data.personal.phone && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 9, color: GOLD, fontWeight: 'bold', textAlign, marginBottom: 2 }}>
-                  {isRtl ? '\u0698\u0645\u0627\u0631\u06D5\u06CC \u0645\u06C6\u0628\u0627\u06CC\u0644' : 'Phone'}
+                  {isRtl ? 'ژمارەی مۆبایل' : 'Phone'}
                 </div>
                 <div style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.phone}</span>
@@ -159,7 +159,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.email && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 9, color: GOLD, fontWeight: 'bold', textAlign, marginBottom: 2 }}>
-                  {isRtl ? '\u0626\u06CC\u0645\u06D5\u06CC\u06B5' : 'Email'}
+                  {isRtl ? 'ئیمەیڵ' : 'Email'}
                 </div>
                 <div style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.email}</span>
@@ -169,7 +169,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.website && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 9, color: GOLD, fontWeight: 'bold', textAlign, marginBottom: 2 }}>
-                  {isRtl ? '\u0648\u06CE\u0628\u0633\u0627\u06CC\u062A' : 'Website'}
+                  {isRtl ? 'وێبسایت' : 'Website'}
                 </div>
                 <div style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.website}</span>
@@ -179,7 +179,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.location && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 9, color: GOLD, fontWeight: 'bold', textAlign, marginBottom: 2 }}>
-                  {isRtl ? '\u0634\u0648\u06CE\u0646' : 'Address'}
+                  {isRtl ? 'شوێن' : 'Address'}
                 </div>
                 <div style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign }}>{data.personal.location}</div>
               </div>
@@ -200,7 +200,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.education && data.education.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u062E\u0648\u06CE\u0646\u062F\u0646' : 'Education'}
+                {isRtl ? 'خوێندن' : 'Education'}
               </ElegantSectionTitle>
               {data.education.map((edu) => (
                 <div key={edu.id} className="resume-entry" style={{ marginBottom: 12 }}>
@@ -211,7 +211,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
                     textAlign,
                     lineHeight: isRtl ? 1.6 : 1.4,
                   }}>
-                    {edu.degree}{edu.field ? ` ${isRtl ? '\u0644\u06D5' : 'in'} ${edu.field}` : ''}
+                    {edu.degree}{edu.field ? ` ${isRtl ? 'لە' : 'in'} ${edu.field}` : ''}
                   </div>
                   <div style={{
                     fontSize: 10,
@@ -226,7 +226,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
                   </div>
                   {edu.gpa && (
                     <div style={{ fontSize: 9, color: TEXT_MUTED, textAlign }}>
-                      {isRtl ? '\u0646\u0645\u0631\u06D5\u06CC \u06A9\u06C6\u06CC \u06AF\u0634\u062A\u06CC' : 'GPA'}: {edu.gpa}
+                      {isRtl ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}
                     </div>
                   )}
                   {edu.achievements && (
@@ -245,7 +245,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.skills && data.skills.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Technical Skills'}
+                {isRtl ? 'تواناییەکان' : 'Technical Skills'}
               </ElegantSectionTitle>
               {data.skills.map((skill) => (
                 <div key={skill.id} className="resume-entry" style={{
@@ -268,7 +268,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.languages && data.languages.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages'}
+                {isRtl ? 'زمانەکان' : 'Languages'}
               </ElegantSectionTitle>
               {data.languages.map((lang) => (
                 <div key={lang.id} className="resume-entry" style={{
@@ -289,35 +289,35 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {(data.personal.dateOfBirth || data.personal.gender || data.personal.nationality || data.personal.maritalStatus || data.personal.country) && (
             <div style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u0632\u0627\u0646\u06CC\u0627\u0631\u06CC \u06A9\u06D5\u0633\u06CC' : 'Personal'}
+                {isRtl ? 'زانیاری کەسی' : 'Personal'}
               </ElegantSectionTitle>
               {data.personal.dateOfBirth && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'DOB'}: </span>
+                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? 'لەدایکبوون' : 'DOB'}: </span>
                   <span style={{ fontSize: 10, color: TEXT_PRIMARY }}>{data.personal.dateOfBirth}</span>
                 </div>
               )}
               {data.personal.gender && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? '\u0695\u06D5\u06AF\u06D5\u0632' : 'Gender'}: </span>
+                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? 'ڕەگەز' : 'Gender'}: </span>
                   <span style={{ fontSize: 10, color: TEXT_PRIMARY }}>{data.personal.gender}</span>
                 </div>
               )}
               {data.personal.nationality && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? '\u0646\u06D5\u062A\u06D5\u0648\u06D5' : 'Nationality'}: </span>
+                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? 'نەتەوە' : 'Nationality'}: </span>
                   <span style={{ fontSize: 10, color: TEXT_PRIMARY }}>{data.personal.nationality}</span>
                 </div>
               )}
               {data.personal.maritalStatus && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? '\u0628\u0627\u0631\u06CC \u062E\u06CE\u0632\u0627\u0646\u06CC' : 'Status'}: </span>
+                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? 'باری خێزانی' : 'Status'}: </span>
                   <span style={{ fontSize: 10, color: TEXT_PRIMARY }}>{data.personal.maritalStatus}</span>
                 </div>
               )}
               {data.personal.country && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? '\u0648\u06B5\u0627\u062A' : 'Country'}: </span>
+                  <span style={{ fontSize: 9, color: GOLD, fontWeight: 'bold' }}>{isRtl ? 'وڵات' : 'Country'}: </span>
                   <span style={{ fontSize: 10, color: TEXT_PRIMARY }}>{data.personal.country}</span>
                 </div>
               )}
@@ -376,7 +376,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.experience && data.experience.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u0626\u06D5\u0632\u0645\u0648\u0648\u0646\u06CC \u06A9\u0627\u0631\u06CC' : 'Professional Experience'}
+                {isRtl ? 'ئەزموونی کاری' : 'Professional Experience'}
               </ElegantSectionTitle>
               {data.experience.map((exp) => (
                 <div key={exp.id} className="resume-entry" style={{ marginBottom: 16 }}>
@@ -433,7 +433,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.projects && data.projects.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u067E\u0695\u06C6\u0698\u06D5\u06A9\u0627\u0646' : 'Projects'}
+                {isRtl ? 'پڕۆژەکان' : 'Projects'}
               </ElegantSectionTitle>
               {data.projects.map((proj) => (
                 <div key={proj.id} className="resume-entry" style={{ marginBottom: 14 }}>
@@ -483,7 +483,7 @@ export function ElegantTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.certifications && data.certifications.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <ElegantSectionTitle isRtl={isRtl}>
-                {isRtl ? '\u0628\u0695\u0648\u0627\u0646\u0627\u0645\u06D5\u06A9\u0627\u0646' : 'Certifications'}
+                {isRtl ? 'بڕوانامەکان' : 'Certifications'}
               </ElegantSectionTitle>
               {data.certifications.map((cert) => (
                 <div key={cert.id} className="resume-entry" style={{ marginBottom: 12 }}>

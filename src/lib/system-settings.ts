@@ -10,6 +10,10 @@ export function invalidateSettingsCache() {
   settingsCache = null
 }
 
+/**
+ * Cached (60s TTL) — raw Prisma result for admin API and general use.
+ * For permission checks with parsed JSON arrays, see the private version in db.ts.
+ */
 export async function getSystemSettings() {
   // Return cached data if still fresh
   if (settingsCache && Date.now() - settingsCache.timestamp < CACHE_TTL_MS) {

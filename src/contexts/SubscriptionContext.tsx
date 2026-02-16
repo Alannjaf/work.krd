@@ -73,7 +73,7 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
       setSubscription(subscription);
       setPermissions(permissions);
       setAvailableTemplates(permissionsData.availableTemplates || ['modern']);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load subscription data');
     } finally {
       setIsLoading(false);

@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { PLAN_NAMES } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 // Simple in-memory rate limiter for webhook endpoint
 const webhookRateLimit = new Map<string, { count: number; resetTime: number }>()
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
       "svix-signature": svix_signature}) as WebhookEvent
     // Webhook signature verified
   } catch (error) {
-    console.error('[Webhook] Clerk webhook verification failed:', error);
+    devError('[Webhook] Clerk webhook verification failed:', error);
     return new Response('Error occured', {
       status: 400
     })

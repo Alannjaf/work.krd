@@ -86,7 +86,7 @@ export function TemplateCarousel() {
             style={{ [isRTL ? 'right' : 'left']: -20 }}
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className={`w-5 h-5 ${isRTL ? 'scale-x-[-1]' : ''}`} />
           </button>
 
           {/* Right arrow */}
@@ -96,7 +96,7 @@ export function TemplateCarousel() {
             style={{ [isRTL ? 'left' : 'right']: -20 }}
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className={`w-5 h-5 ${isRTL ? 'scale-x-[-1]' : ''}`} />
           </button>
 
           {/* Carousel */}

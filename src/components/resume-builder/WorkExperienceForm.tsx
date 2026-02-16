@@ -40,7 +40,7 @@ export function WorkExperienceForm({ experiences, onChange }: WorkExperienceForm
   
   const addExperience = () => {
     const newExperience: WorkExperience = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       jobTitle: '',
       company: '',
       location: '',

@@ -5,6 +5,7 @@ import { SectionType } from '@prisma/client'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES } from '@/lib/constants'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
+import { devError } from '@/lib/admin-utils'
 
 export async function POST(req: Request) {
   try {
@@ -188,7 +189,7 @@ export async function POST(req: Request) {
 
     return successResponse({ resumeId: resume.id })
   } catch (error) {
-    console.error('[OnboardingComplete] Failed to complete onboarding:', error)
+    devError('[OnboardingComplete] Failed to complete onboarding:', error)
     return errorResponse('Internal server error', 500)
   }
 }

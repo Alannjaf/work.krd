@@ -62,14 +62,14 @@ export function CompletionProgressBar({
   return (
     <div className="bg-white border-b border-gray-200">
       {/* Main bar row */}
-      <div className="flex items-center gap-3 px-4 h-10 sm:h-9">
+      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 h-9 sm:h-9">
         {/* Percentage text */}
-        <span className={`text-xs font-semibold whitespace-nowrap ${colorClass}`}>
+        <span className={`text-[11px] sm:text-xs font-semibold whitespace-nowrap ${colorClass}`}>
           {t('pages.resumeBuilder.completion.label', { percent: String(overallPercent) })}
         </span>
 
         {/* Progress bar track */}
-        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex-1 h-2 sm:h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full ${barGradient} transition-all duration-500 ease-out`}
             style={{ width: `${overallPercent}%` }}

@@ -18,7 +18,7 @@ export function LanguagesForm({ languages, onChange }: LanguagesFormProps) {
   
   const addLanguage = () => {
     const newLanguage: Language = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: '',
       proficiency: 'Conversational'}
     onChange([...languages, newLanguage])

@@ -73,10 +73,12 @@ export function DeleteConfirmModal({
             )}
             {itemCount && itemCount > 1 && (
               <p className="mt-2 text-sm font-medium text-red-600">
+{/* TODO: i18n — needs pages.admin.* namespace */}
                 {itemCount} items will be deleted
               </p>
             )}
             <p id="delete-modal-warning" className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+{/* TODO: i18n — needs pages.admin.* namespace */}
               This action cannot be undone.
             </p>
           </div>

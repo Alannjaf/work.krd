@@ -22,7 +22,7 @@ export function LanguagesSection({
 }: LanguagesSectionProps) {
   if (!languages || languages.length === 0) return null;
 
-  const defaultTitle = isRTL ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages';
+  const defaultTitle = isRTL ? 'زمانەکان' : 'Languages';
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -69,7 +69,7 @@ export function LanguagesSection({
               ...levelStyle,
             }}
           >
-            {language.proficiency || (isRTL ? '\u0628\u0646\u06D5\u0695\u06D5\u062A\u06CC' : 'Basic')}
+            {language.proficiency || (isRTL ? 'بنەڕەتی' : 'Basic')}
           </span>
         </div>
       ))}

@@ -20,7 +20,7 @@ export function SkillsSection({
 }: SkillsSectionProps) {
   if (!skills || skills.length === 0) return null;
 
-  const defaultTitle = isRTL ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06D5\u06A9\u0627\u0646' : 'Technical Skills';
+  const defaultTitle = isRTL ? 'توانایەکان' : 'Technical Skills';
 
   return (
     <div style={{ marginBottom: 24 }}>

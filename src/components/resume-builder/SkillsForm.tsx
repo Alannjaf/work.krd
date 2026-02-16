@@ -30,7 +30,7 @@ export function SkillsForm({ skills, onChange, experience = [] }: SkillsFormProp
   }, [skills])
   const addSkill = () => {
     const newSkill: Skill = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: '',
       level: 'Intermediate'}
     onChange([...skills, newSkill])
@@ -50,7 +50,7 @@ export function SkillsForm({ skills, onChange, experience = [] }: SkillsFormProp
 
   const addSkillsFromAI = (aiSkills: Array<{ name: string; level: string }>) => {
     const newSkills = aiSkills.map(skill => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       name: skill.name,
       level: skill.level
     }))

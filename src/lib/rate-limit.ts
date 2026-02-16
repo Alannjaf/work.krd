@@ -5,6 +5,9 @@ interface RateLimitEntry {
   resetTime: number;
 }
 
+// NOTE: In-memory store — rate limits are per-process only.
+// In a multi-instance deployment (e.g., multiple Netlify functions), each instance
+// has its own Map. For shared rate limiting across instances, use Redis or similar.
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Clean up expired entries every 5 minutes
@@ -48,6 +51,10 @@ function getClientIp(request: NextRequest): string {
   const realIp = request.headers.get('x-real-ip');
   if (realIp && /^[\d.:a-fA-F]+$/.test(realIp)) {
     return realIp;
+  }
+  // Dev fallback — all local requests share one rate limit bucket
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[RateLimit] No client IP detected, using 127.0.0.1 fallback');
   }
   return '127.0.0.1';
 }

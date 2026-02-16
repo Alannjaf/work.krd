@@ -60,6 +60,9 @@ export async function logAdminAction(
       },
     })
   } catch (error) {
-    console.error('[AuditLog] Failed to log admin action:', error)
+    // devError not used here to avoid circular dependency with admin-utils
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[AuditLog] Failed to log admin action:', error)
+    }
   }
 }

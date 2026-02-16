@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { Resend } from 'resend'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 // Lazy initialization to avoid build-time errors when API key is not set
 const getResend = () => new Resend(process.env.RESEND_API_KEY)
@@ -118,12 +119,14 @@ Sent from Work.krd contact form
       subject: `Contact Form: ${safeSubject}`,
       html: emailContent,
       text: textContent, // Added plain text version
-      replyTo: email})
+      // Reply-To omitted — user email is in the body. Using user-supplied email as
+      // Reply-To enables email spoofing. Reply manually from info@work.krd.
+    })
 
 
     return successResponse({ message: 'Message sent successfully' })
   } catch (error) {
-    console.error('[Contact] Failed to send contact email:', error);
+    devError('[Contact] Failed to send contact email:', error);
     return errorResponse('Failed to send message. Please try again.', 500)
   }
 }

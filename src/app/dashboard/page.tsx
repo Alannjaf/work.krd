@@ -87,6 +87,7 @@ export default function Dashboard() {
   }
 
   const handleDeleteResume = async (resumeId: string) => {
+    // TODO: Migrate to DeleteConfirmModal (admin pattern) for consistent UX with proper focus management
     // Show a warning toast with confirmation
     toast.custom(
       (toastData) => (
@@ -204,7 +205,7 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {resumes.map((resume) => (
                 <Card key={resume.id} className="p-4 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-3">

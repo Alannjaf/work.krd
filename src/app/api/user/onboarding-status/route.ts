@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 export async function GET() {
   try {
@@ -30,7 +31,7 @@ export async function GET() {
       userName: user.name
     })
   } catch (error) {
-    console.error('[OnboardingStatus] Failed to fetch:', error)
+    devError('[OnboardingStatus] Failed to fetch:', error)
     return errorResponse('Internal server error', 500)
   }
 }

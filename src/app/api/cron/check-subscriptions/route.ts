@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 // This endpoint can be called by external cron services like Vercel Cron, GitHub Actions, or any other scheduler
 export async function GET() {
@@ -9,7 +10,7 @@ export async function GET() {
     const cronSecret = headersList.get('authorization')
 
     if (!process.env.CRON_SECRET) {
-      console.error('[Cron] CRON_SECRET env var is not set — endpoint disabled')
+      devError('[Cron] CRON_SECRET env var is not set — endpoint disabled')
       return errorResponse('Cron endpoint not configured', 503)
     }
     if (cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -53,7 +54,7 @@ export async function POST() {
     const cronSecret = headersList.get('authorization')
 
     if (!process.env.CRON_SECRET) {
-      console.error('[Cron] CRON_SECRET env var is not set — endpoint disabled')
+      devError('[Cron] CRON_SECRET env var is not set — endpoint disabled')
       return errorResponse('Cron endpoint not configured', 503)
     }
     if (cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {

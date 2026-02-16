@@ -4,6 +4,7 @@ import { createResume, checkUserLimits, updateResume } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SectionType } from '@prisma/client'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 // GET - List all resumes for the current user
 export async function GET(req: Request) {
@@ -67,7 +68,7 @@ export async function GET(req: Request) {
 
     return response
   } catch (error) {
-    console.error('Error fetching resumes:', error)
+    devError('Error fetching resumes:', error)
     return errorResponse('Failed to fetch resumes', 500)
   }
 }
@@ -171,7 +172,7 @@ export async function POST(req: Request) {
       message: 'Resume created successfully'
     })
   } catch (error) {
-    console.error('[Resumes] Failed to create resume:', error);
+    devError('[Resumes] Failed to create resume:', error);
     return errorResponse('Failed to create resume', 500)
   }
 }

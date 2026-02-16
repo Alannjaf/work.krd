@@ -26,7 +26,7 @@ export function ProjectsSection({
 }: ProjectsSectionProps) {
   if (!projects || projects.length === 0) return null;
 
-  const defaultTitle = isRTL ? '\u067E\u0695\u06C6\u0698\u06D5\u06A9\u0627\u0646' : 'Notable Projects';
+  const defaultTitle = isRTL ? 'پڕۆژەکان' : 'Notable Projects';
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -86,7 +86,7 @@ export function ProjectsSection({
                 ...techStyle,
               }}
             >
-              {isRTL ? '\u062A\u06D5\u06A9\u0646\u06D5\u0644\u06C6\u0698\u06CC\u0627\u06A9\u0627\u0646' : 'Technologies'}: {project.technologies}
+              {isRTL ? 'تەکنەلۆژیاکان' : 'Technologies'}: {project.technologies}
             </div>
           )}
           {project.link && (
@@ -101,7 +101,7 @@ export function ProjectsSection({
                 ...linkStyle,
               }}
             >
-              {isRTL ? '\u0628\u06CC\u0646\u06CC\u0646\u06CC \u067E\u0695\u06C6\u0698\u06D5' : 'View Project'}
+              {isRTL ? 'بینینی پڕۆژە' : 'View Project'}
             </a>
           )}
         </div>

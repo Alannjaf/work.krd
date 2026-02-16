@@ -37,7 +37,7 @@ export function PaymentApprovalForm({
       try {
         const res = await csrfFetch(`/api/admin/payments/${payment.id}/review`)
         if (!res.ok) throw new Error('Failed to load payment details')
-        const data = await res.json()
+        const data: { screenshot?: string } = await res.json()
         if (!cancelled) {
           setReviewScreenshot(data.screenshot || null)
         }

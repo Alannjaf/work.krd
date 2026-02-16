@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 export async function GET() {
   try {
@@ -34,7 +35,7 @@ export async function GET() {
 
     return successResponse({ payments })
   } catch (error) {
-    console.error('[PaymentStatus] Failed to fetch payment status:', error)
+    devError('[PaymentStatus] Failed to fetch payment status:', error)
     return errorResponse('Failed to fetch payment status', 500)
   }
 }

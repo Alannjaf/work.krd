@@ -8,10 +8,11 @@ import OpenAI from 'openai'
 import { AIExtractedData } from '@/types/api'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { sanitizeHtml } from '@/lib/sanitize'
+import { devError } from '@/lib/admin-utils'
 
 // Validate critical env var at module load — fail fast instead of silent degradation
 if (!process.env.OPENROUTER_API_KEY) {
-  console.error('[ResumeUpload] OPENROUTER_API_KEY is not set — CV import will fail')
+  devError('[ResumeUpload] OPENROUTER_API_KEY is not set — CV import will fail')
 }
 
 // Initialize OpenRouter client
@@ -66,6 +67,12 @@ export async function POST(request: NextRequest) {
     
     if (file.size > maxSize) {
       return validationErrorResponse('File too large. Maximum size is 5MB.')
+    }
+
+    // Minimum file size check — reject empty/corrupt files
+    const minSize = 100 // 100 bytes
+    if (file.size < minSize) {
+      return validationErrorResponse('File appears to be empty or corrupt. Please upload a valid file.')
     }
 
     // Convert file to buffer
@@ -306,7 +313,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
         })
 
       } catch (error) {
-        console.error('[ResumeUpload] PDF processing failed:', error)
+        devError('[ResumeUpload] PDF processing failed:', error)
         return validationErrorResponse('Failed to process PDF. Please try again or convert to DOCX format.')
       }
     } else {
@@ -445,7 +452,7 @@ Return valid JSON only, no explanations.`
           extractedText: extractedText.slice(0, 500)})
 
       } catch (error) {
-        console.error('[ResumeUpload] AI extraction failed, falling back to basic:', error);
+        devError('[ResumeUpload] AI extraction failed, falling back to basic:', error);
         // Return basic extraction if AI fails
         const basicData = ResumeParser.basicExtraction(await ResumeParser.extractText(buffer, file.type))
         
@@ -464,7 +471,7 @@ Return valid JSON only, no explanations.`
     }
 
   } catch (error) {
-    console.error('[ResumeUpload] Failed to process resume:', error);
+    devError('[ResumeUpload] Failed to process resume:', error);
     return errorResponse('Failed to process resume. Please try again.', 500)
   }
 }

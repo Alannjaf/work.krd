@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { SystemSettings } from '@/types/api'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 async function getSystemSettings() {
   try {
@@ -86,7 +87,7 @@ export async function GET() {
       atsUsageLimit = settings.maxProATSChecks !== null && settings.maxProATSChecks !== undefined ? settings.maxProATSChecks : -1
     }
 
-    return successResponse({
+    const response = successResponse({
       // Subscription data
       subscription: {
         currentPlan: plan,
@@ -114,8 +115,11 @@ export async function GET() {
         canExportToPDF: limits.canExport,
       },
     })
+    // Prevent caching of sensitive subscription data
+    response.headers.set('Cache-Control', 'private, no-store')
+    return response
   } catch (error) {
-    console.error('[SubscriptionData] Failed to fetch:', error)
+    devError('[SubscriptionData] Failed to fetch:', error)
     return errorResponse('Internal server error', 500)
   }
 }

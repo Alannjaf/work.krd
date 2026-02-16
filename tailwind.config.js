@@ -55,7 +55,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'], // Inter loaded via next/font/google in layout.tsx
         arabic: ['Noto Sans Arabic', 'system-ui', 'sans-serif'],
       },
       keyframes: {

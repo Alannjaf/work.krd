@@ -71,10 +71,10 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
       if (!d) return '';
       const date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return date.toLocaleDateString(isRtl ? 'ar' : 'en-US', { month: 'short', year: 'numeric' });
     };
     if (isRtl) {
-      return `${current ? '\u0626\u06CE\u0633\u062A\u0627' : fmt(end)} - ${fmt(start)}`;
+      return `${current ? 'ئێستا' : fmt(end)} - ${fmt(start)}`;
     }
     return `${fmt(start)} - ${current ? 'Present' : fmt(end)}`;
   };
@@ -204,7 +204,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Contact */}
           <div style={{ marginBottom: 24 }}>
             <BoldSidebarTitle isRtl={isRtl}>
-              {isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}
+              {isRtl ? 'پەیوەندی' : 'Contact'}
             </BoldSidebarTitle>
             {data.personal.phone && (
               <div className="resume-entry" style={{ marginBottom: 8, textAlign }}>
@@ -245,7 +245,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.skills && data.skills.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <BoldSidebarTitle isRtl={isRtl}>
-                {isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Skills'}
+                {isRtl ? 'تواناییەکان' : 'Skills'}
               </BoldSidebarTitle>
               {data.skills.map((skill) => (
                 <div key={skill.id} className="resume-entry" style={{ marginBottom: 10 }}>
@@ -279,7 +279,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.languages && data.languages.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <BoldSidebarTitle isRtl={isRtl}>
-                {isRtl ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages'}
+                {isRtl ? 'زمانەکان' : 'Languages'}
               </BoldSidebarTitle>
               {data.languages.map((lang) => (
                 <div key={lang.id} className="resume-entry" style={{
@@ -300,35 +300,35 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {hasDemographics && (
             <div style={{ marginBottom: 24 }}>
               <BoldSidebarTitle isRtl={isRtl}>
-                {isRtl ? '\u0632\u0627\u0646\u06CC\u0627\u0631\u06CC \u06A9\u06D5\u0633\u06CC' : 'Personal'}
+                {isRtl ? 'زانیاری کەسی' : 'Personal'}
               </BoldSidebarTitle>
               {data.personal.dateOfBirth && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'DOB'}: </span>
+                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? 'لەدایکبوون' : 'DOB'}: </span>
                   <span style={{ fontSize: 10, color: SIDEBAR_TEXT }}>{data.personal.dateOfBirth}</span>
                 </div>
               )}
               {data.personal.gender && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? '\u0695\u06D5\u06AF\u06D5\u0632' : 'Gender'}: </span>
+                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? 'ڕەگەز' : 'Gender'}: </span>
                   <span style={{ fontSize: 10, color: SIDEBAR_TEXT }}>{data.personal.gender}</span>
                 </div>
               )}
               {data.personal.nationality && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? '\u0646\u06D5\u062A\u06D5\u0648\u06D5' : 'Nationality'}: </span>
+                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? 'نەتەوە' : 'Nationality'}: </span>
                   <span style={{ fontSize: 10, color: SIDEBAR_TEXT }}>{data.personal.nationality}</span>
                 </div>
               )}
               {data.personal.maritalStatus && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? '\u0628\u0627\u0631\u06CC \u062E\u06CE\u0632\u0627\u0646\u06CC' : 'Status'}: </span>
+                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? 'باری خێزانی' : 'Status'}: </span>
                   <span style={{ fontSize: 10, color: SIDEBAR_TEXT }}>{data.personal.maritalStatus}</span>
                 </div>
               )}
               {data.personal.country && (
                 <div className="resume-entry" style={{ marginBottom: 5, textAlign }}>
-                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? '\u0648\u06B5\u0627\u062A' : 'Country'}: </span>
+                  <span style={{ fontSize: 9, color: SIDEBAR_MUTED }}>{isRtl ? 'وڵات' : 'Country'}: </span>
                   <span style={{ fontSize: 10, color: SIDEBAR_TEXT }}>{data.personal.country}</span>
                 </div>
               )}
@@ -358,7 +358,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
               marginBottom: 10,
               lineHeight: isRtl ? 1.5 : 1.2,
             }}>
-              {isRtl ? '\u0633\u06B5\u0627\u0648 !' : 'HELLO !'}
+              {isRtl ? 'سڵاو !' : 'HELLO !'}
             </div>
             {data.summary && (
               <p style={{
@@ -379,7 +379,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.education && data.education.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <BoldMainTitle isRtl={isRtl}>
-                {isRtl ? '\u062E\u0648\u06CE\u0646\u062F\u0646' : 'Education'}
+                {isRtl ? 'خوێندن' : 'Education'}
               </BoldMainTitle>
               <div style={{
                 display: 'flex',
@@ -405,14 +405,14 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
                       lineHeight: isRtl ? 1.6 : 1.3,
                       marginBottom: 2,
                     }}>
-                      {edu.degree}{edu.field ? ` ${isRtl ? '\u0644\u06D5' : 'in'} ${edu.field}` : ''}
+                      {edu.degree}{edu.field ? ` ${isRtl ? 'لە' : 'in'} ${edu.field}` : ''}
                     </div>
                     <div style={{ fontSize: 10, color: MAIN_MUTED, textAlign, lineHeight: isRtl ? 1.5 : 1.3 }}>
                       {edu.school}{edu.location ? `, ${edu.location}` : ''}
                     </div>
                     {edu.gpa && (
                       <div style={{ fontSize: 10, color: MAIN_MUTED, textAlign }}>
-                        {isRtl ? '\u0646\u0645\u0631\u06D5\u06CC \u06A9\u06C6\u06CC \u06AF\u0634\u062A\u06CC' : 'GPA'}: {edu.gpa}
+                        {isRtl ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}
                       </div>
                     )}
                     {edu.achievements && (
@@ -432,7 +432,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.experience && data.experience.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <BoldMainTitle isRtl={isRtl}>
-                {isRtl ? '\u0626\u06D5\u0632\u0645\u0648\u0648\u0646\u06CC \u06A9\u0627\u0631\u06CC' : 'Work Experience'}
+                {isRtl ? 'ئەزموونی کاری' : 'Work Experience'}
               </BoldMainTitle>
               {data.experience.map((exp) => (
                 <div key={exp.id} className="resume-entry" style={{ marginBottom: 16 }}>
@@ -489,7 +489,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.projects && data.projects.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <BoldMainTitle isRtl={isRtl}>
-                {isRtl ? '\u067E\u0695\u06C6\u0698\u06D5\u06A9\u0627\u0646' : 'Projects'}
+                {isRtl ? 'پڕۆژەکان' : 'Projects'}
               </BoldMainTitle>
               {data.projects.map((proj) => (
                 <div key={proj.id} className="resume-entry" style={{ marginBottom: 14 }}>
@@ -539,7 +539,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.certifications && data.certifications.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <BoldMainTitle isRtl={isRtl}>
-                {isRtl ? '\u0628\u0695\u0648\u0627\u0646\u0627\u0645\u06D5\u06A9\u0627\u0646' : 'Certifications'}
+                {isRtl ? 'بڕوانامەکان' : 'Certifications'}
               </BoldMainTitle>
               {data.certifications.map((cert) => (
                 <div key={cert.id} className="resume-entry" style={{ marginBottom: 12 }}>

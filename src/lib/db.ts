@@ -162,6 +162,10 @@ export async function getUserSubscription(userId: string) {
 let _settingsCache: { data: any; ts: number } | null = null
 const _SETTINGS_TTL = 30 * 1000 // 30 seconds
 
+/**
+ * Private — parses JSON arrays, used by checkUserLimits() for permission checks.
+ * For admin API and general use, see the cached version in system-settings.ts.
+ */
 async function getSystemSettings() {
   if (_settingsCache && Date.now() - _settingsCache.ts < _SETTINGS_TTL) {
     return _settingsCache.data

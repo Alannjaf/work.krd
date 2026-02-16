@@ -34,15 +34,21 @@ export function ResumePageScaler({ children, className = '' }: ResumePageScalerP
     const entries = Array.from(content.querySelectorAll('.resume-entry'));
     const contentRect = content.getBoundingClientRect();
     const contentWidth = content.scrollWidth;
-    const sidebarThreshold = contentWidth * 0.4; // entries left of this are sidebar
+    const sidebarThreshold = contentWidth * 0.4; // 40% width boundary for sidebar detection
+    // Detect RTL — sidebar is on right side in RTL layouts
+    const isRtl = getComputedStyle(content).direction === 'rtl';
 
     const entryPositions = entries.map(el => {
       const rect = el.getBoundingClientRect();
+      const centerX = rect.left - contentRect.left + rect.width / 2;
       return {
         top: rect.top - contentRect.top,
         bottom: rect.bottom - contentRect.top,
         height: rect.height,
-        isSidebar: (rect.left - contentRect.left + rect.width / 2) < sidebarThreshold,
+        // In LTR, sidebar is on left (<40%); in RTL, sidebar is on right (>60%)
+        isSidebar: isRtl
+          ? centerX > contentWidth - sidebarThreshold
+          : centerX < sidebarThreshold,
       };
     });
 

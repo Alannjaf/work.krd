@@ -39,7 +39,7 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
   }, [education])
   const addEducation = () => {
     const newEducation: Education = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       degree: '',
       field: '',
       school: '',

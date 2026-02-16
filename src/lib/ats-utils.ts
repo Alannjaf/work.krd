@@ -146,12 +146,17 @@ ${resumeData.certifications?.length ? resumeData.certifications.map((cert) => `-
 }
 
 // --- AI config from env vars (Issue #9/7) ---
+function clampNumber(value: number, fallback: number, min: number, max: number): number {
+  if (isNaN(value) || value < min || value > max) return fallback
+  return value
+}
+
 export const ATS_AI_CONFIG = {
   model: process.env.ATS_AI_MODEL || 'google/gemini-3-flash-preview',
-  temperature: parseFloat(process.env.ATS_AI_TEMPERATURE || '0.3'),
-  scoreMaxTokens: parseInt(process.env.ATS_SCORE_MAX_TOKENS || '1500', 10),
-  keywordsMaxTokens: parseInt(process.env.ATS_KEYWORDS_MAX_TOKENS || '2000', 10),
-  timeoutMs: parseInt(process.env.ATS_AI_TIMEOUT_MS || '30000', 10),
+  temperature: clampNumber(parseFloat(process.env.ATS_AI_TEMPERATURE || '0.3'), 0.3, 0, 2),
+  scoreMaxTokens: clampNumber(parseInt(process.env.ATS_SCORE_MAX_TOKENS || '1500', 10), 1500, 50, 4000),
+  keywordsMaxTokens: clampNumber(parseInt(process.env.ATS_KEYWORDS_MAX_TOKENS || '2000', 10), 2000, 50, 4000),
+  timeoutMs: clampNumber(parseInt(process.env.ATS_AI_TIMEOUT_MS || '30000', 10), 30000, 1000, 120000),
 } as const
 
 // --- AI call timeout wrapper (Issue #11) ---

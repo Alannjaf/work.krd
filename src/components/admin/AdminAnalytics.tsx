@@ -6,7 +6,15 @@ import { devError } from '@/lib/admin-utils'
 import {
   LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  type TooltipProps,
 } from 'recharts'
+
+// Typed tooltip formatters — replaces `as any` casts
+type ChartTooltipFormatter = TooltipProps<number, string>['formatter']
+const signupsFormatter: ChartTooltipFormatter = (v) => [v, 'Signups']
+const revenueFormatter: ChartTooltipFormatter = (v) => [`${Number(v).toLocaleString()} IQD`, 'Revenue']
+const activeUsersFormatter: ChartTooltipFormatter = (v) => [v, 'Active Users']
+const resumesFormatter: ChartTooltipFormatter = (v) => [v, 'Resumes']
 
 interface AnalyticsData {
   signups: { month: string; count: number }[]
@@ -100,7 +108,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tickFormatter={formatMonth} tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip labelFormatter={(l) => l} formatter={((v: number) => [v, 'Signups']) as any} />
+            <Tooltip labelFormatter={(l) => l} formatter={signupsFormatter} />
             <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -113,7 +121,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tickFormatter={formatMonth} tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-            <Tooltip labelFormatter={(l) => l} formatter={((v: number) => [`${v.toLocaleString()} IQD`, 'Revenue']) as any} />
+            <Tooltip labelFormatter={(l) => l} formatter={revenueFormatter} />
             <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -126,7 +134,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tickFormatter={formatMonth} tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip labelFormatter={(l) => l} formatter={((v: number) => [v, 'Active Users']) as any} />
+            <Tooltip labelFormatter={(l) => l} formatter={activeUsersFormatter} />
             <Line type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -139,7 +147,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tickFormatter={formatMonth} tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip labelFormatter={(l) => l} formatter={((v: number) => [v, 'Resumes']) as any} />
+            <Tooltip labelFormatter={(l) => l} formatter={resumesFormatter} />
             <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

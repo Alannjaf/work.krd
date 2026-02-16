@@ -37,7 +37,7 @@ export function ExperienceSection({ experiences, onChange }: ExperienceSectionPr
 
   const addExperience = () => {
     onChange([...experiences, {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       jobTitle: '', company: '', location: '',
       startDate: '', endDate: '', current: false, description: ''
     }])

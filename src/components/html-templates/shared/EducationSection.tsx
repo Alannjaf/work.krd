@@ -14,12 +14,13 @@ interface EducationSectionProps {
   gpaStyle?: React.CSSProperties;
 }
 
-function formatDateRange(start: string, end: string | undefined): string {
+function formatDateRange(start: string, end: string | undefined, isRTL: boolean): string {
+  const locale = isRTL ? 'ar' : 'en-US';
   const fmt = (d: string | undefined) => {
     if (!d) return '';
     const date = new Date(d);
     if (isNaN(date.getTime())) return d;
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
   };
   return `${fmt(start)} - ${fmt(end)}`;
 }
@@ -38,7 +39,7 @@ export function EducationSection({
 }: EducationSectionProps) {
   if (!education || education.length === 0) return null;
 
-  const defaultTitle = isRTL ? '\u062E\u0648\u06CE\u0646\u062F\u0646' : 'Education';
+  const defaultTitle = isRTL ? 'خوێندن' : 'Education';
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -111,7 +112,7 @@ export function EducationSection({
             }}
           >
             <span>{edu.location}</span>
-            <span>{formatDateRange(edu.startDate, edu.endDate)}</span>
+            <span>{formatDateRange(edu.startDate, edu.endDate, isRTL)}</span>
           </div>
           {edu.gpa && (
             <div
@@ -124,7 +125,7 @@ export function EducationSection({
                 ...gpaStyle,
               }}
             >
-              {isRTL ? '\u0646\u0645\u0631\u06D5\u06CC \u06A9\u06C6\u06CC \u06AF\u0634\u062A\u06CC' : 'GPA'}: {edu.gpa}
+              {isRTL ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}
             </div>
           )}
           {edu.achievements && (

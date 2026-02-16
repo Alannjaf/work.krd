@@ -9,6 +9,9 @@ import { ScoreTab, type ATSScoreResult } from './ats/ScoreTab'
 import { KeywordsTab, type KeywordMatchResult } from './ats/KeywordsTab'
 import toast from 'react-hot-toast'
 
+/** Callback for reporting ATS usage changes back to the parent */
+type ATSUsageUpdateCallback = (used: number, limit: number) => void
+
 interface ATSOptimizationProps {
   isOpen: boolean
   onClose: () => void
@@ -17,7 +20,7 @@ interface ATSOptimizationProps {
   atsLimit: number
   atsUsed: number
   onNavigateToSection?: (sectionIndex: number) => void
-  onUsageUpdate?: (used: number, limit: number) => void // Issue #4: update usage in UI
+  onUsageUpdate?: ATSUsageUpdateCallback
 }
 
 export function ATSOptimization({

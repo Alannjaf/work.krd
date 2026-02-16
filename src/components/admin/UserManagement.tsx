@@ -70,7 +70,7 @@ export function UserManagement() {
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
   const [bulkProcessing, setBulkProcessing] = useState(false)
 
-  const debouncedSearch = useDebounce(searchTerm, 500)
+  const debouncedSearch = useDebounce(searchTerm, 300)
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -155,13 +155,17 @@ export function UserManagement() {
     }
   }
 
-  // Bulk selection handlers
+  // Bulk selection handlers — cap at 50 to prevent accidental mass operations
+  const MAX_BULK_SELECTION = 50
   const handleSelectUser = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((selectedId) => selectedId !== id)
-        : [...prev, id]
-    )
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((selectedId) => selectedId !== id)
+      if (prev.length >= MAX_BULK_SELECTION) {
+        toast.error(`Maximum ${MAX_BULK_SELECTION} users can be selected at once`)
+        return prev
+      }
+      return [...prev, id]
+    })
   }
 
   const handleSelectAll = () => {

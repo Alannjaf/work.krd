@@ -1,3 +1,7 @@
+/**
+ * @deprecated Currently unused — templates build their own header layouts inline.
+ * Available for future templates that want a standardized header component.
+ */
 import React from 'react';
 import type { PersonalInfo } from '@/types/resume';
 import { ProfilePhoto } from './ProfilePhoto';
@@ -30,10 +34,10 @@ function hasDemographics(personal: PersonalInfo): boolean {
   );
 }
 
-function formatFullDate(d: string): string {
+function formatFullDate(d: string, isRTL: boolean): string {
   const date = new Date(d);
   if (isNaN(date.getTime())) return d;
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(isRTL ? 'ar' : 'en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -59,31 +63,31 @@ export function ResumeHeader({
   if (showDemographics && hasDemographics(personal)) {
     if (personal.dateOfBirth) {
       demographicItems.push({
-        label: isRTL ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'Born',
-        value: formatFullDate(personal.dateOfBirth),
+        label: isRTL ? 'لەدایکبوون' : 'Born',
+        value: formatFullDate(personal.dateOfBirth, isRTL),
       });
     }
     if (personal.gender) {
       demographicItems.push({
-        label: isRTL ? '\u0695\u06D5\u06AF\u06D5\u0632' : 'Gender',
+        label: isRTL ? 'ڕەگەز' : 'Gender',
         value: personal.gender,
       });
     }
     if (personal.nationality) {
       demographicItems.push({
-        label: isRTL ? '\u0646\u06D5\u062A\u06D5\u0648\u06D5' : 'Nationality',
+        label: isRTL ? 'نەتەوە' : 'Nationality',
         value: personal.nationality,
       });
     }
     if (personal.maritalStatus) {
       demographicItems.push({
-        label: isRTL ? '\u0628\u0627\u0631\u06CC \u062E\u06CE\u0632\u0627\u0646\u06CC' : 'Marital Status',
+        label: isRTL ? 'باری خێزانی' : 'Marital Status',
         value: personal.maritalStatus,
       });
     }
     if (personal.country) {
       demographicItems.push({
-        label: isRTL ? '\u0648\u06B5\u0627\u062A' : 'Country',
+        label: isRTL ? 'وڵات' : 'Country',
         value: personal.country,
       });
     }

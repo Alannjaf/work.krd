@@ -88,10 +88,10 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
       if (!d) return '';
       const date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return date.toLocaleDateString(isRtl ? 'ar' : 'en-US', { month: 'short', year: 'numeric' });
     };
     if (isRtl) {
-      return `${current ? '\u0626\u06CE\u0633\u062A\u0627' : fmt(end)} - ${fmt(start)}`;
+      return `${current ? 'ئێستا' : fmt(end)} - ${fmt(start)}`;
     }
     return `${fmt(start)} - ${current ? 'Present' : fmt(end)}`;
   };
@@ -191,11 +191,11 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
 
           {/* Contact */}
           <div style={{ marginBottom: 24 }}>
-            <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}</SidebarSectionTitle>
+            <SidebarSectionTitle isRtl={isRtl}>{isRtl ? 'پەیوەندی' : 'Contact'}</SidebarSectionTitle>
             {data.personal.email && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold', textAlign, marginBottom: 1 }}>
-                  {isRtl ? '\u0626\u06CC\u0645\u06D5\u06CC\u06B5' : 'Email'}
+                  {isRtl ? 'ئیمەیڵ' : 'Email'}
                 </div>
                 <div style={{ fontSize: 11, color: SIDEBAR_TEXT, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.email}</span>
@@ -205,7 +205,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.phone && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold', textAlign, marginBottom: 1 }}>
-                  {isRtl ? '\u0698\u0645\u0627\u0631\u06D5\u06CC \u0645\u06C6\u0628\u0627\u06CC\u0644' : 'Phone'}
+                  {isRtl ? 'ژمارەی مۆبایل' : 'Phone'}
                 </div>
                 <div style={{ fontSize: 11, color: SIDEBAR_TEXT, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.phone}</span>
@@ -215,7 +215,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.location && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold', textAlign, marginBottom: 1 }}>
-                  {isRtl ? '\u0634\u0648\u06CE\u0646' : 'Location'}
+                  {isRtl ? 'شوێن' : 'Location'}
                 </div>
                 <div style={{ fontSize: 11, color: SIDEBAR_TEXT, textAlign }}>{data.personal.location}</div>
               </div>
@@ -223,7 +223,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
             {data.personal.website && (
               <div className="resume-entry" style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold', textAlign, marginBottom: 1 }}>
-                  {isRtl ? '\u0648\u06CE\u0628\u0633\u0627\u06CC\u062A' : 'Website'}
+                  {isRtl ? 'وێبسایت' : 'Website'}
                 </div>
                 <div style={{ fontSize: 11, color: SIDEBAR_TEXT, textAlign, direction: 'ltr', unicodeBidi: 'plaintext' as const }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.website}</span>
@@ -245,34 +245,34 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Demographics */}
           {hasDemographics && (
             <div style={{ marginBottom: 24 }}>
-              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u0632\u0627\u0646\u06CC\u0627\u0631\u06CC \u06A9\u06D5\u0633\u06CC' : 'Personal'}</SidebarSectionTitle>
+              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? 'زانیاری کەسی' : 'Personal'}</SidebarSectionTitle>
                 {data.personal.dateOfBirth && (
                   <div className="resume-entry" style={{ marginBottom: 6, textAlign }}>
-                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'DOB'}: </span>
+                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? 'لەدایکبوون' : 'DOB'}: </span>
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.dateOfBirth}</span>
                   </div>
                 )}
                 {data.personal.gender && (
                   <div className="resume-entry" style={{ marginBottom: 6, textAlign }}>
-                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0695\u06D5\u06AF\u06D5\u0632' : 'Gender'}: </span>
+                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? 'ڕەگەز' : 'Gender'}: </span>
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.gender}</span>
                   </div>
                 )}
                 {data.personal.nationality && (
                   <div className="resume-entry" style={{ marginBottom: 6, textAlign }}>
-                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0646\u06D5\u062A\u06D5\u0648\u06D5' : 'Nationality'}: </span>
+                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? 'نەتەوە' : 'Nationality'}: </span>
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.nationality}</span>
                   </div>
                 )}
                 {data.personal.maritalStatus && (
                   <div className="resume-entry" style={{ marginBottom: 6, textAlign }}>
-                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0628\u0627\u0631\u06CC \u062E\u06CE\u0632\u0627\u0646\u06CC' : 'Status'}: </span>
+                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? 'باری خێزانی' : 'Status'}: </span>
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.maritalStatus}</span>
                   </div>
                 )}
                 {data.personal.country && (
                   <div className="resume-entry" style={{ marginBottom: 6, textAlign }}>
-                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? '\u0648\u06B5\u0627\u062A' : 'Country'}: </span>
+                    <span style={{ fontSize: 10, color: ACCENT, fontWeight: 'bold' }}>{isRtl ? 'وڵات' : 'Country'}: </span>
                     <span style={{ fontSize: 11, color: SIDEBAR_TEXT }}>{data.personal.country}</span>
                   </div>
                 )}
@@ -282,7 +282,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Skills */}
           {data.skills && data.skills.length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Skills'}</SidebarSectionTitle>
+              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? 'تواناییەکان' : 'Skills'}</SidebarSectionTitle>
                 {data.skills.map((skill) => (
                   <div key={skill.id} className="resume-entry" style={{
                     fontSize: 11,
@@ -303,7 +303,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Languages */}
           {data.languages && data.languages.length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages'}</SidebarSectionTitle>
+              <SidebarSectionTitle isRtl={isRtl}>{isRtl ? 'زمانەکان' : 'Languages'}</SidebarSectionTitle>
               {data.languages.map((lang) => (
                 <div key={lang.id} className="resume-entry" style={{
                   fontSize: 11,
@@ -331,7 +331,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Profile / Summary */}
           {data.summary && (
             <div className="resume-section resume-entry" style={{ marginBottom: 24 }}>
-              <MainSectionTitle isRtl={isRtl}>{isRtl ? '\u067E\u0695\u06C6\u0641\u0627\u06CC\u0644' : 'Profile'}</MainSectionTitle>
+              <MainSectionTitle isRtl={isRtl}>{isRtl ? 'پڕۆفایل' : 'Profile'}</MainSectionTitle>
               <p style={{
                 fontSize: 11,
                 lineHeight: isRtl ? 1.8 : 1.7,
@@ -347,7 +347,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Experience */}
           {data.experience && data.experience.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
-              <MainSectionTitle isRtl={isRtl}>{isRtl ? '\u0626\u06D5\u0632\u0645\u0648\u0648\u0646\u06CC \u06A9\u0627\u0631\u06CC' : 'Experience'}</MainSectionTitle>
+              <MainSectionTitle isRtl={isRtl}>{isRtl ? 'ئەزموونی کاری' : 'Experience'}</MainSectionTitle>
               {data.experience.map((exp) => (
                 <div key={exp.id} className="resume-entry" style={{ marginBottom: 16 }}>
                   <div style={{
@@ -397,7 +397,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Education */}
           {data.education && data.education.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
-              <MainSectionTitle isRtl={isRtl}>{isRtl ? '\u062E\u0648\u06CE\u0646\u062F\u0646' : 'Education'}</MainSectionTitle>
+              <MainSectionTitle isRtl={isRtl}>{isRtl ? 'خوێندن' : 'Education'}</MainSectionTitle>
               {data.education.map((edu) => (
                 <div key={edu.id} className="resume-entry" style={{ marginBottom: 14 }}>
                   <div style={{
@@ -407,7 +407,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
                     textAlign,
                     lineHeight: isRtl ? 1.6 : 1.4,
                   }}>
-                    {edu.degree}{edu.field ? ` ${isRtl ? '\u0644\u06D5' : 'in'} ${edu.field}` : ''}
+                    {edu.degree}{edu.field ? ` ${isRtl ? 'لە' : 'in'} ${edu.field}` : ''}
                   </div>
                   <div style={{
                     fontSize: 11,
@@ -419,11 +419,11 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
                     {edu.school}{edu.location ? ` | ${edu.location}` : ''}
                   </div>
                   <div style={{ fontSize: 10, color: MAIN_MUTED, textAlign }}>
-                    {isRtl ? '\u062F\u06D5\u0631\u0686\u0648\u0648\u0646' : 'Graduated'}: {edu.endDate || edu.startDate}
+                    {isRtl ? 'دەرچوون' : 'Graduated'}: {edu.endDate || edu.startDate}
                   </div>
                   {edu.gpa && (
                     <div style={{ fontSize: 10, color: MAIN_MUTED, textAlign }}>
-                      {isRtl ? '\u0646\u0645\u0631\u06D5\u06CC \u06A9\u06C6\u06CC \u06AF\u0634\u062A\u06CC' : 'GPA'}: {edu.gpa}
+                      {isRtl ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}
                     </div>
                   )}
                   {edu.achievements && (
@@ -441,7 +441,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Projects / Portfolio */}
           {data.projects && data.projects.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
-              <MainSectionTitle isRtl={isRtl}>{isRtl ? '\u067E\u06C6\u0631\u062A\u0641\u06C6\u0644\u06CC\u06C6' : 'Portfolio'}</MainSectionTitle>
+              <MainSectionTitle isRtl={isRtl}>{isRtl ? 'پۆرتفۆلیۆ' : 'Portfolio'}</MainSectionTitle>
               {data.projects.map((proj) => (
                 <div key={proj.id} className="resume-entry" style={{ marginBottom: 14 }}>
                   <div style={{
@@ -478,7 +478,7 @@ export function ModernTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Certifications */}
           {data.certifications && data.certifications.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
-              <MainSectionTitle isRtl={isRtl}>{isRtl ? '\u0628\u0695\u0648\u0627\u0646\u0627\u0645\u06D5\u06A9\u0627\u0646' : 'Certifications'}</MainSectionTitle>
+              <MainSectionTitle isRtl={isRtl}>{isRtl ? 'بڕوانامەکان' : 'Certifications'}</MainSectionTitle>
               {data.certifications.map((cert) => (
                 <div key={cert.id} className="resume-entry" style={{ marginBottom: 12 }}>
                   <div style={{

@@ -15,8 +15,12 @@ export function useCountUp(target: number, options: UseCountUpOptions = {}) {
   const hasAnimated = useRef(false)
 
   const formatNumber = useCallback((n: number) => {
+    const SUPPORTED_LOCALES = ['en', 'ar', 'ckb']
+    const resolvedLocale = SUPPORTED_LOCALES.includes(locale)
+      ? (locale === 'ckb' ? 'ar' : locale)
+      : 'en'
     try {
-      return new Intl.NumberFormat(locale === 'ckb' ? 'ar' : locale).format(Math.round(n))
+      return new Intl.NumberFormat(resolvedLocale).format(Math.round(n))
     } catch {
       return String(Math.round(n))
     }

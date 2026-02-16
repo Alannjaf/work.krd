@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import { devError } from '@/lib/admin-utils'
 
 export async function POST() {
   try {
@@ -24,7 +25,7 @@ export async function POST() {
 
     return successResponse({ success: true })
   } catch (error) {
-    console.error('[OnboardingSkip] Failed to skip onboarding:', error)
+    devError('[OnboardingSkip] Failed to skip onboarding:', error)
     return errorResponse('Internal server error', 500)
   }
 }

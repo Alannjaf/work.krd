@@ -31,7 +31,7 @@ export function CertificationsSection({
 }: CertificationsSectionProps) {
   if (!certifications || certifications.length === 0) return null;
 
-  const defaultTitle = isRTL ? '\u0628\u0695\u0648\u0627\u0646\u0627\u0645\u06D5\u06A9\u0627\u0646' : 'Certifications';
+  const defaultTitle = isRTL ? 'بڕوانامەکان' : 'Certifications';
 
   return (
     <div style={{ marginBottom: 24 }}>

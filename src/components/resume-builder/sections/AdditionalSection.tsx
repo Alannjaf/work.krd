@@ -31,7 +31,7 @@ export function AdditionalSection({
   // Projects
   const addProject = () => {
     onProjectsChange([...projects, {
-      id: Date.now().toString(), name: '', description: '',
+      id: crypto.randomUUID(), name: '', description: '',
       technologies: '', link: '', startDate: '', endDate: ''
     }])
   }
@@ -47,7 +47,7 @@ export function AdditionalSection({
   // Certifications
   const addCertification = () => {
     onCertificationsChange([...certifications, {
-      id: Date.now().toString(), name: '', issuer: '',
+      id: crypto.randomUUID(), name: '', issuer: '',
       date: '', expiryDate: '', credentialId: '', url: ''
     }])
   }

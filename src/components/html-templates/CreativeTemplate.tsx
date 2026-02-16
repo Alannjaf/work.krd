@@ -159,10 +159,10 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
       if (!d) return '';
       const date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return date.toLocaleDateString(isRtl ? 'ar' : 'en-US', { month: 'short', year: 'numeric' });
     };
     if (isRtl) {
-      return `${current ? '\u0626\u06CE\u0633\u062A\u0627' : fmt(end)} - ${fmt(start)}`;
+      return `${current ? 'ئێستا' : fmt(end)} - ${fmt(start)}`;
     }
     return `${fmt(start)} - ${current ? 'Present' : fmt(end)}`;
   };
@@ -170,11 +170,11 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
   const hasDemographics = data.personal.dateOfBirth || data.personal.gender ||
     data.personal.nationality || data.personal.maritalStatus || data.personal.country;
   const demoItems: { label: string; value: string }[] = [];
-  if (data.personal.dateOfBirth) demoItems.push({ label: isRtl ? '\u0644\u06D5\u062F\u0627\u06CC\u06A9\u0628\u0648\u0648\u0646' : 'DOB', value: data.personal.dateOfBirth });
-  if (data.personal.gender) demoItems.push({ label: isRtl ? '\u0695\u06D5\u06AF\u06D5\u0632' : 'Gender', value: data.personal.gender });
-  if (data.personal.nationality) demoItems.push({ label: isRtl ? '\u0646\u06D5\u062A\u06D5\u0648\u06D5' : 'Nationality', value: data.personal.nationality });
-  if (data.personal.maritalStatus) demoItems.push({ label: isRtl ? '\u0628\u0627\u0631\u06CC \u062E\u06CE\u0632\u0627\u0646\u06CC' : 'Status', value: data.personal.maritalStatus });
-  if (data.personal.country) demoItems.push({ label: isRtl ? '\u0648\u06B5\u0627\u062A' : 'Country', value: data.personal.country });
+  if (data.personal.dateOfBirth) demoItems.push({ label: isRtl ? 'لەدایکبوون' : 'DOB', value: data.personal.dateOfBirth });
+  if (data.personal.gender) demoItems.push({ label: isRtl ? 'ڕەگەز' : 'Gender', value: data.personal.gender });
+  if (data.personal.nationality) demoItems.push({ label: isRtl ? 'نەتەوە' : 'Nationality', value: data.personal.nationality });
+  if (data.personal.maritalStatus) demoItems.push({ label: isRtl ? 'باری خێزانی' : 'Status', value: data.personal.maritalStatus });
+  if (data.personal.country) demoItems.push({ label: isRtl ? 'وڵات' : 'Country', value: data.personal.country });
 
   const allSkills = data.skills ?? [];
 
@@ -267,11 +267,11 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {/* Contact */}
           <div className="resume-section" style={{ marginBottom: 24 }}>
             <SidebarSectionTitle color={ACCENT_CORAL}>
-              {isRtl ? '\u067E\u06D5\u06CC\u0648\u06D5\u0646\u062F\u06CC' : 'Contact'}
+              {isRtl ? 'پەیوەندی' : 'Contact'}
             </SidebarSectionTitle>
             {data.personal.email && (
               <div className="resume-entry" style={{ marginBottom: 8, fontSize: 10, textAlign }}>
-                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? '\u0626\u06CC\u0645\u06D5\u06CC\u06B5' : 'Email'}</div>
+                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? 'ئیمەیڵ' : 'Email'}</div>
                 <div style={{ color: SIDEBAR_TEXT, direction: 'ltr', unicodeBidi: 'plaintext' as const, textAlign }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.email}</span>
                 </div>
@@ -279,7 +279,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
             )}
             {data.personal.phone && (
               <div className="resume-entry" style={{ marginBottom: 8, fontSize: 10, textAlign }}>
-                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? '\u0698\u0645\u0627\u0631\u06D5' : 'Phone'}</div>
+                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? 'ژمارە' : 'Phone'}</div>
                 <div style={{ color: SIDEBAR_TEXT, direction: 'ltr', unicodeBidi: 'plaintext' as const, textAlign }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.phone}</span>
                 </div>
@@ -287,13 +287,13 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
             )}
             {data.personal.location && (
               <div className="resume-entry" style={{ marginBottom: 8, fontSize: 10, textAlign }}>
-                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? '\u0634\u0648\u06CE\u0646' : 'Location'}</div>
+                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? 'شوێن' : 'Location'}</div>
                 <div style={{ color: SIDEBAR_TEXT, lineHeight: isRtl ? '1.5' : '1.3', textAlign }}>{data.personal.location}</div>
               </div>
             )}
             {data.personal.website && (
               <div className="resume-entry" style={{ marginBottom: 8, fontSize: 10, textAlign }}>
-                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? '\u0645\u0627\u06B5\u067E\u06D5\u0695' : 'Website'}</div>
+                <div style={{ color: SIDEBAR_MUTED, fontSize: 9, marginBottom: 2 }}>{isRtl ? 'ماڵپەڕ' : 'Website'}</div>
                 <div style={{ color: SIDEBAR_TEXT, direction: 'ltr', unicodeBidi: 'plaintext' as const, textAlign }}>
                   <span style={{ unicodeBidi: 'isolate' as const }}>{data.personal.website}</span>
                 </div>
@@ -313,7 +313,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {allSkills.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle color={ACCENT_TEAL}>
-                {isRtl ? '\u062A\u0648\u0627\u0646\u0627\u06CC\u06CC\u06D5\u06A9\u0627\u0646' : 'Skills'}
+                {isRtl ? 'تواناییەکان' : 'Skills'}
               </SidebarSectionTitle>
               <div style={{
                 display: 'grid',
@@ -338,7 +338,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.languages && data.languages.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle color={ACCENT_YELLOW}>
-                {isRtl ? '\u0632\u0645\u0627\u0646\u06D5\u06A9\u0627\u0646' : 'Languages'}
+                {isRtl ? 'زمانەکان' : 'Languages'}
               </SidebarSectionTitle>
               {data.languages.map((lang, i) => {
                 const pct = langProficiencyToPercent(lang.proficiency);
@@ -377,7 +377,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {hasDemographics && demoItems.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <SidebarSectionTitle color={ACCENT_LAVENDER}>
-                {isRtl ? '\u0632\u0627\u0646\u06CC\u0627\u0631\u06CC' : 'Details'}
+                {isRtl ? 'زانیاری' : 'Details'}
               </SidebarSectionTitle>
               {demoItems.map((item) => (
                 <div key={item.label} className="resume-entry" style={{ marginBottom: 8, fontSize: 10, textAlign }}>
@@ -406,7 +406,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.summary && (
             <div className="resume-section resume-entry" style={{ marginBottom: 24 }}>
               <MainSectionTitle color={ACCENT_TEAL} isRtl={isRtl}>
-                {isRtl ? '\u062F\u06D5\u0631\u0628\u0627\u0631\u06D5' : 'About Me'}
+                {isRtl ? 'دەربارە' : 'About Me'}
               </MainSectionTitle>
               <div style={{
                 backgroundColor: '#f0faf8',
@@ -430,7 +430,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.experience && data.experience.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <MainSectionTitle color={ACCENT_CORAL} isRtl={isRtl}>
-                {isRtl ? '\u0626\u06D5\u0632\u0645\u0648\u0648\u0646\u06CC \u06A9\u0627\u0631\u06CC' : 'Experience'}
+                {isRtl ? 'ئەزموونی کاری' : 'Experience'}
               </MainSectionTitle>
               {data.experience.map((exp) => (
                 <div key={exp.id} className="resume-entry" style={{
@@ -486,7 +486,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.education && data.education.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <MainSectionTitle color={ACCENT_YELLOW} isRtl={isRtl}>
-                {isRtl ? '\u062E\u0648\u06CE\u0646\u062F\u0646' : 'Education'}
+                {isRtl ? 'خوێندن' : 'Education'}
               </MainSectionTitle>
               {data.education.map((edu) => (
                 <div key={edu.id} className="resume-entry" style={{
@@ -506,7 +506,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
                         fontSize: 13, fontWeight: 'bold', color: TEXT_COLOR,
                         textAlign, lineHeight: isRtl ? '1.6' : '1.4',
                       }}>
-                        {edu.degree}{edu.field ? ` ${isRtl ? '\u0644\u06D5' : 'in'} ${edu.field}` : ''}
+                        {edu.degree}{edu.field ? ` ${isRtl ? 'لە' : 'in'} ${edu.field}` : ''}
                       </div>
                       <div style={{
                         fontSize: 11, color: MUTED_COLOR, textAlign,
@@ -525,7 +525,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
                   </div>
                   {edu.gpa && (
                     <div style={{ fontSize: 10, color: MUTED_COLOR, textAlign, marginBottom: 2 }}>
-                      {isRtl ? '\u0646\u0645\u0631\u06D5\u06CC \u06A9\u06C6\u06CC \u06AF\u0634\u062A\u06CC' : 'GPA'}: {edu.gpa}
+                      {isRtl ? 'نمرەی کۆی گشتی' : 'GPA'}: {edu.gpa}
                     </div>
                   )}
                   {edu.achievements && (
@@ -547,7 +547,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.projects && data.projects.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <MainSectionTitle color={ACCENT_MINT} isRtl={isRtl}>
-                {isRtl ? '\u067E\u0695\u06C6\u0698\u06D5\u06A9\u0627\u0646' : 'Projects'}
+                {isRtl ? 'پڕۆژەکان' : 'Projects'}
               </MainSectionTitle>
               {data.projects.map((proj) => (
                 <div key={proj.id} className="resume-entry" style={{
@@ -604,7 +604,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
           {data.certifications && data.certifications.length > 0 && (
             <div className="resume-section" style={{ marginBottom: 24 }}>
               <MainSectionTitle color={ACCENT_LAVENDER} isRtl={isRtl}>
-                {isRtl ? '\u0628\u0695\u0648\u0627\u0646\u0627\u0645\u06D5\u06A9\u0627\u0646' : 'Certifications'}
+                {isRtl ? 'بڕوانامەکان' : 'Certifications'}
               </MainSectionTitle>
               {data.certifications.map((cert) => (
                 <div key={cert.id} className="resume-entry" style={{

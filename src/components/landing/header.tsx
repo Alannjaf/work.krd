@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Logo } from '@/components/ui/logo'
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
@@ -18,6 +18,26 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLangOpen, setIsLangOpen] = useState(false)
+  const langButtonRef = useRef<HTMLButtonElement>(null)
+
+  const closeLangDropdown = useCallback(() => {
+    setIsLangOpen(false)
+    // Return focus to trigger button on close
+    langButtonRef.current?.focus()
+  }, [])
+
+  // Escape key handler for language dropdown
+  useEffect(() => {
+    if (!isLangOpen) return
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeLangDropdown()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isLangOpen, closeLangDropdown])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -65,8 +85,11 @@ export function Header() {
           <div className="hidden md:flex items-center gap-3">
             <div className="relative">
               <button
+                ref={langButtonRef}
                 type="button"
                 onClick={() => setIsLangOpen(!isLangOpen)}
+                aria-expanded={isLangOpen}
+                aria-haspopup="true"
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Globe className="w-4 h-4" />
@@ -75,13 +98,13 @@ export function Header() {
               </button>
               {isLangOpen && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setIsLangOpen(false)} />
+                  <div className="fixed inset-0 z-10" onClick={closeLangDropdown} />
                   <div className={`absolute top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 ${isRTL ? 'left-0' : 'right-0'}`}>
                     {languages.map((lang) => (
                       <button
                         type="button"
                         key={lang.code}
-                        onClick={() => { setLanguage(lang.code); setIsLangOpen(false) }}
+                        onClick={() => { setLanguage(lang.code); closeLangDropdown() }}
                         className={`w-full px-4 py-2 text-sm transition-colors ${isRTL ? 'text-right' : 'text-left'} ${
                           language === lang.code ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700 hover:bg-gray-50'
                         }`}

@@ -31,10 +31,10 @@ function formatKurdishDateRange(start: string | undefined, end: string | undefin
     if (!d) return '';
     const date = new Date(d);
     if (isNaN(date.getTime())) return d;
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('ar', { month: 'short', year: 'numeric' });
   };
   const s = formatDate(start);
-  const e = current ? '\u0626\u06CE\u0633\u062A\u0627' : formatDate(end);
+  const e = current ? 'ئێستا' : formatDate(end);
   return `${e} - ${s}`;
 }
 
@@ -56,7 +56,7 @@ export function ExperienceSection({
 
   const fmtRange = customFormat || (isRTL ? formatKurdishDateRange : defaultFormatDateRange);
 
-  const defaultTitle = isRTL ? '\u0626\u06D5\u0632\u0645\u0648\u0648\u0646\u06CC \u06A9\u0627\u0631\u06CC' : 'Professional Experience';
+  const defaultTitle = isRTL ? 'ئەزموونی کاری' : 'Professional Experience'; // Kurdish covers Arabic script users too
 
   return (
     <div style={{ marginBottom: 24 }}>
