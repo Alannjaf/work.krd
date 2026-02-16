@@ -268,8 +268,14 @@ function ResumeBuilderContent() {
 
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/resumes/${resumeIdParam}`);
-        if (!response.ok) throw new Error(t("pages.resumeBuilder.errors.loadFailed"));
+        // Retry up to 3 times with delay (resume may not be immediately available after creation)
+        let response: Response | null = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          response = await fetch(`/api/resumes/${resumeIdParam}`);
+          if (response.ok) break;
+          if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+        }
+        if (!response || !response.ok) throw new Error(t("pages.resumeBuilder.errors.loadFailed"));
 
         const data = await response.json();
         const resume = data.resume;

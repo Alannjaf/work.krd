@@ -65,12 +65,18 @@ export function AdminDashboard() {
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const settingsDirtyRef = useRef(false)
+  const settingsRef = useRef(settings)
   const { items: recentItems, clearItems: clearRecentItems } = useRecentlyViewed()
 
   const handleSettingsDirtyChange = useCallback((dirty: boolean) => {
     setSettingsDirty(dirty)
     settingsDirtyRef.current = dirty
   }, [])
+
+  // Keep settings ref in sync for save closure
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
 
   // Warn on browser close/refresh with unsaved changes
   useEffect(() => {
@@ -225,7 +231,7 @@ export function AdminDashboard() {
       const response = await csrfFetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: JSON.stringify(settingsRef.current)
       })
       if (response.ok) {
         toast.success(t('pages.admin.settings.settingsSaved'))

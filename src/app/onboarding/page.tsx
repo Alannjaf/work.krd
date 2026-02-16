@@ -143,11 +143,14 @@ export default function OnboardingPage() {
           formData: formDataWithName,
         })
       })
-      if (!res.ok) throw new Error('Failed to complete onboarding')
       const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || 'Failed to complete onboarding')
+      }
       router.push(`/resume-builder?id=${data.resumeId}`)
-    } catch {
-      toast.error(t('pages.onboarding.errors.createFailed'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('pages.onboarding.errors.createFailed')
+      toast.error(message)
       setIsSubmitting(false)
     }
   }
@@ -166,14 +169,14 @@ export default function OnboardingPage() {
         })
       })
 
-      if (!res.ok) {
-        throw new Error('Failed to complete onboarding')
-      }
-
       const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || 'Failed to complete onboarding')
+      }
       router.push(`/resume-builder?id=${data.resumeId}`)
-    } catch {
-      toast.error(t('pages.onboarding.errors.createFailed'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('pages.onboarding.errors.createFailed')
+      toast.error(message)
       setIsSubmitting(false)
     }
   }
