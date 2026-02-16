@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import { ResumeData } from "@/types/resume";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { ADMIN_PAGINATION } from "@/lib/constants";
 
 // Dynamic import for PreviewModal to match user experience
 const PreviewModal = dynamic(
@@ -72,7 +73,7 @@ export function ResumeManagement() {
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "10",
+        limit: String(ADMIN_PAGINATION.RESUMES),
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(status && { status }),
         ...(template && { template }),

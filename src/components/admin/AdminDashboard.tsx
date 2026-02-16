@@ -96,7 +96,7 @@ export function AdminDashboard() {
       setLoading(false)
     }
     loadAll()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchStats = async () => {
     try {

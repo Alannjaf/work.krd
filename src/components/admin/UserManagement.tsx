@@ -23,9 +23,9 @@ import {
 import toast from 'react-hot-toast'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { useDebounce } from '@/hooks/useDebounce'
-import { PLAN_NAMES, VALID_PLANS } from '@/lib/constants'
+import { PLAN_NAMES, VALID_PLANS, ADMIN_PAGINATION } from '@/lib/constants'
 
-const LIMIT = 20
+const LIMIT = ADMIN_PAGINATION.USERS
 
 interface UserData {
   id: string

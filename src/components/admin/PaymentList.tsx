@@ -14,6 +14,7 @@ import {
 import { PaymentItem } from './PaymentItem'
 import { PaymentApprovalForm } from './PaymentApprovalForm'
 import type { Payment, PaymentsResponse, StatusFilter } from './PaymentItem'
+import { ADMIN_PAGINATION } from '@/lib/constants'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
   // Review modal state
   const [reviewPayment, setReviewPayment] = useState<Payment | null>(null)
 
-  const LIMIT = 20
+  const LIMIT = ADMIN_PAGINATION.PAYMENTS
 
   // ─── Fetch payments ─────────────────────────────────────────────────────
 

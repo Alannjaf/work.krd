@@ -1,7 +1,20 @@
 import { prisma } from './prisma'
 import { PLAN_NAMES } from './constants'
 
+// Module-level cache
+let settingsCache: { data: Awaited<ReturnType<typeof prisma.systemSettings.findFirst>>; timestamp: number } | null = null
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+export function invalidateSettingsCache() {
+  settingsCache = null
+}
+
 export async function getSystemSettings() {
+  // Return cached data if still fresh
+  if (settingsCache && Date.now() - settingsCache.timestamp < CACHE_TTL_MS) {
+    return settingsCache.data!
+  }
+
   try {
     let settings = await prisma.systemSettings.findFirst()
 
@@ -27,6 +40,7 @@ export async function getSystemSettings() {
       })
     }
 
+    settingsCache = { data: settings, timestamp: Date.now() }
     return settings
   } catch (error) {
     console.error('[SystemSettings] Failed to get system settings:', error);

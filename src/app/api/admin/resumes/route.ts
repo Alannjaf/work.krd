@@ -4,6 +4,7 @@ import { Resume, ResumeStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
+import { ADMIN_PAGINATION } from '@/lib/constants';
 
 interface ResumeWithUser extends Resume {
   user: {
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status') as ResumeStatus | null;
     const template = searchParams.get('template') || '';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || String(ADMIN_PAGINATION.RESUMES));
     const ALLOWED_SORT_FIELDS = ['createdAt', 'updatedAt', 'title', 'template', 'status'] as const;
     const ALLOWED_SORT_ORDERS = ['asc', 'desc'] as const;
 
@@ -101,7 +102,9 @@ export async function GET(req: NextRequest) {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)}});
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1}});
 
     return attachCsrfToken(response, userId);
   } catch (error) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Settings, RefreshCw, Save } from 'lucide-react'
+import { Settings, RefreshCw, Save, Check } from 'lucide-react'
 import { SystemSettings } from './types'
 import { VALID_PLANS } from '@/lib/constants'
 
@@ -28,6 +28,7 @@ export function AdminSystemSettings({
   onDirtyChange
 }: AdminSystemSettingsProps) {
   const [isDirty, setIsDirty] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
     onDirtyChange?.(isDirty)
@@ -41,6 +42,8 @@ export function AdminSystemSettings({
   const handleSave = async () => {
     await onSave()
     setIsDirty(false)
+    setSaveSuccess(true)
+    setTimeout(() => setSaveSuccess(false), 3000)
   }
 
   return (
@@ -96,6 +99,12 @@ export function AdminSystemSettings({
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
+        {saveSuccess && (
+          <span className="text-green-600 text-sm font-medium flex items-center gap-1">
+            <Check className="h-4 w-4" />
+            Saved!
+          </span>
+        )}
         {isDirty && (
           <span className="text-sm text-amber-600 font-medium">
             Unsaved changes
@@ -151,8 +160,8 @@ function PlanLimitsSection({
     <div>
       <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">{title}</h3>
       {allowUnlimited && (
-        <p id={hintId} className="text-xs text-gray-500 mb-3">
-          -1 = Unlimited
+        <p id={hintId} className="text-xs text-gray-400 mb-3 cursor-help" title="Set to -1 for unlimited usage on any limit field">
+          (-1 = unlimited)
         </p>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

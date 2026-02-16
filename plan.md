@@ -1,145 +1,194 @@
-# Homepage Redesign — Implementation Plan
+# Admin Audit — Remaining Issues & Implementation Plan
 
-## Architecture
+**Date:** 2026-02-16
+**Audit source:** `audit-admin.md` (89 issues)
+**Verified against:** current codebase (main branch)
 
-### Delete These (current landing components):
-- `src/components/landing/about.tsx` — unnecessary
-- `src/components/landing/contact.tsx` — unnecessary  
-- `src/components/landing/hero.tsx` — rewrite from scratch
-- `src/components/landing/features.tsx` — rewrite
-- `src/components/landing/how-it-works.tsx` — rewrite
-- `src/components/landing/pricing.tsx` — rewrite (use billing page pricing instead)
-- `src/components/landing/header.tsx` — rewrite
-- `src/components/landing/footer.tsx` — simplify
+---
 
-### New Page Structure (`src/app/page.tsx`):
-```tsx
-<main>
-  <Header />           {/* Sticky nav with language switcher */}
-  <Hero />             {/* Bold headline + CTA + resume preview */}
-  <Templates />        {/* Visual template carousel */}
-  <HowItWorks />       {/* 3 simple steps */}
-  <Features />         {/* 6 features in grid */}
-  <Pricing />          {/* Free vs Pro */}
-  <FinalCTA />         {/* "Ready to build?" repeat CTA */}
-  <Footer />           {/* Minimal footer */}
-</main>
-```
+## Verification Summary
 
-## Section Details
+| Category | Total in Audit | Already Fixed | Remaining |
+|----------|---------------|---------------|-----------|
+| P0 Bugs (#1-5) | 5 | 5 | 0 |
+| P0 Security (#13-17) | 5 | 5 | 0 |
+| P0 UX (#25-26) | 2 | 2 | 0 |
+| P0 Missing Features (#43-44) | 2 | 1 (audit log) | 1 |
+| P0 Performance (#85) | 1 | 1 (false alarm) | 0 |
+| P0 Things to Add (#76-77) | 2 | 2 | 0 |
+| P1 items | 51 | ~42 | ~9 |
+| P2 items | 22 | ~5 | ~17 |
+| **TOTAL** | **89** | **~63** | **~27** |
 
-### 1. Header (Sticky)
-- Logo (left) + Nav links (center) + Language switcher + Auth buttons (right)
-- Nav: Features, Pricing, How It Works (smooth scroll)
-- Mobile: Logo + hamburger + "Get Started" button
-- Transparent on top, solid white on scroll
-- `position: sticky; top: 0; z-index: 50`
+Most P0 and P1 issues were fixed in commits `99979bd` and `0d62a80`.
 
-### 2. Hero Section
-- **Layout:** Left text + Right resume mockup (desktop) / Stacked (mobile)
-- **Headline:** 
-  - EN: "Build a Professional Resume in Minutes"
-  - AR: "أنشئ سيرة ذاتية احترافية في دقائق"
-  - CKB: "لە چەند خولەکدا CVیەکی پڕۆفیشناڵ دروست بکە"
-- **Subheadline:**
-  - EN: "AI-powered resume builder with ATS optimization. Free to start."
-  - AR: "منشئ السيرة الذاتية بالذكاء الاصطناعي مع تحسين ATS. ابدأ مجاناً."
-  - CKB: "دروستکەری CV بە یارمەتی AI لەگەڵ باشکردنی ATS. بەخۆڕایی دەست پێبکە."
-- **CTA Button:** "Build Your Resume — It's Free" (big, primary color, rounded)
-- **Secondary CTA:** "See Templates →" (text link)
-- **Trust line:** "Used by {count} professionals in Kurdistan" (real count from DB)
-- **Right side:** Animated resume template preview (rotate through 2-3 templates)
-- **Background:** Subtle gradient or geometric pattern
+---
 
-### 3. Templates Preview
-- **Headline:** "Choose from Professional Templates"
-- Show 3-4 template previews as cards
-- Each card: template thumbnail + template name
-- Hover: subtle scale animation
-- **CTA:** "View All Templates" → links to /resume-builder
-- Mobile: horizontal scroll carousel
+## Remaining Issues by Priority
 
-### 4. How It Works
-- **Headline:** "3 Simple Steps to Your New Resume"
-- Step 1: 📝 "Choose a Template" — Pick from professional designs
-- Step 2: ✍️ "Fill Your Details" — AI helps you write better
-- Step 3: 📄 "Download PDF" — ATS-optimized, ready to send
-- Visual: numbered circles connected with a line/arrow
-- Mobile: vertical stack with numbers
+### P0 — Critical (1 issue)
 
-### 5. Features Grid
-- **Headline:** "Everything You Need"
-- 2x3 grid (desktop) / 1 column (mobile)
-- Each feature: icon + title + one-line description
-- Features:
-  1. 🤖 AI-Powered Writing — "Smart suggestions for every section"
-  2. 📊 ATS Optimization — "Pass automated screening systems"
-  3. 🌍 Multilingual — "Kurdish, Arabic & English support"
-  4. 📱 Mobile-Friendly — "Build your resume from your phone"
-  5. 📄 PDF Export — "Download professional PDFs instantly"
-  6. 🎨 Pro Templates — "Stand out with modern designs"
+#### #44 — No Backup/Restore for System Settings
+- **Status:** PENDING
+- **Risk:** One bad save breaks platform limits for all users
+- **Files:**
+  - `src/app/api/admin/settings/route.ts` — Before updating, snapshot current settings to a `SystemSettingsHistory` table
+  - `prisma/schema.prisma` — Add `SystemSettingsHistory` model
+  - `src/components/admin/AdminSystemSettings.tsx` — Add "History" button + revert UI
+- **Effort:** Medium (new table + API + small UI)
+- **Decision needed:** Do we want full version history or just last-N snapshots?
 
-### 6. Pricing
-- **Headline:** "Simple, Affordable Pricing"
-- Two cards side by side (desktop) / stacked (mobile)
-- FREE card: basic features, "Get Started Free" button
-- PRO card: highlighted/bordered, 5,000 IQD/month, all features, "Upgrade to Pro" button
-- Pro card has a "Most Popular" badge
-- Below: "No credit card required for free plan"
+---
 
-### 7. Final CTA
-- Full-width colored background section
-- **Headline:** "Ready to Land Your Dream Job?"
-- **Subheadline:** "Join thousands of professionals building better resumes"
-- **CTA Button:** "Get Started Free" (white button on colored bg)
+### P1 — Important (9 issues)
 
-### 8. Footer
-- Logo + tagline
-- Links: Privacy, Terms, Contact
-- Language switcher
-- "© 2026 work.krd"
-- Social links if any
+#### #27 — No Loading Skeleton for Stats Cards
+- **Status:** PENDING
+- **File:** `src/components/admin/AdminStatsCards.tsx`
+- **Fix:** Add animated skeleton placeholders when `loading && !stats` (currently shows "0")
+- **Automatable:** Yes — mechanical change
 
-## i18n Keys Needed
+#### #30 — No Success Feedback on Settings Save
+- **Status:** PENDING
+- **File:** `src/components/admin/AdminSystemSettings.tsx`
+- **Fix:** Show temporary green checkmark/toast after successful save (2-3s auto-dismiss)
+- **Automatable:** Yes — mechanical change
 
-All under `pages.home.*`:
-```
-hero.title, hero.subtitle, hero.cta, hero.secondaryCta, hero.trust
-templates.title, templates.viewAll
-howItWorks.title, howItWorks.step1.title, howItWorks.step1.desc, 
-howItWorks.step2.title, howItWorks.step2.desc,
-howItWorks.step3.title, howItWorks.step3.desc
-features.title, features.ai.title, features.ai.desc,
-features.ats.title, features.ats.desc,
-features.multilingual.title, features.multilingual.desc,
-features.mobile.title, features.mobile.desc,
-features.pdf.title, features.pdf.desc,
-features.templates.title, features.templates.desc
-pricing.title, pricing.subtitle, pricing.free.*, pricing.pro.*
-finalCta.title, finalCta.subtitle, finalCta.button
-footer.tagline, footer.privacy, footer.terms, footer.contact
-```
+#### #32 — No Sorting in Resume Table
+- **Status:** PENDING
+- **Files:** `src/components/admin/ResumeTable.tsx`, `src/app/api/admin/resumes/route.ts`
+- **Fix:** Add sortable column headers (createdAt, user), pass `sortBy`/`sortOrder` to API
+- **Automatable:** Partially — API + UI changes needed
 
-## Animations
-- Hero: fade-in on load (text first, then resume preview)
-- Templates: cards slide up on scroll (staggered)
-- How It Works: steps appear one by one on scroll
-- Features: grid items fade in on scroll
-- Use CSS animations or Framer Motion (already in deps?)
-- Keep animations subtle — don't slow down the page
+#### #37 — No Skip-to-Content Link
+- **Status:** PENDING (confirmed: no skip links anywhere)
+- **Files:** `src/app/admin/layout.tsx` or each admin page
+- **Fix:** Add `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip to content</a>` + `id="main-content"` on main wrapper
+- **Automatable:** Yes — single pattern applied to admin layout
 
-## Implementation Checklist
-- [x] Delete old landing components (about, contact)
-- [x] Create new Header with language switcher + sticky behavior
-- [x] Create Hero with headline, CTA, and resume preview
-- [x] Create Templates carousel/grid section
-- [x] Create HowItWorks with 3 steps
-- [x] Create Features grid (6 items)
-- [x] Create Pricing section (Free vs Pro)
-- [x] Create FinalCTA section
-- [x] Create minimal Footer
-- [x] Add all i18n keys (en/ar/ckb)
-- [x] Test RTL layout (Arabic + Kurdish) — RTL support via isRTL + Tailwind rtl: + document.dir
-- [x] Test mobile responsiveness — mobile-first Tailwind breakpoints throughout
-- [x] Optimize for performance (lazy loading, minimal JS) — IntersectionObserver scroll animations, no framer-motion
-- [x] Commit
+#### #45 — No Payment Dispute/Refund Flow
+- **Status:** PENDING
+- **Files:** `prisma/schema.prisma` (add refund fields), API route, PaymentApprovalForm
+- **Fix:** Add `refundStatus`, `refundNote` fields to Payment model; add refund button in admin
+- **Decision needed:** Is this actually needed now? Only ~few payments/month currently.
+
+#### #80 — No hasNextPage/hasPrevPage in API Responses
+- **Status:** PENDING (frontends calculate manually from total/page/limit)
+- **Files:** `src/app/api/admin/payments/route.ts`, `src/app/api/admin/resumes/route.ts`, `src/app/api/admin/users/route.ts`
+- **Fix:** Add `hasNextPage: page * limit < total, hasPrevPage: page > 1` to JSON response
+- **Automatable:** Yes — identical pattern across 3 files
+
+#### #65 — Magic Numbers (Pagination Limits)
+- **Status:** PENDING (hardcoded 10, 20, 50, 100 across 6+ files)
+- **Files:** Create `src/lib/constants.ts`, update all admin APIs + frontend components
+- **Fix:** Extract `ADMIN_PAGINATION = { PAYMENTS: 20, RESUMES: 10, USERS: 20, MAX: 100 }`
+- **Automatable:** Yes — find-and-replace pattern
+
+#### #86 — No Caching for System Settings
+- **Status:** PENDING
+- **Files:** `src/lib/system-settings.ts`
+- **Fix:** Add module-level cache with 5-min TTL, invalidate on POST to settings API
+- **Automatable:** Yes — isolated change in one file + cache-bust in settings POST
+
+#### #75 — Unused ResumeDetailsModal Component
+- **Status:** PENDING (confirmed: defined but never imported anywhere)
+- **File:** `src/components/admin/ResumeDetailsModal.tsx`
+- **Fix:** Delete the file
+- **Automatable:** Yes — single file deletion
+
+---
+
+### P2 — Nice-to-Have (17 issues)
+
+#### Trivial / Automatable (can batch-fix):
+| # | Issue | File(s) | Fix |
+|---|-------|---------|-----|
+| 11 | Inconsistent date formatting | Multiple admin files | Create `formatAdminDate()` utility, replace `toLocaleDateString` calls |
+| 40 | Inconsistent button styles | Multiple admin files | Audit + standardize on Button component variants |
+| 41 | No tooltips for limit inputs | `AdminSystemSettings.tsx` | Add `title` or tooltip component next to "-1 = unlimited" |
+| 42 | Pagination doesn't show total | `ResumeManagement.tsx` | Add "X total results" text next to pagination |
+| 69 | Unused imports | `ResumeDetailsModal.tsx` | Moot if we delete #75 |
+| 70 | console.error in production | 10 admin component files (18 occurrences) | Replace with structured logger or gate behind `process.env.NODE_ENV` |
+| 71 | Inline styles in AdminResumePreview | `AdminResumePreview.tsx` | Convert `style={{}}` to Tailwind classes |
+| 74 | Commented-out eslint-disable | `AdminDashboard.tsx` | Remove eslint-disable comment (deps are correct now) |
+| 90 | Unnecessary re-renders | `AdminDashboard.tsx` | Wrap child components in `React.memo` |
+| 92 | Debounced search callback | `ResumeManagement.tsx` | Already uses `useCallback` — **FIXED**, can close |
+
+#### Requires Design/Product Decisions (defer):
+| # | Issue | Notes |
+|---|-------|-------|
+| 29 | Native confirm() for delete | Replace with custom modal — need design spec |
+| 31 | Poor mobile payment cards | Need responsive design review |
+| 33 | No bulk actions for users | Feature request — needs product decision |
+| 34 | No "Select All" across pages | Complex UX pattern — needs product decision |
+| 39 | No aria-live region | `AdminSubscriptionStatus.tsx` — low traffic, low impact |
+| 57 | No dark mode | Large effort, product decision |
+| 58-62 | Keyboard shortcuts, column toggle, recently viewed, date range, CSV export | Feature requests — defer to roadmap |
+
+#### P1 Features Deferred (need product decisions):
+| # | Issue | Notes |
+|---|-------|-------|
+| 46 | Email notifications | Needs email provider (Resend/SES), template design |
+| 47 | Dashboard analytics/charts | Needs charting library choice, data model |
+| 48 | Search by Clerk ID | Minor API change, low priority |
+| 49 | Resume export as JSON | Feature request |
+| 50 | Payment receipt PDF | Feature request |
+| 51 | Bulk payment actions | Feature request |
+| 52 | User impersonation | Security implications, careful design needed |
+| 53 | Settings change history | Overlaps with #44 |
+| 54 | Template preview in settings | Can reuse existing SVG thumbnails |
+| 55 | User role management | Only 1 admin currently |
+| 56 | Subscription manual extension | Feature request |
+| 66 | JSDoc comments | Nice-to-have, low ROI |
+| 67 | Inconsistent naming | Cosmetic, low ROI |
+| 68 | TypeScript strict mode | High effort, many type errors expected |
+| 81-82 | Request timeout + retry | Over-engineering for admin panel traffic |
+| 83-84 | Storybook + E2E tests | Separate initiative |
+| 91 | Virtual scrolling | Paginated to 20 items max — unnecessary |
+
+---
+
+## Automation Strategy
+
+### Batch 1: Agent Team — 7 Parallel Agents (~5 min)
+**10 issues, zero file conflicts:**
+
+| Agent | Issues | Files | Task |
+|-------|--------|-------|------|
+| **A: Cleanup** | #75, #74 | `ResumeDetailsModal.tsx`, `AdminDashboard.tsx` | Delete dead file, remove eslint-disable comment |
+| **B: Skip Link** | #37 | `src/app/admin/layout.tsx` | Add skip-to-content link to admin layout |
+| **C: Constants** | #65 | New `src/lib/constants.ts` + 6 files | Extract pagination constants to shared file |
+| **D: Cache** | #86 | `system-settings.ts`, `admin/settings/route.ts` | Add 5-min TTL cache + invalidation on save |
+| **E: Pagination** | #80 | 3 admin API route files | Add `hasNextPage`/`hasPrevPage` to responses |
+| **F: Loading UX** | #27, #30 | `AdminStatsCards.tsx`, `AdminSystemSettings.tsx` | Skeleton loader for stats + save success toast |
+| **G: Small UX** | #42, #41 | `ResumeManagement.tsx`, `AdminSystemSettings.tsx` | Total count in pagination + tooltip for limits |
+
+### Batch 2: Semi-Automated (Sequential, needs review)
+
+| Issue | Why Not Parallel |
+|-------|-----------------|
+| #32 (Sortable resume table) | API + UI coordination, needs sort param design |
+| #11 (Date formatting utility) | Need to decide format string, verify all call sites |
+| #70 (console.error cleanup) | Need to decide: remove, gate, or structured logger? |
+| #90 (React.memo optimization) | Need to verify no prop mutation side effects |
+
+### Batch 3: Needs Decisions Before Implementation
+
+| Issue | Decision Needed |
+|-------|----------------|
+| #44 (Settings backup) | Full history vs last-5? Separate table vs JSON log? |
+| #45 (Refund flow) | Is this needed now with <10 payments/month? |
+| #29 (Custom delete modal) | Design spec for the confirmation dialog |
+| #46 (Email notifications) | Email provider? Template design? |
+| #47 (Analytics charts) | Charting library? Which metrics? |
+
+---
+
+## Recommended Execution Order
+
+1. **Now:** Run Batch 1 (agent team, 7 parallel agents) — fixes 10 issues in one shot
+2. **Next session:** Run Batch 2 (4 sequential fixes) — fixes 4 more issues
+3. **Decide:** Review Batch 3 decisions, pick which features to build
+4. **Later:** P2 feature requests go to product roadmap
+
+**After Batch 1+2:** 63 + 14 = **77 of 89 issues resolved (87%)**. Remaining 12 are product/design decisions or large features.

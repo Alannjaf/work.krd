@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken } from '@/lib/csrf'
+import { ADMIN_PAGINATION } from '@/lib/constants'
 
 const VALID_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)))
+    const limit = Math.min(ADMIN_PAGINATION.MAX_LIMIT, Math.max(1, parseInt(searchParams.get('limit') || String(ADMIN_PAGINATION.PAYMENTS), 10)))
     const skip = (page - 1) * limit
 
     // Validate status filter if provided
@@ -72,6 +73,8 @@ export async function GET(req: NextRequest) {
       total,
       page,
       limit,
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
     })
 
     return attachCsrfToken(response, adminId)

@@ -9,13 +9,20 @@ interface AdminStatsCardsProps {
   loading?: boolean
 }
 
-function StatSkeleton({ colSpan }: { colSpan?: string }) {
+function StatSkeleton({ colSpan, showSubStats }: { colSpan?: string; showSubStats?: boolean }) {
   return (
     <Card className={`p-6 ${colSpan ?? ''}`}>
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
           <div className="h-7 w-16 bg-gray-200 rounded animate-pulse" />
+          {showSubStats && (
+            <div className="flex gap-3 mt-1">
+              <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+              <div className="h-3 w-18 bg-gray-200 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+            </div>
+          )}
         </div>
         <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
       </div>
@@ -31,7 +38,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
         <StatSkeleton />
         <StatSkeleton />
         <StatSkeleton />
-        <StatSkeleton colSpan="md:col-span-2 lg:col-span-2" />
+        <StatSkeleton colSpan="md:col-span-2 lg:col-span-2" showSubStats />
       </div>
     )
   }

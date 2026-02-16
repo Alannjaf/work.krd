@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireAdminWithId, logAdminAction } from '@/lib/admin'
-import { getSystemSettings, updateSystemSettings } from '@/lib/system-settings'
+import { getSystemSettings, updateSystemSettings, invalidateSettingsCache } from '@/lib/system-settings'
 import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     const savedSettings = await updateSystemSettings(parsed.data)
+    invalidateSettingsCache()
 
     await logAdminAction(adminId, 'UPDATE_SETTINGS', 'system_settings', {
       updatedFields: Object.keys(parsed.data),

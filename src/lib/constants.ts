@@ -48,5 +48,13 @@ export const DEFAULT_SYSTEM_SETTINGS = {
   maintenanceMode: false,
 } as const
 
+// Admin pagination defaults per resource type
+export const ADMIN_PAGINATION = {
+  PAYMENTS: 20,
+  RESUMES: 10,
+  USERS: 20,
+  MAX_LIMIT: 100,
+} as const
+
 // Subscription duration in milliseconds (30 days)
 export const SUBSCRIPTION_DURATION_MS = 30 * 24 * 60 * 60 * 1000
