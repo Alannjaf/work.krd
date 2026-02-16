@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Eye, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { ResumeStatus } from '@prisma/client';
 import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils';
+import { Button } from '@/components/ui/button';
 
 interface ResumeWithUser {
   id: string;
@@ -126,28 +127,28 @@ export function ResumeTable({
   const getStatusColor = (status: ResumeStatus) => {
     switch (status) {
       case 'DRAFT':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
       case 'PUBLISHED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'ARCHIVED':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
     }
   };
 
-  const thSortableClass = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none hover:bg-gray-100 transition-colors';
+  const thSortableClass = 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors';
 
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className="overflow-hidden rounded-lg border dark:border-gray-700">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
                   checked={selectedIds.length === resumes.length && resumes.length > 0}
                   onChange={onSelectAll}
-                  className="rounded border-gray-300"
+                  className="rounded border-gray-300 dark:border-gray-600"
                 />
               </th>
               <th className={thSortableClass} onClick={() => handleSort('title')}>
@@ -180,38 +181,38 @@ export function ResumeTable({
                   <SortIcon field="createdAt" />
                 </span>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {sortedResumes.map((resume) => (
-              <tr key={resume.id} className="hover:bg-gray-50">
+              <tr key={resume.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                 <td className="px-6 py-4">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(resume.id)}
                     onChange={() => onSelectId(resume.id)}
-                    className="rounded border-gray-300"
+                    className="rounded border-gray-300 dark:border-gray-600"
                   />
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {resume.title}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {resume.template} template
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-gray-100">
                       {resume.user.name || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {resume.user.email}
                     </div>
                   </div>
@@ -221,34 +222,22 @@ export function ResumeTable({
                     {resume.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {resume._count.sections}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
+                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                   <span title={formatAdminDateFull(resume.createdAt)}>
                     {formatAdminDate(resume.createdAt)}
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => onViewResume(resume)}
-                      className="text-blue-600 hover:text-blue-900"
-                      title="View Resume"
-                      aria-label="View Resume"
-                    >
-                      <Eye className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteResume(resume.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Delete Resume"
-                      aria-label="Delete Resume"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" onClick={() => onViewResume(resume)} title="View Resume" aria-label="View Resume">
+                      <Eye className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => onDeleteResume(resume.id)} title="Delete Resume" aria-label="Delete Resume">
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
                   </div>
                 </td>
               </tr>

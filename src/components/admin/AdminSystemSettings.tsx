@@ -193,16 +193,16 @@ export function AdminSystemSettings({
       </div>
 
       {showHistory && (
-        <div className="bg-white border rounded-lg shadow-lg p-4 mt-4 space-y-2">
-          <h4 className="text-sm font-semibold text-gray-700">Recent Snapshots</h4>
+        <div className="bg-white dark:bg-gray-900 border rounded-lg shadow-lg p-4 mt-4 space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Recent Snapshots</h4>
           {loadingHistory ? (
-            <div className="text-sm text-gray-500">Loading...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
           ) : snapshots.length === 0 ? (
-            <div className="text-sm text-gray-500">No snapshots yet. Snapshots are created automatically each time you save.</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">No snapshots yet. Snapshots are created automatically each time you save.</div>
           ) : (
             snapshots.map((s) => (
               <div key={s.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
-                <span className="text-gray-600" title={formatAdminDateFull(s.createdAt)}>
+                <span className="text-gray-600 dark:text-gray-400" title={formatAdminDateFull(s.createdAt)}>
                   {formatAdminDate(s.createdAt)}
                 </span>
                 <Button
@@ -254,9 +254,9 @@ function PlanLimitsSection({
 
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">{title}</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{title}</h3>
       {allowUnlimited && (
-        <p id={hintId} className="text-xs text-gray-400 mb-3 cursor-help" title="Set to -1 for unlimited usage on any limit field">
+        <p id={hintId} className="text-xs text-gray-400 dark:text-gray-500 mb-3 cursor-help" title="Set to -1 for unlimited usage on any limit field">
           (-1 = unlimited)
         </p>
       )}
@@ -347,7 +347,7 @@ function TemplateAccessSection({ settings, setSettings, availableTemplates }: Te
 
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Template Access Control</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Template Access Control</h3>
       <div className="space-y-4">
         {(['free', 'pro'] as const).map(plan => (
           <div key={plan}>
@@ -390,7 +390,7 @@ interface PhotoUploadSectionProps {
 function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) {
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Profile Photo Upload Access</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Profile Photo Upload Access</h3>
       <div>
         <div id="photo-upload-group-label" className="block text-sm font-medium mb-2">
           Plans with Photo Upload Access
@@ -414,7 +414,7 @@ function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) 
             </label>
           ))}
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           Select which subscription plans can upload profile photos
         </p>
       </div>
@@ -430,7 +430,7 @@ interface PricingSectionProps {
 function PricingSection({ settings, setSettings }: PricingSectionProps) {
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">Pricing Settings</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Pricing Settings</h3>
       <div className="max-w-xs">
         <label htmlFor="pro-plan-price" className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
         <Input
@@ -456,7 +456,7 @@ interface MaintenanceModeSectionProps {
 function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectionProps) {
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">System Settings</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">System Settings</h3>
       <div>
         <label htmlFor="maintenance-mode" className="flex items-center space-x-2">
           <input
@@ -468,7 +468,7 @@ function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectio
           />
           <span className="text-sm font-medium">Maintenance Mode</span>
         </label>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           When enabled, only admins can access the site
         </p>
       </div>

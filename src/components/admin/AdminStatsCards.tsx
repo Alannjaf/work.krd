@@ -14,17 +14,17 @@ function StatSkeleton({ colSpan, showSubStats }: { colSpan?: string; showSubStat
     <Card className={`p-6 ${colSpan ?? ''}`}>
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-          <div className="h-7 w-16 bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-7 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
           {showSubStats && (
             <div className="flex gap-3 mt-1">
-              <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
-              <div className="h-3 w-18 bg-gray-200 rounded animate-pulse" />
-              <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-3 w-18 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </div>
           )}
         </div>
-        <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
+        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
       </div>
     </Card>
   )
@@ -57,7 +57,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       <Card className="p-6" aria-label={`Total users: ${userCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Total Users</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Total Users</p>
             <p className="text-2xl font-bold">{userCount}</p>
           </div>
           <Users className="h-8 w-8 text-blue-500" />
@@ -67,7 +67,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       <Card className="p-6" aria-label={`Total resumes: ${resumeCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Total Resumes</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Total Resumes</p>
             <p className="text-2xl font-bold">{resumeCount}</p>
           </div>
           <FileText className="h-8 w-8 text-green-500" />
@@ -77,7 +77,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       <Card className="p-6" aria-label={`Pro subscriptions: ${subCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Pro Subscriptions</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Pro Subscriptions</p>
             <p className="text-2xl font-bold">{subCount}</p>
           </div>
           <DollarSign className="h-8 w-8 text-purple-500" />
@@ -87,7 +87,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       <Card className="p-6" aria-label={`Monthly revenue: ${revenueAmount.toLocaleString()} IQD`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Monthly Revenue</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Revenue</p>
             <p className="text-2xl font-bold">{revenueAmount.toLocaleString()} IQD</p>
           </div>
           <DollarSign className="h-8 w-8 text-yellow-500" />
@@ -97,7 +97,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       <Card className="p-6 md:col-span-2 lg:col-span-2" aria-label={`Payments: ${totalPayments}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Payments</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Payments</p>
             <p className="text-2xl font-bold">{totalPayments}</p>
             {stats?.payments && (
               <div className="flex gap-3 mt-1 text-xs">

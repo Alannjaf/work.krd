@@ -24,7 +24,7 @@ function formatMonth(month: string) {
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">{title}</h3>
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{title}</h3>
       <div className="h-48">
         {children}
       </div>
@@ -35,8 +35,8 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 function ChartSkeleton() {
   return (
     <Card className="p-4">
-      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-3" />
-      <div className="h-48 bg-gray-100 rounded animate-pulse" />
+      <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-3" />
+      <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
     </Card>
   )
 }
@@ -85,7 +85,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
 
   if (error || !data) {
     return (
-      <Card className="p-6 text-center text-gray-500">
+      <Card className="p-6 text-center text-gray-500 dark:text-gray-400">
         <p>{error || 'No analytics data available'}</p>
       </Card>
     )

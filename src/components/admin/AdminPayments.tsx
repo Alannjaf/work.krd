@@ -8,7 +8,7 @@ export function AdminPayments() {
   const { csrfFetch } = useCsrfToken()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AppHeader
         title="Payment Reviews"
         showBackButton={true}

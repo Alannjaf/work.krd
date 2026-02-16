@@ -19,7 +19,8 @@ import {
   X,
   ArrowUp,
   ArrowDown,
-  Trash2
+  Trash2,
+  Download
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
@@ -210,8 +211,35 @@ export function UserManagement() {
     setDateTo('')
   }
 
+  const handleExportCSV = () => {
+    const rows = users.map(user => ({
+      name: user.name || '',
+      email: user.email,
+      role: user.role,
+      plan: user.subscription?.plan || 'NONE',
+      status: user.subscription?.status || 'N/A',
+      resumes: user.subscription?.resumeCount ?? 0,
+      aiUsage: user.subscription?.aiUsageCount ?? 0,
+      exports: user.subscription?.exportCount ?? 0,
+      joined: user.createdAt,
+    }))
+
+    const csv = [
+      ['Name', 'Email', 'Role', 'Plan', 'Status', 'Resumes', 'AI Usage', 'Exports', 'Joined'],
+      ...rows.map(r => Object.values(r))
+    ].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `users-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AppHeader
         title="User Management"
         showBackButton={true}
@@ -221,17 +249,17 @@ export function UserManagement() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage users and their subscriptions</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage users and their subscriptions</p>
         </div>
 
         {/* Search, Filters, and Actions */}
         <Card className="p-4 mb-6">
           <div className="flex flex-col gap-4">
-            {/* Row 1: Search + Plan Filter + Refresh */}
+            {/* Row 1: Search + Plan Filter + Export CSV + Refresh */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search by email or name..."
                   value={searchTerm}
@@ -242,7 +270,7 @@ export function UserManagement() {
                   <button
                     type="button"
                     onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                     aria-label="Clear search"
                   >
                     <X className="h-4 w-4" />
@@ -252,13 +280,17 @@ export function UserManagement() {
               <select
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
-                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
               >
                 <option value="">All Plans</option>
                 {VALID_PLANS.map(p => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
+              <Button onClick={handleExportCSV} variant="outline" type="button">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
               <Button onClick={fetchUsers} variant="outline" type="button">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
@@ -269,7 +301,7 @@ export function UserManagement() {
             <div className="flex flex-col sm:flex-row gap-4 items-end">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="dateFrom" className="text-xs font-medium text-gray-500">
+                  <label htmlFor="dateFrom" className="text-xs font-medium text-gray-500 dark:text-gray-400">
                     From date
                   </label>
                   <input
@@ -277,11 +309,11 @@ export function UserManagement() {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="dateTo" className="text-xs font-medium text-gray-500">
+                  <label htmlFor="dateTo" className="text-xs font-medium text-gray-500 dark:text-gray-400">
                     To date
                   </label>
                   <input
@@ -289,12 +321,12 @@ export function UserManagement() {
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                   />
                 </div>
               </div>
               {hasActiveFilters && (
-                <Button onClick={clearFilters} variant="ghost" size="sm" type="button" className="text-gray-500">
+                <Button onClick={clearFilters} variant="ghost" size="sm" type="button" className="text-gray-500 dark:text-gray-400">
                   <X className="h-4 w-4 mr-1" />
                   Clear Filters
                 </Button>
@@ -307,7 +339,7 @@ export function UserManagement() {
         {selectedIds.length > 0 && (
           <Card className="p-4 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <span className="text-blue-700 font-medium">
+              <span className="text-blue-700 dark:text-blue-300 font-medium">
                 {selectedIds.length} user(s) selected
               </span>
               <div className="flex gap-2">
@@ -359,7 +391,7 @@ export function UserManagement() {
           </div>
         ) : users.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-gray-500">No users found matching your filters.</p>
+            <p className="text-gray-500 dark:text-gray-400">No users found matching your filters.</p>
           </Card>
         ) : (
           <>
@@ -369,10 +401,10 @@ export function UserManagement() {
                 type="checkbox"
                 checked={selectedIds.length === users.length && users.length > 0}
                 onChange={handleSelectAll}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                 aria-label="Select all users on this page"
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {selectedIds.length === users.length && users.length > 0
                   ? 'Deselect all'
                   : 'Select all on this page'}
@@ -384,7 +416,7 @@ export function UserManagement() {
                 <Card
                   key={user.id}
                   className={`p-4 sm:p-6 transition-colors ${
-                    selectedIds.includes(user.id) ? 'ring-2 ring-blue-500 bg-blue-50/50' : ''
+                    selectedIds.includes(user.id) ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-900/30' : ''
                   }`}
                 >
                   <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -394,15 +426,15 @@ export function UserManagement() {
                         type="checkbox"
                         checked={selectedIds.includes(user.id)}
                         onChange={() => handleSelectUser(user.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         aria-label={`Select ${user.name || user.email}`}
                       />
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                             {user.name || 'No name'}
                           </h3>
                           {user.role === 'ADMIN' && (
@@ -412,7 +444,7 @@ export function UserManagement() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
+                        <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                           <span className="flex items-center truncate">
                             <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
                             <span className="truncate">{user.email}</span>
@@ -431,11 +463,11 @@ export function UserManagement() {
                           {user.subscription?.plan || 'NO PLAN'}
                         </Badge>
                         {user.subscription?.endDate && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             Expires: <span title={formatAdminDateFull(user.subscription.endDate)}>{formatAdminDate(user.subscription.endDate)}</span>
                           </span>
                         )}
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                           {user.subscription && (
                             <>
                               {user.subscription.resumeCount} resumes •{' '}
@@ -479,7 +511,7 @@ export function UserManagement() {
             )}
 
             {/* Page info */}
-            <p className="text-center text-sm text-gray-500 mt-3">
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
               Page {page} of {totalPages} — {total} users total
             </p>
           </>
@@ -503,8 +535,8 @@ export function UserManagement() {
               <h3 className="text-lg font-semibold mb-4">Manage User Subscription</h3>
 
               <div className="mb-4">
-                <p className="text-sm text-gray-600">User: {selectedUser.email}</p>
-                <div className="text-sm text-gray-600 flex items-center gap-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">User: {selectedUser.email}</p>
+                <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                   <span>Current Plan:</span>
                   <Badge variant="outline">{selectedUser.subscription?.plan || 'NONE'}</Badge>
                 </div>
@@ -576,20 +608,20 @@ export function UserManagement() {
                 </p>
               ) : (
                 <>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     Are you sure you want to {bulkAction === 'upgrade' ? 'upgrade' : 'downgrade'}{' '}
                     <strong>{selectedIds.length}</strong> user(s) to{' '}
                     <strong>{bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE}</strong>?
                   </p>
 
                   {bulkAction === 'upgrade' && (
-                    <p className="text-xs text-gray-500 mb-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                       Each user will receive a 30-day PRO subscription.
                     </p>
                   )}
 
                   {bulkAction === 'downgrade' && (
-                    <p className="text-xs text-gray-500 mb-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                       Users will be downgraded to the FREE plan. Their usage counts will be preserved.
                     </p>
                   )}

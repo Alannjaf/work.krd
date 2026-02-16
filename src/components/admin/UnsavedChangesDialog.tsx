@@ -42,18 +42,18 @@ export function UnsavedChangesDialog({ open, onCancel, onDiscard }: UnsavedChang
       aria-describedby="unsaved-dialog-desc"
     >
       <div
-        className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6"
+        className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
           </div>
-          <h2 id="unsaved-dialog-title" className="text-lg font-semibold text-gray-900">
+          <h2 id="unsaved-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Unsaved Changes
           </h2>
         </div>
-        <p id="unsaved-dialog-desc" className="text-sm text-gray-600 mb-6">
+        <p id="unsaved-dialog-desc" className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           You have unsaved changes in System Settings. Are you sure you want to leave? Your changes will be lost.
         </p>
         <div className="flex justify-end gap-3">

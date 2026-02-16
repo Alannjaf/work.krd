@@ -13,6 +13,7 @@ export function AdminQuickActions() {
       <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push('/admin/users')}
         >
@@ -20,6 +21,7 @@ export function AdminQuickActions() {
           Manage Users
         </Button>
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push('/admin/resumes')}
         >
@@ -27,6 +29,7 @@ export function AdminQuickActions() {
           View All Resumes
         </Button>
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push('/admin/payments')}
         >

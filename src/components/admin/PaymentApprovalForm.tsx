@@ -120,65 +120,65 @@ export function PaymentApprovalForm({
       }}
     >
       <div
-        className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-label="Review payment"
       >
         {/* Modal header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-xl">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Payment Review
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Close"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
           {/* User details */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
               User Details
             </h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Name</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Name</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {payment.user.name || 'Unknown'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Email</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {payment.user.email}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Plan</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Plan</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {payment.plan}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Amount</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Amount</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {formatAmount(payment.amount)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Submitted</span>
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Submitted</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
                   {formatDate(payment.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Status</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
                 <Badge className={statusBadgeClass(payment.status)}>
                   {payment.status}
                 </Badge>
@@ -188,14 +188,14 @@ export function PaymentApprovalForm({
 
           {/* Screenshot */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
               Payment Screenshot
             </h3>
-            <div className="border rounded-lg overflow-hidden bg-gray-50 min-h-[200px] flex items-center justify-center">
+            <div className="border dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 min-h-[200px] flex items-center justify-center">
               {loadingScreenshot ? (
                 <div className="flex flex-col items-center gap-2 py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                  <span className="text-sm text-gray-400">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
+                  <span className="text-sm text-gray-400 dark:text-gray-500">
                     Loading screenshot...
                   </span>
                 </div>
@@ -207,8 +207,8 @@ export function PaymentApprovalForm({
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 py-8">
-                  <ImageIcon className="h-10 w-10 text-gray-300" />
-                  <span className="text-sm text-gray-400">
+                  <ImageIcon className="h-10 w-10 text-gray-300 dark:text-gray-600" />
+                  <span className="text-sm text-gray-400 dark:text-gray-500">
                     No screenshot available
                   </span>
                 </div>
@@ -219,26 +219,26 @@ export function PaymentApprovalForm({
           {/* Reviewed info for non-pending */}
           {payment.status !== 'PENDING' && (
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-2">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                 Review Info
               </h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
                 {payment.reviewedAt && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       Reviewed At
                     </span>
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
                       {formatDate(payment.reviewedAt)}
                     </span>
                   </div>
                 )}
                 {payment.adminNote && (
                   <div>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       Admin Note
                     </span>
-                    <p className="text-sm text-gray-900 mt-1">
+                    <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
                       {payment.adminNote}
                     </p>
                   </div>
@@ -254,7 +254,7 @@ export function PaymentApprovalForm({
               <div>
                 <label
                   htmlFor="reject-note"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
                   Note (optional, shown to user on rejection)
                 </label>
@@ -264,7 +264,7 @@ export function PaymentApprovalForm({
                   onChange={(e) => setRejectNote(e.target.value)}
                   placeholder="Reason for rejection..."
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                 />
               </div>
 

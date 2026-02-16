@@ -238,7 +238,7 @@ export function ResumeManagement() {
       {selectedIds.length > 0 && (
         <Card className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-blue-700 font-medium">
+            <span className="text-blue-700 dark:text-blue-300 font-medium">
               {selectedIds.length} resume(s) selected
             </span>
             <Button
@@ -265,12 +265,12 @@ export function ResumeManagement() {
       <Card className="p-6">
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-400" />
           </div>
         ) : resumes.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No resumes found</p>
-            <p className="text-sm text-gray-400 mt-2">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No resumes found</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
               {search || status || template
                 ? "Try adjusting your search filters"
                 : "Resumes will appear here once users create them"}
@@ -293,7 +293,7 @@ export function ResumeManagement() {
                 totalPages={totalPages}
                 onPageChange={setPage}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Page {page} of {totalPages} — {totalCount} resume{totalCount !== 1 ? 's' : ''} total
               </p>
             </div>
@@ -317,9 +317,9 @@ export function ResumeManagement() {
       {/* Loading overlay for preview */}
       {isLoadingPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-gray-700">Loading resume preview...</p>
+            <p className="text-gray-700 dark:text-gray-300">Loading resume preview...</p>
           </div>
         </div>
       )}
