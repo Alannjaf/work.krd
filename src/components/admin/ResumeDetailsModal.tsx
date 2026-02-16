@@ -7,6 +7,7 @@ import { AdminResumePreview } from './AdminResumePreview';
 import { ResumeData } from '@/types/resume';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 interface ResumeWithUser {
   id: string;
@@ -31,6 +32,7 @@ interface ResumeDetailsModalProps {
 }
 
 export function ResumeDetailsModal({ resume, onClose }: ResumeDetailsModalProps) {
+  const { csrfFetch } = useCsrfToken();
   const [showPreview, setShowPreview] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,7 +51,7 @@ export function ResumeDetailsModal({ resume, onClose }: ResumeDetailsModalProps)
   const handlePreviewResume = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/resumes/${resume.id}/preview`);
+      const response = await csrfFetch(`/api/admin/resumes/${resume.id}/preview`);
       if (!response.ok) throw new Error('Failed to fetch resume data');
       
       const data = await response.json();

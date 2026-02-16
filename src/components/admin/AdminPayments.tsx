@@ -16,6 +16,7 @@ import {
   ImageIcon,
   Search,
 } from 'lucide-react'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ function statusBadgeClass(status: Payment['status']) {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function AdminPayments() {
+  const { csrfFetch } = useCsrfToken()
   const [payments, setPayments] = useState<Payment[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -109,7 +111,7 @@ export function AdminPayments() {
       if (searchTerm.trim()) {
         params.set('search', searchTerm.trim())
       }
-      const res = await fetch(`/api/admin/payments?${params}`)
+      const res = await csrfFetch(`/api/admin/payments?${params}`)
       if (!res.ok) throw new Error('Failed to fetch payments')
       const data: PaymentsResponse = await res.json()
       setPayments(data.payments)
@@ -152,7 +154,7 @@ export function AdminPayments() {
     setLoadingScreenshot(true)
 
     try {
-      const res = await fetch(`/api/admin/payments/${payment.id}/review`)
+      const res = await csrfFetch(`/api/admin/payments/${payment.id}/review`)
       if (!res.ok) throw new Error('Failed to load payment details')
       const data = await res.json()
       setReviewScreenshot(data.screenshot || null)
@@ -188,7 +190,7 @@ export function AdminPayments() {
         body.note = rejectNote.trim()
       }
 
-      const res = await fetch(`/api/admin/payments/${reviewingId}/review`, {
+      const res = await csrfFetch(`/api/admin/payments/${reviewingId}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

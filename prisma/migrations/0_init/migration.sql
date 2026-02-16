@@ -8,10 +8,13 @@ CREATE TYPE "ResumeStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 CREATE TYPE "SectionType" AS ENUM ('WORK_EXPERIENCE', 'EDUCATION', 'SKILLS', 'LANGUAGES', 'CERTIFICATIONS', 'PROJECTS', 'ACHIEVEMENTS', 'REFERENCES', 'CUSTOM');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionPlan" AS ENUM ('FREE', 'BASIC', 'PRO');
+CREATE TYPE "SubscriptionPlan" AS ENUM ('FREE', 'PRO');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'CANCELLED', 'EXPIRED', 'SUSPENDED');
+
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -19,6 +22,7 @@ CREATE TABLE "User" (
     "clerkId" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
+    "onboardingCompleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
@@ -86,28 +90,37 @@ CREATE TABLE "SystemSettings" (
     "maxFreeResumes" INTEGER NOT NULL DEFAULT 10,
     "maxFreeAIUsage" INTEGER NOT NULL DEFAULT 100,
     "maxFreeExports" INTEGER NOT NULL DEFAULT 20,
-    "maxBasicResumes" INTEGER NOT NULL DEFAULT 50,
-    "maxBasicAIUsage" INTEGER NOT NULL DEFAULT 500,
-    "maxBasicExports" INTEGER NOT NULL DEFAULT 100,
+    "maxFreeImports" INTEGER NOT NULL DEFAULT 1,
+    "maxFreeATSChecks" INTEGER NOT NULL DEFAULT 0,
     "maxProResumes" INTEGER NOT NULL DEFAULT -1,
     "maxProAIUsage" INTEGER NOT NULL DEFAULT -1,
     "maxProExports" INTEGER NOT NULL DEFAULT -1,
-    "basicPlanPrice" INTEGER NOT NULL DEFAULT 5000,
-    "proPlanPrice" INTEGER NOT NULL DEFAULT 10000,
+    "maxProImports" INTEGER NOT NULL DEFAULT -1,
+    "maxProATSChecks" INTEGER NOT NULL DEFAULT -1,
+    "proPlanPrice" INTEGER NOT NULL DEFAULT 5000,
     "maintenanceMode" BOOLEAN NOT NULL DEFAULT false,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "maxBasicImports" INTEGER NOT NULL DEFAULT 0,
-    "maxFreeImports" INTEGER NOT NULL DEFAULT 0,
-    "maxProImports" INTEGER NOT NULL DEFAULT -1,
-    "basicTemplates" JSONB NOT NULL DEFAULT '["modern", "creative"]',
     "freeTemplates" JSONB NOT NULL DEFAULT '["modern"]',
-    "photoUploadPlans" JSONB NOT NULL DEFAULT '["BASIC", "PRO"]',
-    "proTemplates" JSONB NOT NULL DEFAULT '["modern", "creative", "executive"]',
-    "maxFreeATSChecks" INTEGER NOT NULL DEFAULT 0,
-    "maxBasicATSChecks" INTEGER NOT NULL DEFAULT 5,
-    "maxProATSChecks" INTEGER NOT NULL DEFAULT -1,
+    "proTemplates" JSONB NOT NULL DEFAULT '["modern"]',
+    "photoUploadPlans" JSONB NOT NULL DEFAULT '["PRO"]',
 
     CONSTRAINT "SystemSettings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "plan" "SubscriptionPlan" NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "screenshotData" BYTEA NOT NULL,
+    "screenshotType" TEXT NOT NULL,
+    "status" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
+    "adminNote" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reviewedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -149,6 +162,15 @@ CREATE INDEX "Subscription_userId_idx" ON "Subscription"("userId");
 -- CreateIndex
 CREATE INDEX "Subscription_status_idx" ON "Subscription"("status");
 
+-- CreateIndex
+CREATE INDEX "Payment_userId_idx" ON "Payment"("userId");
+
+-- CreateIndex
+CREATE INDEX "Payment_status_idx" ON "Payment"("status");
+
+-- CreateIndex
+CREATE INDEX "Payment_createdAt_idx" ON "Payment"("createdAt");
+
 -- AddForeignKey
 ALTER TABLE "Resume" ADD CONSTRAINT "Resume_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -157,4 +179,7 @@ ALTER TABLE "ResumeSection" ADD CONSTRAINT "ResumeSection_resumeId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

@@ -1,8 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { Resume, ResumeStatus } from '@prisma/client';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers';
+import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
 
 interface ResumeWithUser extends Resume {
   user: {
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
       // If role column doesn't exist, just check if user exists
       const userExists = await prisma.user.findUnique({
         where: { clerkId: userId }});
-      
+
       if (!userExists) {
         return notFoundResponse('User not found');
       }
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
     // Try to fetch resumes, but handle case where tables might not exist
     let resumes: ResumeWithUser[] = [];
     let total = 0;
-    
+
     try {
       [resumes, total] = await Promise.all([
         prisma.resume.findMany({
@@ -94,13 +95,15 @@ export async function GET(req: NextRequest) {
       // Return empty array if tables don't exist yet
     }
 
-    return successResponse({
+    const response = NextResponse.json({
       resumes: resumes as ResumeWithUser[],
       pagination: {
         total,
         page,
         limit,
         totalPages: Math.ceil(total / limit)}});
+
+    return attachCsrfToken(response, userId);
   } catch (error) {
     console.error('[AdminResumes] Failed to get resumes:', error);
     return errorResponse('Internal Server Error', 500);
@@ -119,6 +122,12 @@ export async function DELETE(req: NextRequest) {
 
     if (!user || user.role !== 'ADMIN') {
       return forbiddenResponse();
+    }
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(req);
+    if (!validateCsrfToken(userId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403);
     }
 
     const { ids } = await req.json();

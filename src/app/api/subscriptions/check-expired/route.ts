@@ -1,13 +1,21 @@
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { requireAdmin } from '@/lib/admin'
+import { requireAdminWithId } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/api-helpers'
+import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    await requireAdmin()
-    
+    const adminId = await requireAdminWithId()
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(req)
+    if (!validateCsrfToken(adminId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403)
+    }
+
     const now = new Date()
-    
+
     // Find all active subscriptions that have passed their end date
     const expiredSubscriptions = await prisma.subscription.findMany({
       where: {
@@ -56,7 +64,7 @@ export async function POST() {
           })
 
           // User downgraded successfully
-          
+
           return {
             success: true,
             userId: subscription.userId,
@@ -76,12 +84,12 @@ export async function POST() {
       })
     )
 
-    const successful = downgradeResults.filter(result => 
+    const successful = downgradeResults.filter(result =>
       result.status === 'fulfilled' && result.value.success
     ).map(result => result.status === 'fulfilled' ? result.value : null)
 
-    const failed = downgradeResults.filter(result => 
-      result.status === 'rejected' || 
+    const failed = downgradeResults.filter(result =>
+      result.status === 'rejected' ||
       (result.status === 'fulfilled' && !result.value.success)
     ).map(result => {
       if (result.status === 'rejected') {
@@ -113,10 +121,10 @@ export async function POST() {
 // GET endpoint to check expiration status without making changes
 export async function GET() {
   try {
-    await requireAdmin()
-    
+    const adminId = await requireAdminWithId()
+
     const now = new Date()
-    
+
     // Find all active subscriptions that have passed their end date
     const expiredSubscriptions = await prisma.subscription.findMany({
       where: {
@@ -162,7 +170,7 @@ export async function GET() {
       }
     })
 
-    return successResponse({
+    const response = NextResponse.json({
       expired: {
         count: expiredSubscriptions.length,
         subscriptions: expiredSubscriptions.map(sub => ({
@@ -186,6 +194,8 @@ export async function GET() {
         }))
       }
     })
+
+    return attachCsrfToken(response, adminId)
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

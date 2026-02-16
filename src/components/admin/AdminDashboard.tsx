@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { getTemplateIds } from '@/lib/templates'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { AdminStatsCards } from './AdminStatsCards'
 import { AdminSubscriptionStatus } from './AdminSubscriptionStatus'
 import { AdminSystemSettings } from './AdminSystemSettings'
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
 
 export function AdminDashboard() {
   const { t } = useLanguage()
+  const { csrfFetch } = useCsrfToken()
   const availableTemplates = getTemplateIds()
   const [stats, setStats] = useState<Stats | null>(null)
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
@@ -42,12 +44,16 @@ export function AdminDashboard() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errors, setErrors] = useState<{
+    stats?: string;
+    settings?: string;
+    subscriptions?: string;
+  }>({})
 
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true)
-      setError(null)
+      setErrors({})
       await Promise.allSettled([fetchStats(), fetchSettings(), fetchSubscriptionStatus()])
       setLoading(false)
     }
@@ -56,20 +62,21 @@ export function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/stats')
+      const response = await csrfFetch('/api/admin/stats')
       if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
       setStats(data)
+      setErrors(prev => { const { stats: _, ...rest } = prev; return rest })
     } catch (error) {
       console.error('[AdminDashboard] Failed to fetch stats:', error)
-      setError('Failed to load dashboard data')
+      setErrors(prev => ({ ...prev, stats: 'Failed to load stats' }))
       toast.error('Failed to load stats')
     }
   }
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings')
+      const response = await csrfFetch('/api/admin/settings')
       if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
 
@@ -99,22 +106,24 @@ export function AdminDashboard() {
         proPlanPrice: data.proPlanPrice ?? 5000,
         maintenanceMode: data.maintenanceMode ?? false
       })
+      setErrors(prev => { const { settings: _, ...rest } = prev; return rest })
     } catch (error) {
       console.error('[AdminDashboard] Failed to fetch settings:', error)
-      setError('Failed to load dashboard data')
+      setErrors(prev => ({ ...prev, settings: 'Failed to load settings' }))
       toast.error('Failed to load settings')
     }
   }
 
   const fetchSubscriptionStatus = async () => {
     try {
-      const response = await fetch('/api/subscriptions/check-expired')
+      const response = await csrfFetch('/api/subscriptions/check-expired')
       if (!response.ok) throw new Error(`API returned ${response.status}`)
       const data = await response.json()
       setSubscriptionStatus(data)
+      setErrors(prev => { const { subscriptions: _, ...rest } = prev; return rest })
     } catch (error) {
       console.error('[AdminDashboard] Failed to fetch subscription status:', error)
-      setError('Failed to load dashboard data')
+      setErrors(prev => ({ ...prev, subscriptions: 'Failed to load subscription status' }))
       toast.error('Failed to load subscription status')
     }
   }
@@ -122,7 +131,7 @@ export function AdminDashboard() {
   const checkExpiredSubscriptions = async () => {
     setCheckingSubscriptions(true)
     try {
-      const response = await fetch('/api/subscriptions/check-expired', { method: 'POST' })
+      const response = await csrfFetch('/api/subscriptions/check-expired', { method: 'POST' })
       const data = await response.json()
 
       if (response.ok) {
@@ -147,7 +156,7 @@ export function AdminDashboard() {
   const saveSettings = async () => {
     setSaving(true)
     try {
-      const response = await fetch('/api/admin/settings', {
+      const response = await csrfFetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
@@ -173,25 +182,7 @@ export function AdminDashboard() {
     )
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button
-            onClick={async () => {
-              setError(null)
-              setLoading(true)
-              await Promise.allSettled([fetchStats(), fetchSettings(), fetchSubscriptionStatus()])
-              setLoading(false)
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      </div>
-    )
-  }
+  const hasErrors = Object.keys(errors).length > 0
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -208,22 +199,56 @@ export function AdminDashboard() {
           <p className="text-gray-600 mt-2">Manage your Work.krd platform</p>
         </div>
 
-        <AdminStatsCards stats={stats} />
+        {hasErrors && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-red-800">Some sections failed to load</p>
+                <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
+                  {errors.stats && <li>{errors.stats}</li>}
+                  {errors.settings && <li>{errors.settings}</li>}
+                  {errors.subscriptions && <li>{errors.subscriptions}</li>}
+                </ul>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const failedSections = { ...errors }
+                  setErrors({})
+                  const retries: Promise<void>[] = []
+                  if (failedSections.stats) retries.push(fetchStats())
+                  if (failedSections.settings) retries.push(fetchSettings())
+                  if (failedSections.subscriptions) retries.push(fetchSubscriptionStatus())
+                  await Promise.allSettled(retries)
+                }}
+              >
+                Retry Failed
+              </Button>
+            </div>
+          </div>
+        )}
 
-        <AdminSubscriptionStatus
-          subscriptionStatus={subscriptionStatus}
-          checkingSubscriptions={checkingSubscriptions}
-          onCheckExpired={checkExpiredSubscriptions}
-        />
+        {errors.stats ? null : <AdminStatsCards stats={stats} />}
 
-        <AdminSystemSettings
-          settings={settings}
-          setSettings={setSettings}
-          availableTemplates={availableTemplates}
-          saving={saving}
-          onSave={saveSettings}
-          onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
-        />
+        {errors.subscriptions ? null : (
+          <AdminSubscriptionStatus
+            subscriptionStatus={subscriptionStatus}
+            checkingSubscriptions={checkingSubscriptions}
+            onCheckExpired={checkExpiredSubscriptions}
+          />
+        )}
+
+        {errors.settings ? null : (
+          <AdminSystemSettings
+            settings={settings}
+            setSettings={setSettings}
+            availableTemplates={availableTemplates}
+            saving={saving}
+            onSave={saveSettings}
+            onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
+          />
+        )}
 
         <AdminQuickActions />
       </div>

@@ -1,13 +1,25 @@
-import { requireAdmin } from '@/lib/admin'
+import { NextRequest } from 'next/server'
+import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(req)
+    if (!validateCsrfToken(adminId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403)
+    }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-upgrade' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const { userId } = await params
     const { plan } = await req.json()

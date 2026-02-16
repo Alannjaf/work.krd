@@ -1,13 +1,19 @@
-import { requireAdmin } from '@/lib/admin'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 
 export async function GET(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-payment-review' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const { id } = await params
 
@@ -32,7 +38,7 @@ export async function GET(
     const base64 = Buffer.from(payment.screenshotData).toString('base64')
     const screenshotDataUrl = `data:${payment.screenshotType};base64,${base64}`
 
-    return successResponse({
+    const response = NextResponse.json({
       id: payment.id,
       plan: payment.plan,
       amount: payment.amount,
@@ -43,6 +49,8 @@ export async function GET(
       screenshot: screenshotDataUrl,
       user: payment.user,
     })
+
+    return attachCsrfToken(response, adminId)
   } catch (error) {
     if (error instanceof Error && error.message.includes('Admin access required')) {
       return errorResponse('Unauthorized', 403)
@@ -53,11 +61,20 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(req)
+    if (!validateCsrfToken(adminId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403)
+    }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-payment-review' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const { id } = await params
 
@@ -80,8 +97,10 @@ export async function POST(
 
     const now = new Date()
 
-    // Payment lookup + status check + update all inside transaction to prevent race conditions
+    // Atomic check-and-set inside transaction to prevent race conditions
+    // Using updateMany with status: 'PENDING' ensures only one admin can process a payment
     const result = await prisma.$transaction(async (tx) => {
+      // First get the payment to check existence and get userId/plan
       const payment = await tx.payment.findUnique({
         where: { id },
         select: {
@@ -94,19 +113,24 @@ export async function POST(
       })
 
       if (!payment) throw new Error('Payment not found')
-      if (payment.status !== 'PENDING') throw new Error(`Payment has already been ${payment.status.toLowerCase()}`)
+
+      const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED'
+
+      // Atomic status update — only succeeds if still PENDING
+      const updateResult = await tx.payment.updateMany({
+        where: { id, status: 'PENDING' },
+        data: {
+          status: newStatus,
+          reviewedAt: now,
+          adminNote: note || null,
+        },
+      })
+
+      if (updateResult.count === 0) {
+        throw new Error(`Payment has already been ${payment.status.toLowerCase()}`)
+      }
 
       if (action === 'approve') {
-        // Update payment status
-        const updatedPayment = await tx.payment.update({
-          where: { id },
-          data: {
-            status: 'APPROVED',
-            reviewedAt: now,
-            adminNote: note || null,
-          },
-        })
-
         // Upsert subscription to upgrade user
         const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
 
@@ -143,29 +167,19 @@ export async function POST(
         return {
           message: `Payment approved. User upgraded to ${payment.plan} plan.`,
           payment: {
-            id: updatedPayment.id,
-            status: updatedPayment.status,
-            reviewedAt: updatedPayment.reviewedAt,
+            id: payment.id,
+            status: newStatus,
+            reviewedAt: now,
           },
         }
       } else {
-        // Reject payment
-        const updatedPayment = await tx.payment.update({
-          where: { id },
-          data: {
-            status: 'REJECTED',
-            reviewedAt: now,
-            adminNote: note || null,
-          },
-        })
-
         return {
           message: 'Payment rejected.',
           payment: {
-            id: updatedPayment.id,
-            status: updatedPayment.status,
-            reviewedAt: updatedPayment.reviewedAt,
-            adminNote: updatedPayment.adminNote,
+            id: payment.id,
+            status: newStatus,
+            reviewedAt: now,
+            adminNote: note || null,
           },
         }
       }
@@ -180,7 +194,7 @@ export async function POST(
       return errorResponse('Payment not found', 404)
     }
     if (error instanceof Error && error.message.startsWith('Payment has already been')) {
-      return validationErrorResponse(error.message)
+      return errorResponse(error.message, 409)
     }
     console.error('[AdminPaymentReview] Failed to review payment:', error)
     return errorResponse('Failed to review payment', 500)

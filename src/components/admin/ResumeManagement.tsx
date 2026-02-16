@@ -12,6 +12,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import dynamic from "next/dynamic";
 import { ResumeData } from "@/types/resume";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 // Dynamic import for PreviewModal to match user experience
 const PreviewModal = dynamic(
@@ -42,6 +43,7 @@ interface ResumeWithUser {
 }
 
 export function ResumeManagement() {
+  const { csrfFetch } = useCsrfToken();
   const [resumes, setResumes] = useState<ResumeWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -73,7 +75,7 @@ export function ResumeManagement() {
         ...(template && { template }),
       });
 
-      const response = await fetch(`/api/admin/resumes?${params}`);
+      const response = await csrfFetch(`/api/admin/resumes?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -96,7 +98,8 @@ export function ResumeManagement() {
 
   useEffect(() => {
     fetchResumes();
-  }, [fetchResumes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch, status, template]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -129,7 +132,7 @@ export function ResumeManagement() {
       return;
 
     try {
-      const response = await fetch("/api/admin/resumes", {
+      const response = await csrfFetch("/api/admin/resumes", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),

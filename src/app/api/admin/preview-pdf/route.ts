@@ -7,6 +7,7 @@ import { getHtmlTemplate } from '@/components/html-templates/registry';
 import { renderResumeToHtml } from '@/lib/pdf/renderHtml';
 import { generatePdfFromHtml } from '@/lib/pdf/generatePdf';
 import { isResumeRTL } from '@/lib/rtl';
+import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +27,12 @@ export async function POST(request: NextRequest) {
 
     if (!user || user.role !== 'ADMIN') {
       return forbiddenResponse();
+    }
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(request);
+    if (!validateCsrfToken(userId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403);
     }
 
     const body = await request.json();

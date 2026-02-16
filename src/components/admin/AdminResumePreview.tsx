@@ -5,6 +5,7 @@ import { X, Download, ZoomIn, ZoomOut, FileText, RotateCcw } from 'lucide-react'
 import { ResumeData } from '@/types/resume';
 import { ResumePreview } from '@/components/resume-builder/ResumePreview';
 import { toast } from 'react-hot-toast';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 interface AdminResumePreviewProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function AdminResumePreview({
   template, 
   resumeTitle 
 }: AdminResumePreviewProps) {
+  const { csrfFetch } = useCsrfToken();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -42,7 +44,7 @@ export function AdminResumePreview({
       }
 
       // Use admin-specific server-side PDF generation (no watermarks)
-      const response = await fetch('/api/admin/preview-pdf', {
+      const response = await csrfFetch('/api/admin/preview-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,12 +1,17 @@
-import { NextRequest } from 'next/server'
-import { requireAdmin } from '@/lib/admin'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { UserWithSubscription } from '@/types/api'
 import { successResponse, forbiddenResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { attachCsrfToken } from '@/lib/csrf'
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-users' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const { searchParams } = new URL(req.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
@@ -51,12 +56,14 @@ export async function GET(req: NextRequest) {
       } : null
     }))
 
-    return successResponse({
+    const response = NextResponse.json({
       users: usersWithRole,
       total,
       page,
       limit
     })
+
+    return attachCsrfToken(response, adminId)
   } catch (error) {
     console.error('[AdminUsers] Failed to fetch users:', error);
     return forbiddenResponse('Unauthorized or failed to fetch users')

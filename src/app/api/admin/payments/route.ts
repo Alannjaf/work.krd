@@ -1,12 +1,18 @@
-import { requireAdmin } from '@/lib/admin'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
-import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { errorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { attachCsrfToken } from '@/lib/csrf'
 
 const VALID_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-payments' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')
@@ -61,12 +67,14 @@ export async function GET(req: Request) {
       prisma.payment.count({ where }),
     ])
 
-    return successResponse({
+    const response = NextResponse.json({
       payments,
       total,
       page,
       limit,
     })
+
+    return attachCsrfToken(response, adminId)
   } catch (error) {
     if (error instanceof Error && error.message.includes('Admin access required')) {
       return errorResponse('Unauthorized', 403)

@@ -1,7 +1,10 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireAdmin } from '@/lib/admin'
+import { requireAdminWithId } from '@/lib/admin'
 import { getSystemSettings, updateSystemSettings } from '@/lib/system-settings'
 import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 
 const settingsSchema = z.object({
   maxFreeResumes: z.number().int().min(0),
@@ -21,12 +24,16 @@ const settingsSchema = z.object({
   maintenanceMode: z.boolean(),
 }).partial()
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-settings' })
+    if (!success) return rateLimitResponse(resetIn)
+
     const settings = await getSystemSettings()
 
-    return successResponse({
+    const response = NextResponse.json({
       maxFreeResumes: settings.maxFreeResumes,
       maxFreeAIUsage: settings.maxFreeAIUsage,
       maxFreeExports: settings.maxFreeExports,
@@ -43,6 +50,8 @@ export async function GET() {
       proPlanPrice: settings.proPlanPrice,
       maintenanceMode: settings.maintenanceMode
     })
+
+    return attachCsrfToken(response, adminId)
   } catch (error) {
     if (error instanceof Error && error.message === 'Unauthorized: Admin access required') {
       return forbiddenResponse('Unauthorized')
@@ -52,9 +61,18 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    await requireAdmin()
+    const adminId = await requireAdminWithId()
+
+    // Validate CSRF token
+    const csrfToken = getCsrfTokenFromRequest(req)
+    if (!validateCsrfToken(adminId, csrfToken)) {
+      return errorResponse('Invalid or expired CSRF token', 403)
+    }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-settings' })
+    if (!success) return rateLimitResponse(resetIn)
 
     const body = await req.json()
     const parsed = settingsSchema.safeParse(body)

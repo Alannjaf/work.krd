@@ -17,6 +17,7 @@ import {
   Crown
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
 
 interface UserData {
   id: string
@@ -38,6 +39,7 @@ interface UserData {
 }
 
 export function UserManagement() {
+  const { csrfFetch } = useCsrfToken()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -65,7 +67,7 @@ export function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/users')
+      const response = await csrfFetch('/api/admin/users')
       if (response.ok) {
         const data = await response.json()
         setUsers(data.users)
@@ -80,7 +82,7 @@ export function UserManagement() {
   const upgradeUserPlan = async (userId: string, newPlan: string) => {
     setUpgrading(true)
     try {
-      const response = await fetch(`/api/admin/users/${userId}/upgrade`, {
+      const response = await csrfFetch(`/api/admin/users/${userId}/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: newPlan })
