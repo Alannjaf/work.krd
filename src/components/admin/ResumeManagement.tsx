@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { ResumeStatus } from "@prisma/client";
 import { toast } from "react-hot-toast";
-import { Loader2, Trash2, Download, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, Download } from "lucide-react";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ResumeFilters } from "./ResumeFilters";
@@ -64,7 +65,7 @@ export function ResumeManagement() {
     template: string;
   } | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[] } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[]; label: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const debouncedSearch = useDebounce(search, 500);
@@ -134,7 +135,11 @@ export function ResumeManagement() {
   };
 
   const handleDeleteResumes = (ids: string[]) => {
-    setDeleteConfirm({ ids });
+    const label =
+      ids.length === 1
+        ? resumes.find((r) => r.id === ids[0])?.title || "this resume"
+        : `${ids.length} resumes`;
+    setDeleteConfirm({ ids, label });
   };
 
   const confirmDelete = async () => {
@@ -320,63 +325,24 @@ export function ResumeManagement() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Confirm resume deletion"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !isDeleting) {
-              setDeleteConfirm(null);
-            }
-          }}
-        >
-          <Card className="w-full max-w-md p-6 mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Delete {deleteConfirm.ids.length} Resume{deleteConfirm.ids.length !== 1 ? 's' : ''}?
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              This action cannot be undone. {deleteConfirm.ids.length === 1
-                ? 'This resume and all its sections will be permanently deleted.'
-                : `These ${deleteConfirm.ids.length} resumes and all their sections will be permanently deleted.`}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteConfirm(null)}
-                disabled={isDeleting}
-                type="button"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                type="button"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={!!deleteConfirm}
+        title={`Delete ${deleteConfirm?.ids.length === 1 ? 'Resume' : `${deleteConfirm?.ids.length} Resumes`}?`}
+        message={
+          deleteConfirm?.ids.length === 1
+            ? 'This resume and all its sections will be permanently deleted.'
+            : `These ${deleteConfirm?.ids.length} resumes and all their sections will be permanently deleted.`
+        }
+        detail={
+          deleteConfirm?.ids.length === 1
+            ? deleteConfirm.label
+            : undefined
+        }
+        itemCount={deleteConfirm?.ids.length}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirming={isDeleting}
+      />
     </div>
   );
 }

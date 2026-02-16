@@ -5,6 +5,7 @@ import { getSystemSettings, updateSystemSettings, invalidateSettingsCache } from
 import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
+import { prisma } from '@/lib/prisma'
 
 const settingsSchema = z.object({
   maxFreeResumes: z.number().int().min(0),
@@ -78,6 +79,31 @@ export async function POST(req: NextRequest) {
     const parsed = settingsSchema.safeParse(body)
     if (!parsed.success) {
       return errorResponse('Invalid settings: ' + parsed.error.issues.map(i => i.message).join(', '), 400)
+    }
+
+    // Snapshot current settings before saving
+    try {
+      const currentSettings = await getSystemSettings()
+      await (prisma as any).settingsSnapshot.create({
+        data: {
+          data: currentSettings,
+          savedBy: adminId,
+        }
+      })
+      // Prune old snapshots — keep only last 5
+      const allSnapshots = await (prisma as any).settingsSnapshot.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: 5,
+        select: { id: true }
+      })
+      if (allSnapshots.length > 0) {
+        await (prisma as any).settingsSnapshot.deleteMany({
+          where: { id: { in: allSnapshots.map((s: any) => s.id) } }
+        })
+      }
+    } catch (snapshotError) {
+      // Log but don't block the save — snapshots are best-effort
+      console.error('[AdminSettings] Failed to create snapshot:', snapshotError)
     }
 
     const savedSettings = await updateSystemSettings(parsed.data)

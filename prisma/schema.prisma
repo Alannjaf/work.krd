@@ -174,3 +174,12 @@ model AdminAuditLog {
   @@index([adminId])
   @@index([createdAt])
 }
+
+model SettingsSnapshot {
+  id        String   @id @default(cuid())
+  data      Json
+  savedBy   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

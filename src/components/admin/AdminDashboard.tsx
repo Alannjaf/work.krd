@@ -13,6 +13,7 @@ import { AdminSubscriptionStatus } from './AdminSubscriptionStatus'
 import { AdminSystemSettings } from './AdminSystemSettings'
 import { AdminQuickActions } from './AdminQuickActions'
 import { AdminErrorBoundary } from './AdminErrorBoundary'
+import { AdminAnalytics } from './AdminAnalytics'
 import { AuditLogPanel } from './AuditLogPanel'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { Stats, SubscriptionStatus, SystemSettings } from './types'
@@ -265,6 +266,13 @@ export function AdminDashboard() {
             <AdminStatsCards stats={stats} loading={loading && !stats} />
           </AdminErrorBoundary>
         )}
+
+        <AdminErrorBoundary sectionName="Analytics">
+          <section className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Analytics</h2>
+            <AdminAnalytics csrfFetch={csrfFetch} />
+          </section>
+        </AdminErrorBoundary>
 
         {errors.subscriptions ? null : (
           <AdminErrorBoundary sectionName="Subscription Status">

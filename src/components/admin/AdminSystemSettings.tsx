@@ -4,9 +4,18 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Settings, RefreshCw, Save, Check } from 'lucide-react'
+import { Settings, RefreshCw, Save, Check, History } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { SystemSettings } from './types'
 import { VALID_PLANS } from '@/lib/constants'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils'
+
+interface SettingsSnapshot {
+  id: string
+  savedBy: string
+  createdAt: string
+}
 
 interface AdminSystemSettingsProps {
   settings: SystemSettings
@@ -16,6 +25,7 @@ interface AdminSystemSettingsProps {
   onSave: () => void | Promise<void>
   onRefresh: () => void
   onDirtyChange?: (dirty: boolean) => void
+  onRevert?: (settings: SystemSettings) => void
 }
 
 export function AdminSystemSettings({
@@ -25,10 +35,16 @@ export function AdminSystemSettings({
   saving,
   onSave,
   onRefresh,
-  onDirtyChange
+  onDirtyChange,
+  onRevert
 }: AdminSystemSettingsProps) {
+  const { csrfFetch } = useCsrfToken()
   const [isDirty, setIsDirty] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [snapshots, setSnapshots] = useState<SettingsSnapshot[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [revertingId, setRevertingId] = useState<string | null>(null)
 
   useEffect(() => {
     onDirtyChange?.(isDirty)
@@ -44,6 +60,53 @@ export function AdminSystemSettings({
     setIsDirty(false)
     setSaveSuccess(true)
     setTimeout(() => setSaveSuccess(false), 3000)
+  }
+
+  const loadHistory = async () => {
+    setLoadingHistory(true)
+    try {
+      const res = await csrfFetch('/api/admin/settings/history')
+      if (res.ok) {
+        const data = await res.json()
+        setSnapshots(data.snapshots || [])
+      }
+    } catch {
+      /* ignore — panel will show empty state */
+    }
+    setLoadingHistory(false)
+  }
+
+  const revertToSnapshot = async (snapshotId: string) => {
+    setRevertingId(snapshotId)
+    try {
+      const res = await csrfFetch('/api/admin/settings/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snapshotId })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (onRevert) {
+          onRevert(data.settings)
+        } else {
+          setSettings(data.settings)
+        }
+        setIsDirty(false)
+        setShowHistory(false)
+        toast.success('Settings reverted successfully')
+      } else {
+        toast.error('Failed to revert settings')
+      }
+    } catch {
+      toast.error('Failed to revert settings')
+    }
+    setRevertingId(null)
+  }
+
+  const toggleHistory = () => {
+    const nextShow = !showHistory
+    setShowHistory(nextShow)
+    if (nextShow) loadHistory()
   }
 
   return (
@@ -110,6 +173,10 @@ export function AdminSystemSettings({
             Unsaved changes
           </span>
         )}
+        <Button variant="outline" size="sm" onClick={toggleHistory} type="button">
+          <History className="h-4 w-4 mr-1" />
+          History
+        </Button>
         <Button onClick={handleSave} disabled={saving || !isDirty}>
           {saving ? (
             <>
@@ -124,6 +191,35 @@ export function AdminSystemSettings({
           )}
         </Button>
       </div>
+
+      {showHistory && (
+        <div className="bg-white border rounded-lg shadow-lg p-4 mt-4 space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700">Recent Snapshots</h4>
+          {loadingHistory ? (
+            <div className="text-sm text-gray-500">Loading...</div>
+          ) : snapshots.length === 0 ? (
+            <div className="text-sm text-gray-500">No snapshots yet. Snapshots are created automatically each time you save.</div>
+          ) : (
+            snapshots.map((s) => (
+              <div key={s.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
+                <span className="text-gray-600" title={formatAdminDateFull(s.createdAt)}>
+                  {formatAdminDate(s.createdAt)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={revertingId === s.id}
+                  onClick={() => revertToSnapshot(s.id)}
+                  className="text-xs h-7"
+                  type="button"
+                >
+                  {revertingId === s.id ? 'Reverting...' : 'Restore'}
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </Card>
   )
 }
