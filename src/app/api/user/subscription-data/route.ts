@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SystemSettings } from '@/types/api'
@@ -57,9 +57,42 @@ export async function GET() {
       return authErrorResponse()
     }
 
-    const user = await getCurrentUser()
+    let user = await getCurrentUser()
     if (!user || !user.subscription) {
-      return notFoundResponse('User not found')
+      // Auto-create user if webhook hasn't fired yet
+      let email = ''
+      let name = ''
+      try {
+        const client = await clerkClient()
+        const clerkUser = await client.users.getUser(userId)
+        email = clerkUser.emailAddresses?.[0]?.emailAddress || ''
+        name = clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : ''
+      } catch { /* fallback */ }
+
+      user = await prisma.user.upsert({
+        where: { clerkId: userId },
+        update: {},
+        create: {
+          clerkId: userId,
+          email,
+          name,
+          subscription: {
+            create: {
+              plan: PLAN_NAMES.FREE,
+              resumeCount: 0,
+              aiUsageCount: 0,
+              exportCount: 0,
+              importCount: 0,
+              atsUsageCount: 0,
+            }
+          }
+        },
+        include: { subscription: true }
+      })
+
+      if (!user.subscription) {
+        return notFoundResponse('User subscription not found')
+      }
     }
 
     // Get both subscription data and permissions in parallel
