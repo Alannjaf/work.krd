@@ -30,7 +30,7 @@ export function ToolsSection() {
   const ActiveIcon = activeTabData.icon
 
   return (
-    <section ref={sectionRef} className="py-20 sm:py-28 bg-white">
+    <section id="how-it-works" ref={sectionRef} className="py-20 sm:py-28 bg-white">
       <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadeIn { animation: fadeIn 0.3s ease-out; }`}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

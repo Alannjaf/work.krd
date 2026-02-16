@@ -51,6 +51,7 @@ export function TemplateCarousel() {
 
   return (
     <section
+      id="templates"
       ref={sectionRef}
       className="bg-gray-900 py-20 sm:py-28"
     >
