@@ -66,9 +66,7 @@ async function processExpiredSubscriptions(): Promise<{
   )
 
   const successful = downgradeResults
-    .filter((r): r is PromiseFulfilledResult<{ success: true; userId: string; previousPlan: string; newPlan: string }> =>
-      r.status === 'fulfilled'
-    )
+    .filter((r) => r.status === 'fulfilled')
     .map((r) => r.value)
 
   const failed = downgradeResults
