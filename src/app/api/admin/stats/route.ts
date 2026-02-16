@@ -5,6 +5,7 @@ import { forbiddenResponse } from '@/lib/api-helpers'
 import { getSystemSettings } from '@/lib/system-settings'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken } from '@/lib/csrf'
+import { PLAN_NAMES } from '@/lib/constants'
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
       prisma.user.count(),
       prisma.resume.count(),
       prisma.subscription.count({
-        where: { status: 'ACTIVE', plan: 'PRO' }
+        where: { status: 'ACTIVE', plan: PLAN_NAMES.PRO }
       }),
       prisma.payment.count({ where: { status: 'PENDING' } }),
       prisma.payment.count({ where: { status: 'APPROVED' } }),

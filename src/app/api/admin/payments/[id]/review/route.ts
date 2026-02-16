@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdminWithId } from '@/lib/admin'
+import { requireAdminWithId, logAdminAction } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
@@ -183,6 +183,12 @@ export async function POST(
           },
         }
       }
+    })
+
+    await logAdminAction(adminId, action === 'approve' ? 'APPROVE_PAYMENT' : 'REJECT_PAYMENT', `payment:${id}`, {
+      paymentId: id,
+      action,
+      note: note || null,
     })
 
     return successResponse({ success: true, ...result })

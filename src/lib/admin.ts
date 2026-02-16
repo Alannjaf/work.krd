@@ -38,3 +38,27 @@ export async function requireAdminWithId(): Promise<string> {
 
   return userId
 }
+
+/**
+ * Log an admin action to the audit trail.
+ * Fire-and-forget — errors are logged but never thrown.
+ */
+export async function logAdminAction(
+  adminId: string,
+  action: string,
+  target: string,
+  details?: Record<string, unknown>
+): Promise<void> {
+  try {
+    await prisma.adminAuditLog.create({
+      data: {
+        adminId,
+        action,
+        target,
+        details: details ?? undefined,
+      },
+    })
+  } catch (error) {
+    console.error('[AuditLog] Failed to log admin action:', error)
+  }
+}

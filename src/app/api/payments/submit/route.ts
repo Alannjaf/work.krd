@@ -1,11 +1,12 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
-const VALID_PLANS = ['PRO'] as const
+const VALID_PLANS = [...PAID_PLANS] as const
 const PLAN_PRICES: Record<string, number> = {
-  PRO: 5000,
+  [PLAN_NAMES.PRO]: 5000,
 }
 
 export async function POST(req: Request) {

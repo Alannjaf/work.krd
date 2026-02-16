@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { PLAN_NAMES } from '@/lib/constants'
 
 export async function GET() {
   try {
@@ -55,7 +56,7 @@ export async function GET() {
       await prisma.subscription.create({
         data: {
           userId: user.id,
-          plan: 'FREE',
+          plan: PLAN_NAMES.FREE,
           status: 'ACTIVE'}})
     }
 

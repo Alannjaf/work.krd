@@ -6,6 +6,7 @@ import { forbiddenResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken } from '@/lib/csrf'
 import { Prisma } from '@prisma/client'
+import { PLAN_NAMES } from '@/lib/constants'
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
       ]
     }
 
-    if (plan === 'FREE' || plan === 'PRO') {
+    if (plan === PLAN_NAMES.FREE || plan === PLAN_NAMES.PRO) {
       where.subscription = { plan }
     }
 

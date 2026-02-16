@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { prisma } from './prisma'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
 import { getTemplateIds } from './templates'
+import { PLAN_NAMES } from './constants'
 
 export async function getCurrentUser() {
   const { userId } = await auth()
@@ -190,7 +191,7 @@ async function getSystemSettings() {
         ...settings,
         freeTemplates: parseJsonArray(settings.freeTemplates, ['modern']),
         proTemplates: parseJsonArray(settings.proTemplates, ['modern']),
-        photoUploadPlans: parseJsonArray(settings.photoUploadPlans, ['PRO']),
+        photoUploadPlans: parseJsonArray(settings.photoUploadPlans, [PLAN_NAMES.PRO]),
       }
     }
   } catch (error) {
@@ -218,7 +219,7 @@ async function getSystemSettings() {
     proTemplates: ['modern'],
 
     // Profile Photo Upload Access Control
-    photoUploadPlans: ['PRO']
+    photoUploadPlans: [PLAN_NAMES.PRO]
   }
 }
 
@@ -327,17 +328,17 @@ export async function checkUserLimits(clerkUserId: string) {
   }
 
   // Check photo upload permission
-  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, ['PRO'])
+  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, [PLAN_NAMES.PRO])
   const canUploadPhoto = photoUploadPlans.includes(subscription.plan)
 
   // Get available templates for user's plan
   const allRegisteredTemplates = getTemplateIds()
   let availableTemplates: string[] = ['basic']
   switch (subscription.plan) {
-    case 'FREE':
+    case PLAN_NAMES.FREE:
       availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
       break
-    case 'PRO':
+    case PLAN_NAMES.PRO:
       // PRO always gets all registered templates plus any from settings
       availableTemplates = [...new Set(['basic', ...allRegisteredTemplates, ...ensureStringArray(systemSettings.proTemplates, allRegisteredTemplates)])]
       break

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { isAdmin } from '@/lib/admin'
 import { AdminPayments } from '@/components/admin/AdminPayments'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,5 +10,9 @@ export default async function AdminPaymentsPage() {
   if (!admin) {
     redirect('/dashboard')
   }
-  return <AdminPayments />
+  return (
+    <AdminErrorBoundary sectionName="Payment Management">
+      <AdminPayments />
+    </AdminErrorBoundary>
+  )
 }

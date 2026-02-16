@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Settings, RefreshCw, Save } from 'lucide-react'
 import { SystemSettings } from './types'
+import { VALID_PLANS } from '@/lib/constants'
 
 interface AdminSystemSettingsProps {
   settings: SystemSettings
@@ -290,7 +291,7 @@ function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) 
           Plans with Photo Upload Access
         </div>
         <div role="group" aria-labelledby="photo-upload-group-label" className="space-y-2">
-          {['FREE', 'PRO'].map(plan => (
+          {VALID_PLANS.map(plan => (
             <label key={plan} htmlFor={`photo-${plan}`} className="flex items-center space-x-2">
               <input
                 id={`photo-${plan}`}

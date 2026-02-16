@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SystemSettings } from '@/types/api'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import { PLAN_NAMES } from '@/lib/constants'
 
 async function getSystemSettings() {
   try {
@@ -69,7 +70,7 @@ export async function GET() {
     // Get limits based on plan and admin settings
     let resumesLimit, aiUsageLimit, exportLimit, importLimit, atsUsageLimit
     
-    if (plan === 'FREE') {
+    if (plan === PLAN_NAMES.FREE) {
       resumesLimit = settings.maxFreeResumes !== null && settings.maxFreeResumes !== undefined ? settings.maxFreeResumes : 10
       aiUsageLimit = settings.maxFreeAIUsage !== null && settings.maxFreeAIUsage !== undefined ? settings.maxFreeAIUsage : 100
       exportLimit = settings.maxFreeExports !== null && settings.maxFreeExports !== undefined ? settings.maxFreeExports : 20

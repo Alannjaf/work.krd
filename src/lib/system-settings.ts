@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+import { PLAN_NAMES } from './constants'
 
 export async function getSystemSettings() {
   try {
@@ -19,7 +20,7 @@ export async function getSystemSettings() {
           maxProATSChecks: -1,
           freeTemplates: ['modern'],
           proTemplates: ['modern'],
-          photoUploadPlans: ['PRO'],
+          photoUploadPlans: [PLAN_NAMES.PRO],
           proPlanPrice: 5000,
           maintenanceMode: false
         }
@@ -43,7 +44,7 @@ export async function getSystemSettings() {
       maxProATSChecks: -1,
       freeTemplates: ['modern'],
       proTemplates: ['modern'],
-      photoUploadPlans: ['PRO'],
+      photoUploadPlans: [PLAN_NAMES.PRO],
       proPlanPrice: 5000,
       maintenanceMode: false,
       updatedAt: new Date()
@@ -94,7 +95,7 @@ export async function updateSystemSettings(data: SystemSettingsUpdateData) {
       maxProATSChecks: data.maxProATSChecks,
       freeTemplates: ensureArray(data.freeTemplates, ['modern']),
       proTemplates: ensureArray(data.proTemplates, ['modern']),
-      photoUploadPlans: ensureArray(data.photoUploadPlans, ['PRO']),
+      photoUploadPlans: ensureArray(data.photoUploadPlans, [PLAN_NAMES.PRO]),
       proPlanPrice: data.proPlanPrice,
       maintenanceMode: data.maintenanceMode
     }

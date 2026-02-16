@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { requireAdminWithId } from '@/lib/admin'
+import { requireAdminWithId, logAdminAction } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/api-helpers'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
+import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['PRO']
+          in: [...PAID_PLANS]
         },
         endDate: {
           lte: now
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
           await prisma.subscription.update({
             where: { id: subscription.id },
             data: {
-              plan: 'FREE',
+              plan: PLAN_NAMES.FREE,
               status: 'ACTIVE',
               endDate: null,
               // Keep usage counts as is - don't reset
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
             userId: subscription.userId,
             userEmail: subscription.user.email,
             previousPlan: subscription.plan,
-            newPlan: 'FREE'
+            newPlan: PLAN_NAMES.FREE
           }
         } catch (error) {
           console.error('[CheckExpired] Failed to downgrade user:', error);
@@ -96,6 +97,13 @@ export async function POST(req: Request) {
         return { error: result.reason }
       }
       return result.value
+    })
+
+    await logAdminAction(adminId, 'PROCESS_EXPIRED_SUBSCRIPTIONS', 'subscriptions', {
+      processed: expiredSubscriptions.length,
+      successful: successful.length,
+      failed: failed.length,
+      downgradedUsers: successful.filter(Boolean).map(s => s?.userEmail),
     })
 
     return successResponse({
@@ -130,7 +138,7 @@ export async function GET() {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['PRO']
+          in: [...PAID_PLANS]
         },
         endDate: {
           lte: now
@@ -152,7 +160,7 @@ export async function GET() {
       where: {
         status: 'ACTIVE',
         plan: {
-          in: ['PRO']
+          in: [...PAID_PLANS]
         },
         endDate: {
           gt: now,

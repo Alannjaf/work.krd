@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { createResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import { PLAN_NAMES } from '@/lib/constants'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
 
 export async function POST(req: Request) {
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
           email: '',
           subscription: {
             create: {
-              plan: 'FREE',
+              plan: PLAN_NAMES.FREE,
               resumeCount: 0,
               aiUsageCount: 0,
               exportCount: 0,

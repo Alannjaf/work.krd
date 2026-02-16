@@ -2,6 +2,7 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { PLAN_NAMES } from '@/lib/constants'
 
 export async function POST(req: Request) {
   // Webhook received
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
           await prisma.subscription.create({
             data: {
               userId: user.id, // Use database user ID, not Clerk ID
-              plan: 'FREE',
+              plan: PLAN_NAMES.FREE,
               status: 'ACTIVE'}})
           // Subscription created
         } else {

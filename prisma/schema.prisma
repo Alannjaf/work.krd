@@ -162,3 +162,15 @@ enum PaymentStatus {
   APPROVED
   REJECTED
 }
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  target    String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+}

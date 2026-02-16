@@ -12,25 +12,28 @@ import { AdminStatsCards } from './AdminStatsCards'
 import { AdminSubscriptionStatus } from './AdminSubscriptionStatus'
 import { AdminSystemSettings } from './AdminSystemSettings'
 import { AdminQuickActions } from './AdminQuickActions'
+import { AdminErrorBoundary } from './AdminErrorBoundary'
+import { AuditLogPanel } from './AuditLogPanel'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { Stats, SubscriptionStatus, SystemSettings } from './types'
+import { PLAN_NAMES, DEFAULT_SYSTEM_SETTINGS } from '@/lib/constants'
 
 const DEFAULT_SETTINGS: SystemSettings = {
-  maxFreeResumes: 10,
-  maxFreeAIUsage: 100,
-  maxFreeExports: 20,
-  maxFreeImports: 1,
-  maxFreeATSChecks: 0,
-  maxProResumes: -1,
-  maxProAIUsage: -1,
-  maxProExports: -1,
-  maxProImports: -1,
-  maxProATSChecks: -1,
-  freeTemplates: ['modern'],
-  proTemplates: [],
-  photoUploadPlans: ['PRO'],
-  proPlanPrice: 5000,
-  maintenanceMode: false
+  maxFreeResumes: DEFAULT_SYSTEM_SETTINGS.maxFreeResumes,
+  maxFreeAIUsage: DEFAULT_SYSTEM_SETTINGS.maxFreeAIUsage,
+  maxFreeExports: DEFAULT_SYSTEM_SETTINGS.maxFreeExports,
+  maxFreeImports: DEFAULT_SYSTEM_SETTINGS.maxFreeImports,
+  maxFreeATSChecks: DEFAULT_SYSTEM_SETTINGS.maxFreeATSChecks,
+  maxProResumes: DEFAULT_SYSTEM_SETTINGS.maxProResumes,
+  maxProAIUsage: DEFAULT_SYSTEM_SETTINGS.maxProAIUsage,
+  maxProExports: DEFAULT_SYSTEM_SETTINGS.maxProExports,
+  maxProImports: DEFAULT_SYSTEM_SETTINGS.maxProImports,
+  maxProATSChecks: DEFAULT_SYSTEM_SETTINGS.maxProATSChecks,
+  freeTemplates: [...DEFAULT_SYSTEM_SETTINGS.freeTemplates],
+  proTemplates: [...DEFAULT_SYSTEM_SETTINGS.proTemplates],
+  photoUploadPlans: [...DEFAULT_SYSTEM_SETTINGS.photoUploadPlans],
+  proPlanPrice: DEFAULT_SYSTEM_SETTINGS.proPlanPrice,
+  maintenanceMode: DEFAULT_SYSTEM_SETTINGS.maintenanceMode
 }
 
 export function AdminDashboard() {
@@ -137,7 +140,7 @@ export function AdminDashboard() {
         freeTemplates: parseArray(data.freeTemplates, ['modern']),
         // PRO always includes all registered templates
         proTemplates: [...new Set([...availableTemplates, ...parseArray(data.proTemplates, availableTemplates)])],
-        photoUploadPlans: parseArray(data.photoUploadPlans, ['PRO']),
+        photoUploadPlans: parseArray(data.photoUploadPlans, [...DEFAULT_SYSTEM_SETTINGS.photoUploadPlans]),
         proPlanPrice: data.proPlanPrice ?? 5000,
         maintenanceMode: data.maintenanceMode ?? false
       })
@@ -256,29 +259,43 @@ export function AdminDashboard() {
           </div>
         )}
 
-        {errors.stats ? null : <AdminStatsCards stats={stats} loading={loading && !stats} />}
+        {errors.stats ? null : (
+          <AdminErrorBoundary sectionName="Stats Cards">
+            <AdminStatsCards stats={stats} loading={loading && !stats} />
+          </AdminErrorBoundary>
+        )}
 
         {errors.subscriptions ? null : (
-          <AdminSubscriptionStatus
-            subscriptionStatus={subscriptionStatus}
-            checkingSubscriptions={checkingSubscriptions}
-            onCheckExpired={checkExpiredSubscriptions}
-          />
+          <AdminErrorBoundary sectionName="Subscription Status">
+            <AdminSubscriptionStatus
+              subscriptionStatus={subscriptionStatus}
+              checkingSubscriptions={checkingSubscriptions}
+              onCheckExpired={checkExpiredSubscriptions}
+            />
+          </AdminErrorBoundary>
         )}
 
         {errors.settings ? null : (
-          <AdminSystemSettings
-            settings={settings}
-            setSettings={setSettings}
-            availableTemplates={availableTemplates}
-            saving={saving}
-            onSave={saveSettings}
-            onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
-            onDirtyChange={handleSettingsDirtyChange}
-          />
+          <AdminErrorBoundary sectionName="System Settings">
+            <AdminSystemSettings
+              settings={settings}
+              setSettings={setSettings}
+              availableTemplates={availableTemplates}
+              saving={saving}
+              onSave={saveSettings}
+              onRefresh={() => { fetchStats(); fetchSettings(); fetchSubscriptionStatus(); }}
+              onDirtyChange={handleSettingsDirtyChange}
+            />
+          </AdminErrorBoundary>
         )}
 
-        <AdminQuickActions />
+        <AdminErrorBoundary sectionName="Quick Actions">
+          <AdminQuickActions />
+        </AdminErrorBoundary>
+
+        <AdminErrorBoundary sectionName="Audit Log">
+          <AuditLogPanel />
+        </AdminErrorBoundary>
       </div>
 
       <UnsavedChangesDialog

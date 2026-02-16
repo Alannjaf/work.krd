@@ -1,4 +1,6 @@
-export type SubscriptionPlan = 'FREE' | 'PRO';
+import { PlanName } from '@/lib/constants'
+
+export type SubscriptionPlan = PlanName;
 
 export interface SubscriptionData {
   plan: SubscriptionPlan;

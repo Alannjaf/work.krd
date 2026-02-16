@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server'
-import { requireAdminWithId } from '@/lib/admin'
+import { requireAdminWithId, logAdminAction } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
+import { PLAN_NAMES, VALID_PLANS, SUBSCRIPTION_DURATION_MS } from '@/lib/constants'
 
 export async function POST(
   req: NextRequest,
@@ -24,7 +25,7 @@ export async function POST(
     const { userId } = await params
     const { plan } = await req.json()
 
-    if (!['FREE', 'PRO'].includes(plan)) {
+    if (!(VALID_PLANS as readonly string[]).includes(plan)) {
       return validationErrorResponse('Invalid plan')
     }
 
@@ -47,7 +48,7 @@ export async function POST(
           plan,
           status: 'ACTIVE',
           startDate: new Date(),
-          endDate: plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+          endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
         }
       })
     } else {
@@ -58,10 +59,17 @@ export async function POST(
           plan,
           status: 'ACTIVE',
           startDate: new Date(),
-          endDate: plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
         }
       })
     }
+
+    await logAdminAction(adminId, 'CHANGE_USER_PLAN', `user:${userId}`, {
+      userId,
+      userEmail: user.email,
+      newPlan: plan,
+      previousPlan: existingSubscription?.plan ?? null,
+    })
 
     return successResponse({
       success: true,

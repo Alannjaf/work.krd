@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireAdminWithId } from '@/lib/admin'
+import { requireAdminWithId, logAdminAction } from '@/lib/admin'
 import { getSystemSettings, updateSystemSettings } from '@/lib/system-settings'
 import { successResponse, errorResponse, forbiddenResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
@@ -81,6 +81,10 @@ export async function POST(req: NextRequest) {
     }
 
     const savedSettings = await updateSystemSettings(parsed.data)
+
+    await logAdminAction(adminId, 'UPDATE_SETTINGS', 'system_settings', {
+      updatedFields: Object.keys(parsed.data),
+    })
 
     return successResponse({
       success: true,
