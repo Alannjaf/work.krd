@@ -65,7 +65,7 @@ export function Hero() {
                   {t('pages.home.hero.cta')}
                   <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
                 </Link>
-                <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all duration-200">
+                <Link href="/resume-builder/import" className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all duration-200">
                   <Upload className="w-5 h-5" />
                   {t('pages.home.hero.uploadCta')}
                 </Link>
