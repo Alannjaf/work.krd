@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
+import { getSystemSettings } from '@/lib/system-settings'
 
 export async function GET(
   req: NextRequest,
@@ -114,6 +115,18 @@ export async function POST(
 
       if (!payment) throw new Error('Payment not found')
 
+      // Validate payment amount when approving
+      if (action === 'approve') {
+        if (!payment.amount || payment.amount <= 0) {
+          throw new Error('Invalid payment amount')
+        }
+        const settings = await getSystemSettings()
+        const expectedPrice = settings.proPlanPrice || 5000
+        if (payment.amount !== expectedPrice) {
+          throw new Error(`Payment amount (${payment.amount}) does not match plan price (${expectedPrice})`)
+        }
+      }
+
       const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED'
 
       // Atomic status update — only succeeds if still PENDING
@@ -201,6 +214,9 @@ export async function POST(
     }
     if (error instanceof Error && error.message.startsWith('Payment has already been')) {
       return errorResponse(error.message, 409)
+    }
+    if (error instanceof Error && (error.message === 'Invalid payment amount' || error.message.startsWith('Payment amount'))) {
+      return errorResponse(error.message, 400)
     }
     console.error('[AdminPaymentReview] Failed to review payment:', error)
     return errorResponse('Failed to review payment', 500)

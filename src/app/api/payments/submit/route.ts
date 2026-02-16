@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const payment = await prisma.payment.create({
       data: {
         userId: user.id,
-        plan: plan as 'PRO',
+        plan: plan as typeof PLAN_NAMES.PRO,
         amount,
         screenshotData: screenshotBuffer,
         screenshotType,

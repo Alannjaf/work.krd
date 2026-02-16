@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import {
@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Loader2,
   Search,
+  X,
 } from 'lucide-react'
 import { PaymentItem } from './PaymentItem'
 import { PaymentApprovalForm } from './PaymentApprovalForm'
@@ -21,12 +22,23 @@ interface PaymentListProps {
 }
 
 export function PaymentList({ csrfFetch }: PaymentListProps) {
+  const initialParams = useMemo(() => {
+    if (typeof window === 'undefined') return { search: '', status: 'PENDING' as StatusFilter }
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get('status')
+    const validStatuses: StatusFilter[] = ['ALL', 'PENDING', 'APPROVED', 'REJECTED']
+    return {
+      search: params.get('search') || '',
+      status: (status && validStatuses.includes(status as StatusFilter) ? status : 'PENDING') as StatusFilter,
+    }
+  }, [])
+
   const [payments, setPayments] = useState<Payment[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<StatusFilter>('PENDING')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [filter, setFilter] = useState<StatusFilter>(initialParams.status)
+  const [searchTerm, setSearchTerm] = useState(initialParams.search)
 
   // Review modal state
   const [reviewPayment, setReviewPayment] = useState<Payment | null>(null)
@@ -119,9 +131,19 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
               placeholder="Search by user email or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-white text-gray-900
                        focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <span>{total} total payment{total !== 1 ? 's' : ''}</span>

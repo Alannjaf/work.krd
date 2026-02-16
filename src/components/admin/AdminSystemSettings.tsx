@@ -165,7 +165,7 @@ function PlanLimitsSection({
             type="number"
             min={min}
             value={resumes}
-            onChange={(e) => onChange(`${fieldPrefix}Resumes`, parseInt(e.target.value) || 0)}
+            onChange={(e) => { const v = parseInt(e.target.value); if (!isNaN(v)) onChange(`${fieldPrefix}Resumes`, v) }}
             aria-describedby={hintId}
           />
         </div>
@@ -178,7 +178,7 @@ function PlanLimitsSection({
             type="number"
             min={min}
             value={aiUsage}
-            onChange={(e) => onChange(`${fieldPrefix}AIUsage`, parseInt(e.target.value) || 0)}
+            onChange={(e) => { const v = parseInt(e.target.value); if (!isNaN(v)) onChange(`${fieldPrefix}AIUsage`, v) }}
             aria-describedby={hintId}
           />
         </div>
@@ -191,7 +191,7 @@ function PlanLimitsSection({
             type="number"
             min={min}
             value={exports}
-            onChange={(e) => onChange(`${fieldPrefix}Exports`, parseInt(e.target.value) || 0)}
+            onChange={(e) => { const v = parseInt(e.target.value); if (!isNaN(v)) onChange(`${fieldPrefix}Exports`, v) }}
             aria-describedby={hintId}
           />
         </div>
@@ -204,7 +204,7 @@ function PlanLimitsSection({
             type="number"
             min={min}
             value={imports}
-            onChange={(e) => onChange(`${fieldPrefix}Imports`, parseInt(e.target.value) || 0)}
+            onChange={(e) => { const v = parseInt(e.target.value); if (!isNaN(v)) onChange(`${fieldPrefix}Imports`, v) }}
             aria-describedby={hintId}
           />
         </div>
@@ -217,7 +217,7 @@ function PlanLimitsSection({
             type="number"
             min={min}
             value={atsChecks}
-            onChange={(e) => onChange(`${fieldPrefix}ATSChecks`, parseInt(e.target.value) || 0)}
+            onChange={(e) => { const v = parseInt(e.target.value); if (!isNaN(v)) onChange(`${fieldPrefix}ATSChecks`, v) }}
             aria-describedby={hintId}
           />
         </div>

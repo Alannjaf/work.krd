@@ -21,6 +21,7 @@ import {
 import { useUser } from '@clerk/nextjs'
 import { useLanguage } from '@/contexts/LanguageContext'
 import toast from 'react-hot-toast'
+import { PLAN_NAMES } from '@/lib/constants'
 
 const PAYMENT_PHONE = '0750 491 0348'
 const PAYMENT_PHONE_RAW = '07504910348'
@@ -56,7 +57,7 @@ function PaymentContent() {
   const { user } = useUser()
   const { t } = useLanguage()
 
-  const plan = (searchParams.get('plan') || 'PRO').toUpperCase()
+  const plan = (searchParams.get('plan') || PLAN_NAMES.PRO).toUpperCase()
   const userEmail = user?.emailAddresses[0]?.emailAddress || ''
 
   const [currentStep, setCurrentStep] = useState(1)

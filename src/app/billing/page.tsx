@@ -18,6 +18,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { PLAN_NAMES } from '@/lib/constants'
 
 interface PaymentStatus {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | null
@@ -60,7 +61,7 @@ export default function BillingPage() {
     fetchPaymentStatus()
   }, [])
 
-  const isPro = subscription?.plan === 'PRO'
+  const isPro = subscription?.plan === PLAN_NAMES.PRO
 
   const freeFeatures = [
     t('billing.freePlan.feature1'),

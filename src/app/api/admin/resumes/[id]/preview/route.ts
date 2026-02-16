@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminWithId } from '@/lib/admin';
 import { ResumeData, PersonalInfo, WorkExperience, Education, Skill, Language, Project, Certification } from '@/types/resume';
-import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse } from '@/lib/api-helpers';
+import { successResponse, errorResponse, validationErrorResponse, notFoundResponse } from '@/lib/api-helpers';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(
   req: NextRequest,
@@ -10,17 +11,14 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return authErrorResponse();
-    }
+    await requireAdminWithId();
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }});
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'admin-resume-preview' });
+    if (!success) return rateLimitResponse(resetIn);
 
-    if (!user || user.role !== 'ADMIN') {
-      return forbiddenResponse();
+    // Validate ID format (cuid)
+    if (!id || !/^c[a-z0-9]{20,}$/.test(id)) {
+      return validationErrorResponse('Invalid resume ID format');
     }
 
     // Fetch resume with all related data
@@ -83,6 +81,10 @@ export async function GET(
 
     // Transform sections based on their type
     resume.sections.forEach((section) => {
+      if (!section.content || typeof section.content !== 'object') {
+        console.warn(`Invalid section content for resume ${id}, section ${section.type}:`, typeof section.content);
+        return;
+      }
       const content = section.content as Record<string, unknown>;
       
       switch (section.type) {
@@ -185,6 +187,9 @@ export async function GET(
     // successResponse() automatically handles UTF-8 encoding for Unicode characters (Kurdish, Arabic, etc.)
     return successResponse(transformedData);
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Admin access required')) {
+      return errorResponse('Unauthorized', 403);
+    }
     console.error(`Error fetching resume ${id}:`, error);
     return errorResponse('Failed to fetch resume data', 500);
   }

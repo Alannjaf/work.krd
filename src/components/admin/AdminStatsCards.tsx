@@ -46,7 +46,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
   const revenueAmount = stats?.revenue ?? 0
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" role="region" aria-label="Platform statistics">
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${loading ? 'opacity-60 transition-opacity' : ''}`} role="region" aria-label="Platform statistics">
       <Card className="p-6" aria-label={`Total users: ${userCount}`}>
         <div className="flex items-center justify-between">
           <div>

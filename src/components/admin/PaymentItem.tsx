@@ -85,7 +85,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
           <p className="text-sm text-gray-500 truncate mb-3">
             {payment.user.email}
           </p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
             <div>
               <span className="text-gray-500">Plan:</span>{' '}
               <span className="font-medium text-gray-900">
@@ -125,12 +125,12 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
         </div>
 
         {/* Right: action button */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 w-full sm:w-auto">
           {payment.status === 'PENDING' ? (
             <Button
               size="sm"
               onClick={() => onReview(payment)}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
               Review
@@ -140,7 +140,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
               variant="outline"
               size="sm"
               onClick={() => onReview(payment)}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
               View
