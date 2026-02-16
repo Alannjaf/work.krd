@@ -54,7 +54,14 @@ export async function GET(req: NextRequest) {
 
     const totalPages = Math.max(1, Math.ceil(total / limit))
 
-    return Response.json({ logs, total, page, totalPages })
+    return Response.json({
+      logs,
+      total,
+      page,
+      totalPages,
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+    })
   } catch (error) {
     if (error instanceof Error && error.message.includes('Admin access required')) {
       return errorResponse('Unauthorized', 403)

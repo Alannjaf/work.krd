@@ -7,6 +7,12 @@ import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
 import { AIExtractedData } from '@/types/api'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { sanitizeHtml } from '@/lib/sanitize'
+
+// Validate critical env var at module load — fail fast instead of silent degradation
+if (!process.env.OPENROUTER_API_KEY) {
+  console.error('[ResumeUpload] OPENROUTER_API_KEY is not set — CV import will fail')
+}
 
 // Initialize OpenRouter client
 const openai = new OpenAI({
@@ -65,6 +71,25 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
+
+    // Helper function to convert various date formats to YYYY-MM
+    const convertDateFormat = (date: string): string => {
+      if (!date || date.trim() === '') return ''
+      date = date.trim()
+      if (date.toLowerCase().includes('present') || date.toLowerCase().includes('current')) return ''
+      if (date.match(/^\d{1,2}\/\d{4}$/)) { const [month, year] = date.split('/'); return `${year}-${month.padStart(2, '0')}` }
+      if (date.match(/^\d{4}-\d{2}$/)) return date
+      const monthYearMatch = date.match(/^(\w+)\s+(\d{4})$/)
+      if (monthYearMatch) {
+        const monthNames: Record<string, string> = { 'january': '01', 'jan': '01', 'february': '02', 'feb': '02', 'march': '03', 'mar': '03', 'april': '04', 'apr': '04', 'may': '05', 'june': '06', 'jun': '06', 'july': '07', 'jul': '07', 'august': '08', 'aug': '08', 'september': '09', 'sep': '09', 'sept': '09', 'october': '10', 'oct': '10', 'november': '11', 'nov': '11', 'december': '12', 'dec': '12' }
+        const monthNum = monthNames[monthYearMatch[1].toLowerCase()]
+        if (monthNum) return `${monthYearMatch[2]}-${monthNum}`
+      }
+      if (date.match(/^\d{1,2}-\d{4}$/)) { const [month, year] = date.split('-'); return `${year}-${month.padStart(2, '0')}` }
+      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { const parts = date.split('/'); return `${parts[2]}-${parts[1].padStart(2, '0')}` }
+      if (date.match(/^\d{4}$/)) return `${date}-01`
+      return ''
+    }
 
     // For PDF files, send directly to AI. For DOCX, extract text first
     if (file.type === 'application/pdf') {
@@ -199,67 +224,6 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
         // Parse the JSON
         const aiData = JSON.parse(cleanedText) as AIExtractedData
 
-        // Helper function to convert various date formats to YYYY-MM
-        const convertDateFormat = (date: string): string => {
-          if (!date || date.trim() === '') return ''
-          
-          // Remove extra whitespace
-          date = date.trim()
-          
-          // Handle "Present", "Current", etc.
-          if (date.toLowerCase().includes('present') || date.toLowerCase().includes('current')) {
-            return ''
-          }
-          
-          // Handle MM/YYYY format
-          if (date.match(/^\d{1,2}\/\d{4}$/)) {
-            const [month, year] = date.split('/')
-            return `${year}-${month.padStart(2, '0')}`
-          }
-          
-          // Handle YYYY-MM format (already correct)
-          if (date.match(/^\d{4}-\d{2}$/)) {
-            return date
-          }
-          
-          // Handle Month YYYY format (e.g., "January 2023", "Jan 2023")
-          const monthYearMatch = date.match(/^(\w+)\s+(\d{4})$/)
-          if (monthYearMatch) {
-            const monthNames = {
-              'january': '01', 'jan': '01',
-              'february': '02', 'feb': '02',
-              'march': '03', 'mar': '03',
-              'april': '04', 'apr': '04',
-              'may': '05',
-              'june': '06', 'jun': '06',
-              'july': '07', 'jul': '07',
-              'august': '08', 'aug': '08',
-              'september': '09', 'sep': '09', 'sept': '09',
-              'october': '10', 'oct': '10',
-              'november': '11', 'nov': '11',
-              'december': '12', 'dec': '12'
-            }
-            const monthNum = monthNames[monthYearMatch[1].toLowerCase() as keyof typeof monthNames]
-            if (monthNum) {
-              return `${monthYearMatch[2]}-${monthNum}`
-            }
-          }
-          
-          // Handle MM-YYYY format
-          if (date.match(/^\d{1,2}-\d{4}$/)) {
-            const [month, year] = date.split('-')
-            return `${year}-${month.padStart(2, '0')}`
-          }
-          
-          // Handle YYYY only
-          if (date.match(/^\d{4}$/)) {
-            return `${date}-01` // Default to January
-          }
-          
-          // Return empty string for unrecognized formats
-          return ''
-        }
-
         // Transform the data to match our ResumeData interface
         const transformedData: ResumeData = {
           personal: {
@@ -279,7 +243,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
             startDate: convertDateFormat(exp.startDate || ''),
             endDate: exp.endDate?.toLowerCase().includes('present') ? '' : convertDateFormat(exp.endDate || ''),
             current: exp.endDate?.toLowerCase().includes('present') || exp.current || false,
-            description: Array.isArray(exp.description) ? exp.description.join('\n• ') : (exp.description || '')})),
+            description: sanitizeHtml(Array.isArray(exp.description) ? exp.description.join('\n• ') : (exp.description || ''))})),
           education: (aiData.education || []).map((edu, index: number) => ({
             id: edu.id || `edu_${index + 1}`,
             degree: edu.degree || '',
@@ -289,7 +253,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
             startDate: convertDateFormat(edu.startDate || ''),
             endDate: convertDateFormat(edu.endDate || edu.graduationDate || ''),
             gpa: edu.gpa || '',
-            achievements: edu.achievements || ''})),
+            achievements: sanitizeHtml(edu.achievements || '')})),
           skills: (aiData.skills || []).map((skill, index: number) => ({
             id: typeof skill === 'object' && skill.id ? skill.id : `skill_${index + 1}`,
             name: typeof skill === 'string' ? skill : (skill.name || ''),
@@ -313,7 +277,7 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
           projects: (aiData.projects || []).map((proj, index: number) => ({
             id: proj.id || `proj_${index + 1}`,
             name: proj.name || '',
-            description: proj.description || '',
+            description: sanitizeHtml(proj.description || ''),
             technologies: proj.technologies || '',
             link: proj.link || '',
             startDate: proj.startDate || '',
@@ -327,11 +291,14 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
             credentialId: cert.credentialId || '',
             url: cert.url || ''}))}
 
-        // Update import count
-        await prisma.subscription.update({
-          where: { id: limits.subscription.id },
+        // Update import count — use atomic updateMany to prevent race conditions
+        const updateResult = await prisma.subscription.updateMany({
+          where: { id: limits.subscription.id, importCount: { lt: limits.importLimit === -1 ? 999999 : limits.importLimit } },
           data: { importCount: { increment: 1 } }
         })
+        if (updateResult.count === 0 && limits.importLimit !== -1) {
+          return forbiddenResponse('Import limit reached')
+        }
         return successResponse({
           success: true,
           data: transformedData,
@@ -339,9 +306,8 @@ CRITICAL: Use the real person's name, email, phone, and details from the PDF. Do
         })
 
       } catch (error) {
-        // Return more specific error for debugging
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-        return validationErrorResponse(`Failed to process PDF: ${errorMessage}. Please try again or convert to DOCX format.`)
+        console.error('[ResumeUpload] PDF processing failed:', error)
+        return validationErrorResponse('Failed to process PDF. Please try again or convert to DOCX format.')
       }
     } else {
       // For DOCX files, extract text first then send to AI
@@ -413,20 +379,20 @@ Return valid JSON only, no explanations.`
             jobTitle: exp.jobTitle || exp.title || '',
             company: exp.company || '',
             location: exp.location || '',
-            startDate: exp.startDate || '',
-            endDate: exp.endDate || '',
-            current: exp.current || false,
-            description: Array.isArray(exp.description) ? exp.description.join('\n') : (exp.description || '')})),
+            startDate: convertDateFormat(exp.startDate || ''),
+            endDate: exp.endDate?.toLowerCase().includes('present') ? '' : convertDateFormat(exp.endDate || ''),
+            current: exp.endDate?.toLowerCase().includes('present') || exp.current || false,
+            description: sanitizeHtml(Array.isArray(exp.description) ? exp.description.join('\n') : (exp.description || ''))})),
           education: (aiData.education || []).map((edu, index: number) => ({
             id: edu.id || `edu_${index + 1}`,
             degree: edu.degree || '',
             field: edu.field || edu.major || '',
             school: edu.school || edu.university || '',
             location: edu.location || '',
-            startDate: edu.startDate || '',
-            endDate: edu.endDate || edu.graduationDate || '',
+            startDate: convertDateFormat(edu.startDate || ''),
+            endDate: convertDateFormat(edu.endDate || edu.graduationDate || ''),
             gpa: edu.gpa || '',
-            achievements: edu.achievements || ''})),
+            achievements: sanitizeHtml(edu.achievements || '')})),
           skills: (aiData.skills || []).map((skill, index: number) => ({
             id: typeof skill === 'object' && skill.id ? skill.id : `skill_${index + 1}`,
             name: typeof skill === 'string' ? skill : (skill.name || ''),
@@ -450,7 +416,7 @@ Return valid JSON only, no explanations.`
           projects: (aiData.projects || []).map((proj, index: number) => ({
             id: proj.id || `proj_${index + 1}`,
             name: proj.name || '',
-            description: proj.description || '',
+            description: sanitizeHtml(proj.description || ''),
             technologies: proj.technologies || '',
             link: proj.link || '',
             startDate: proj.startDate || '',
@@ -464,11 +430,14 @@ Return valid JSON only, no explanations.`
             credentialId: cert.credentialId || '',
             url: cert.url || ''}))}
 
-        // Update import count
-        await prisma.subscription.update({
-          where: { id: limits.subscription.id },
+        // Update import count — use atomic updateMany to prevent race conditions
+        const updateResult2 = await prisma.subscription.updateMany({
+          where: { id: limits.subscription.id, importCount: { lt: limits.importLimit === -1 ? 999999 : limits.importLimit } },
           data: { importCount: { increment: 1 } }
         })
+        if (updateResult2.count === 0 && limits.importLimit !== -1) {
+          return forbiddenResponse('Import limit reached')
+        }
 
         return successResponse({
           success: true,
@@ -480,9 +449,9 @@ Return valid JSON only, no explanations.`
         // Return basic extraction if AI fails
         const basicData = ResumeParser.basicExtraction(await ResumeParser.extractText(buffer, file.type))
         
-        // Update import count even for basic extraction
-        await prisma.subscription.update({
-          where: { userId },
+        // Update import count even for basic extraction — use subscription ID, not userId
+        await prisma.subscription.updateMany({
+          where: { id: limits.subscription.id, importCount: { lt: limits.importLimit === -1 ? 999999 : limits.importLimit } },
           data: { importCount: { increment: 1 } }
         })
         

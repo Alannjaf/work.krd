@@ -735,6 +735,7 @@
         "autoSaving": "Auto-saving..."
       },
       "actions": {
+        "back": "Back",
         "preview": "Preview",
         "save": "Save",
         "saving": "Saving...",

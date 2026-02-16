@@ -50,6 +50,22 @@ export async function POST(req: Request) {
       return validationErrorResponse('Screenshot must be an image file')
     }
 
+    // Validate file type by checking magic bytes (not just MIME type which is client-controlled)
+    const headerBytes = await screenshot.slice(0, 12).arrayBuffer()
+    const header = new Uint8Array(headerBytes)
+    const isValidImage =
+      // JPEG: FF D8 FF
+      (header[0] === 0xFF && header[1] === 0xD8 && header[2] === 0xFF) ||
+      // PNG: 89 50 4E 47
+      (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47) ||
+      // WebP: RIFF....WEBP
+      (header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46 &&
+       header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50)
+
+    if (!isValidImage) {
+      return validationErrorResponse('Screenshot must be a valid image file (JPEG, PNG, or WebP)')
+    }
+
     if (screenshot.size > MAX_SCREENSHOT_SIZE) {
       return validationErrorResponse('Screenshot must be under 5MB')
     }

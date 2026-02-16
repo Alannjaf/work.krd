@@ -63,6 +63,7 @@ function PaymentContent() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  const [copyAnnouncement, setCopyAnnouncement] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -80,8 +81,9 @@ function PaymentContent() {
   const copyToClipboard = useCallback((text: string, field: string) => {
     navigator.clipboard.writeText(text)
     setCopied(field)
+    setCopyAnnouncement(t('billing.pay.copied'))
     toast.success(t('billing.pay.copied'))
-    setTimeout(() => setCopied(null), 2000)
+    setTimeout(() => { setCopied(null); setCopyAnnouncement('') }, 2000)
   }, [t])
 
   const handleFileSelect = useCallback((file: File) => {
@@ -521,6 +523,14 @@ function PaymentContent() {
           </div>
         </div>
       </div>
+      {/* Visually hidden live region for screen reader copy announcements */}
+      <span
+        aria-live="polite"
+        role="status"
+        className="sr-only"
+      >
+        {copyAnnouncement}
+      </span>
     </div>
   )
 }

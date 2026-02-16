@@ -91,7 +91,7 @@ export async function GET(
         case 'WORK_EXPERIENCE':
           if (content.experiences && Array.isArray(content.experiences)) {
             transformedData.experience = (content.experiences as Array<Partial<WorkExperience> & Record<string, unknown>>).map((exp) => ({
-              id: exp.id || Math.random().toString(),
+              id: exp.id || crypto.randomUUID(),
               jobTitle: exp.jobTitle || '',
               company: exp.company || '',
               location: exp.location || '',
@@ -106,7 +106,7 @@ export async function GET(
             );
             if (expArray.length > 0) {
               transformedData.experience = (expArray as Array<Partial<WorkExperience> & Record<string, unknown>>).map((exp) => ({
-                id: exp.id || Math.random().toString(),
+                id: exp.id || crypto.randomUUID(),
                 jobTitle: exp.jobTitle || '',
                 company: exp.company || '',
                 location: exp.location || '',
@@ -121,7 +121,7 @@ export async function GET(
         case 'EDUCATION':
           if (content.education && Array.isArray(content.education)) {
             transformedData.education = (content.education as Array<Partial<Education> & Record<string, unknown>>).map((edu) => ({
-              id: edu.id || Math.random().toString(),
+              id: edu.id || crypto.randomUUID(),
               degree: edu.degree || '',
               field: edu.field || '',
               school: edu.school || '',
@@ -136,7 +136,7 @@ export async function GET(
         case 'SKILLS':
           if (content.skills && Array.isArray(content.skills)) {
             transformedData.skills = (content.skills as Array<Partial<Skill> & Record<string, unknown>>).map((skill) => ({
-              id: skill.id || Math.random().toString(),
+              id: skill.id || crypto.randomUUID(),
               name: skill.name || '',
               level: skill.level || ''}));
           }
@@ -145,7 +145,7 @@ export async function GET(
         case 'LANGUAGES':
           if (content.languages && Array.isArray(content.languages)) {
             transformedData.languages = (content.languages as Array<Partial<Language> & Record<string, unknown>>).map((lang) => ({
-              id: lang.id || Math.random().toString(),
+              id: lang.id || crypto.randomUUID(),
               name: lang.name || '',
               proficiency: lang.proficiency || ''}));
           }
@@ -154,7 +154,7 @@ export async function GET(
         case 'PROJECTS':
           if (content.projects && Array.isArray(content.projects)) {
             transformedData.projects = (content.projects as Array<Partial<Project> & Record<string, unknown>>).map((proj) => ({
-              id: proj.id || Math.random().toString(),
+              id: proj.id || crypto.randomUUID(),
               name: proj.name || '',
               description: proj.description || '',
               technologies: proj.technologies || '',
@@ -167,7 +167,7 @@ export async function GET(
         case 'CERTIFICATIONS':
           if (content.certifications && Array.isArray(content.certifications)) {
             transformedData.certifications = (content.certifications as Array<Partial<Certification> & Record<string, unknown>>).map((cert) => ({
-              id: cert.id || Math.random().toString(),
+              id: cert.id || crypto.randomUUID(),
               name: cert.name || '',
               issuer: cert.issuer || '',
               date: cert.date || '',

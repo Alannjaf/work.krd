@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
       return errorResponse('Invalid or expired CSRF token', 403)
     }
 
-    const { success, resetIn } = rateLimit(req, { maxRequests: 10, windowSeconds: 60, identifier: 'admin-bulk-users' })
+    // Rate limit by total affected users: 5 requests/min with max 50 users each = 250 users/min
+    const { success, resetIn } = rateLimit(req, { maxRequests: 5, windowSeconds: 60, identifier: 'admin-bulk-users', userId: adminId })
     if (!success) return rateLimitResponse(resetIn)
 
     const { userIds, action } = await req.json()
@@ -27,8 +28,8 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('userIds must be a non-empty array')
     }
 
-    if (userIds.length > 100) {
-      return validationErrorResponse('Cannot process more than 100 users at once')
+    if (userIds.length > 50) {
+      return validationErrorResponse('Cannot process more than 50 users at once')
     }
 
     if (!['upgrade', 'downgrade', 'delete'].includes(action)) {

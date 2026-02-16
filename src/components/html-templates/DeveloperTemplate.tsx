@@ -80,7 +80,7 @@ export function DeveloperTemplate({ data, watermark }: HtmlTemplateProps) {
   return (
     <div style={{
       width: '794px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      fontFamily: "system-ui, -apple-system, 'Noto Sans Arabic', sans-serif",
       color: TEXT_PRIMARY,
       direction: dir,
       position: 'relative',

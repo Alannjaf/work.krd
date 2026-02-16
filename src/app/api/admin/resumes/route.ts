@@ -1,12 +1,19 @@
 import { prisma } from '@/lib/prisma';
-import { Resume, ResumeStatus } from '@prisma/client';
+import { ResumeStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers';
-import { requireAdminWithId } from '@/lib/admin';
+import { requireAdminWithId, logAdminAction } from '@/lib/admin';
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
 import { ADMIN_PAGINATION } from '@/lib/constants';
 
-interface ResumeWithUser extends Resume {
+interface ResumeListItem {
+  id: string;
+  title: string;
+  template: string;
+  status: ResumeStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
   user: {
     id: string;
     email: string;
@@ -22,11 +29,21 @@ export async function GET(req: NextRequest) {
     const userId = await requireAdminWithId();
 
     const searchParams = req.nextUrl.searchParams;
-    const search = searchParams.get('search') || '';
-    const status = searchParams.get('status') as ResumeStatus | null;
-    const template = searchParams.get('template') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || String(ADMIN_PAGINATION.RESUMES));
+    const search = (searchParams.get('search') || '').slice(0, 200);
+
+    // Validate status against enum allowlist
+    const rawStatus = searchParams.get('status');
+    const ALLOWED_STATUSES: ResumeStatus[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
+    const status = rawStatus && ALLOWED_STATUSES.includes(rawStatus as ResumeStatus)
+      ? (rawStatus as ResumeStatus)
+      : null;
+
+    // Validate template against safe pattern (alphanumeric + hyphens only)
+    const rawTemplate = searchParams.get('template') || '';
+    const template = /^[a-z0-9-]*$/.test(rawTemplate) ? rawTemplate : '';
+
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
+    const limit = Math.min(ADMIN_PAGINATION.MAX_LIMIT, Math.max(1, parseInt(searchParams.get('limit') || String(ADMIN_PAGINATION.RESUMES)) || ADMIN_PAGINATION.RESUMES));
     const ALLOWED_SORT_FIELDS = ['createdAt', 'updatedAt', 'title', 'template', 'status'] as const;
     const ALLOWED_SORT_ORDERS = ['asc', 'desc'] as const;
 
@@ -48,14 +65,21 @@ export async function GET(req: NextRequest) {
       ]};
 
     // Try to fetch resumes, but handle case where tables might not exist
-    let resumes: ResumeWithUser[] = [];
+    let resumes: ResumeListItem[] = [];
     let total = 0;
 
     try {
       [resumes, total] = await Promise.all([
         prisma.resume.findMany({
           where,
-          include: {
+          select: {
+            id: true,
+            title: true,
+            template: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            userId: true,
             user: {
               select: {
                 id: true,
@@ -75,7 +99,7 @@ export async function GET(req: NextRequest) {
     }
 
     const response = NextResponse.json({
-      resumes: resumes as ResumeWithUser[],
+      resumes: resumes as ResumeListItem[],
       pagination: {
         total,
         page,
@@ -108,6 +132,12 @@ export async function DELETE(req: NextRequest) {
     if (!ids || !Array.isArray(ids)) {
       return validationErrorResponse('Invalid request');
     }
+
+    // Audit log the IDs being deleted before performing the deletion
+    await logAdminAction(userId, 'DELETE_RESUMES', `resumes:${ids.length}`, {
+      resumeIds: ids,
+      count: ids.length,
+    });
 
     await prisma.resume.deleteMany({
       where: { id: { in: ids } }});

@@ -34,9 +34,10 @@ export function LanguagesSection({
       {languages.map((language) => (
         <div
           key={language.id}
+          className="resume-entry"
           style={{
             display: 'flex',
-            flexDirection: isRTL ? 'row-reverse' : 'row',
+            flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: 10,

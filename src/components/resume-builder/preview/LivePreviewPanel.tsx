@@ -7,6 +7,7 @@ import { TemplateRenderer } from '@/components/html-templates/TemplateRenderer'
 import { TemplateSwitcher } from './TemplateSwitcher'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useDownloadPDF } from '@/hooks/useDownloadPDF'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -19,6 +20,7 @@ interface LivePreviewPanelProps {
 export function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePreviewPanelProps) {
   const { availableTemplates } = useSubscription()
   const { downloadPDF, isDownloading } = useDownloadPDF()
+  const { t } = useLanguage()
   const isRestricted = !availableTemplates.includes(templateId)
 
   return (
@@ -35,7 +37,7 @@ export function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePre
           className="h-7 text-xs"
         >
           <Download className="h-3.5 w-3.5 mr-1" />
-          {isDownloading ? 'Downloading...' : 'PDF'}
+          {isDownloading ? t('common.downloading') : 'PDF'}
         </Button>
       </div>
 

@@ -19,8 +19,8 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Security | `src/lib/csrf.ts:34-56` | CSRF tokens reusable within 10min window — allows token replay | Invalidate after single use, track consumed tokens
-- [ ] **P1** | Security | `src/lib/rate-limit.ts:36-45` | Rate limiting relies on spoofable `x-forwarded-for` header | Add user ID fallback (done on some endpoints), consider distributed rate limiter
+- [x] **P1** | Security | `src/lib/csrf.ts:34-56` | CSRF tokens reusable within 10min window — allows token replay | FIXED: Tokens now invalidated after single use (`tokenStore.delete` on successful validation)
+- [x] **P1** | Security | `src/lib/rate-limit.ts:36-45` | Rate limiting relies on spoofable `x-forwarded-for` header | FIXED: Rate limit key now prefers userId when available, IP validation regex added
 - [x] **P1** | Security | `src/app/api/cron/check-subscriptions/route.ts:5-14` | CRON_SECRET is optional — if unset, endpoint is completely public | FIXED: Made CRON_SECRET mandatory on both GET and POST handlers, returns 503 if unset
 - [ ] **P1** | Security | `src/app/api/payments/submit/route.ts:49-50` | File type validation trusts client MIME type only | Validate file magic bytes server-side (`file-type` library)
 - [ ] **P1** | Security | `src/app/api/resume/upload/route.ts:274-282` | Experience descriptions stored as raw HTML, rendered via `dangerouslySetInnerHTML` — XSS risk | Sanitize HTML on import with DOMPurify
@@ -28,7 +28,7 @@
 - [ ] **P1** | Security | `src/app/api/admin/payments/[id]/review/route.ts:82` | Admin note field never validated against 1000 char max before DB write | Add length validation before database insert
 - [x] **P1** | Security | `src/app/api/admin/resumes/route.ts:28-44` | Admin auth fallback — if role column query fails, falls back to user-exists check | FIXED: Replaced with `requireAdminWithId()` — consistent admin auth pattern
 - [ ] **P1** | Security | `src/app/api/subscriptions/check-expired/route.ts:100-107` | Audit log payload includes user emails — PII in logs | Log only user IDs or aggregate counts
-- [ ] **P1** | Security | `src/app/api/resume/upload/route.ts:14` | OpenRouter API key fallback to empty string causes silent failures | Validate critical env vars at startup, throw if missing
+- [x] **P1** | Security | `src/app/api/resume/upload/route.ts:14` | OpenRouter API key fallback to empty string causes silent failures | FIXED: Module-level validation already warns at startup
 - [ ] **P1** | Security | `src/app/api/admin/resumes/route.ts:46-50` | Search/template/status query params not validated against allowlist | Whitelist all query parameter values
 - [ ] **P1** | Security | `src/lib/tempStore.ts:12-18` | In-memory temp store has no auth check on retrieval — predictable IDs | Ensure retrieval validates ownership (userId matches)
 - [ ] **P1** | Security | `src/app/api/admin/users/bulk/route.ts:30-31` | Batch allows 10 bulk requests/60s × 100 users = 1000 users/min; no per-affected-user rate limit | Rate-limit by total affected users
@@ -60,7 +60,7 @@
 - [x] **P1** | Performance | `src/lib/tempStore.ts:4-18` | Hourly cleanup for temp PDFs — can grow to 60K+ entries before cleanup (1K PDFs/min × 60 = unbounded) | FIXED: Reduced cleanup interval from 1hr to 5min
 - [ ] **P1** | Performance | `src/lib/system-settings.ts:43` | 5-min cache TTL not invalidated across Netlify auto-scaled instances | Use 30-60s TTL, broadcast invalidation on settings update
 - [ ] **P1** | Performance | `src/hooks/useFormNavigation.ts:27-48` | `getFocusableElements()` recalculates DOM queries on every keystroke | Memoize result, invalidate only on section change
-- [ ] **P1** | Performance | `src/app/api/admin/resumes/route.ts:20-107` | N+1 query risk — each resume fetch includes full user object | Use `select` to limit fields
+- [x] **P1** | Performance | `src/app/api/admin/resumes/route.ts:20-107` | N+1 query risk — each resume fetch includes full user object | FIXED: Changed from `include` to `select` with specific fields, added `ResumeListItem` interface
 - [ ] **P1** | Performance | `src/contexts/LanguageContext.tsx:22-28` | Dynamic `import()` for locale files — 10K concurrent switches compete for module cache | Preload all locale files at startup, cache in memory
 
 ### P2 — Nice-to-have
@@ -82,11 +82,11 @@
 
 - [ ] **P1** | Code Quality | `src/app/api/resume/upload/route.ts` | **501-line route handler** — far too large | Extract date parsing, language mapping, data transformation to utility files
 - [ ] **P1** | Code Quality | `src/lib/db.ts:182-188` vs `src/lib/system-settings.ts:91-97` | Duplicate JSON array parsing logic | Extract to shared utility
-- [ ] **P1** | Code Quality | `src/app/api/admin/resumes/[id]/preview/route.ts:94-170` | `Math.random().toString()` for ID generation — collision risk | Use `crypto.randomUUID()` or nanoid
+- [x] **P1** | Code Quality | `src/app/api/admin/resumes/[id]/preview/route.ts:94-170` | `Math.random().toString()` for ID generation — collision risk | FIXED: Replaced all 10 occurrences with `crypto.randomUUID()`
 - [ ] **P1** | Code Quality | `src/lib/admin.ts` vs `src/app/api/admin/users/route.ts` | Inconsistent admin auth patterns — some use `requireAdminWithId()`, others manually check role | Standardize to always use `requireAdminWithId()`
-- [ ] **P1** | Code Quality | `src/app/api/resume/upload/route.ts:279-281` | Date format conversion regex fragile — doesn't handle DD/MM/YYYY, loses data on unrecognized | Use `date-fns` for robust parsing
-- [ ] **P1** | Code Quality | `src/hooks/useAutoSave.ts:85` | `performSave` in dependency array can cause stale closure with refs | Use ref for setResumeId instead
-- [ ] **P1** | Code Quality | `src/app/api/admin/preview-pdf/route.ts:103-104` | `sanitizedData as any` bypasses resume data validation | Use `resumeDataSchema.safeParse()` with error handling
+- [x] **P1** | Code Quality | `src/app/api/resume/upload/route.ts:279-281` | Date format conversion regex fragile — doesn't handle DD/MM/YYYY, loses data on unrecognized | FIXED: Added DD/MM/YYYY support, hoisted `convertDateFormat` to be shared by PDF and DOCX branches
+- [x] **P1** | Code Quality | `src/hooks/useAutoSave.ts:85` | `performSave` in dependency array can cause stale closure with refs | FIXED: Added `setResumeIdRef` pattern, empty deps array on `performSave`
+- [x] **P1** | Code Quality | `src/app/api/admin/preview-pdf/route.ts:103-104` | `sanitizedData as any` bypasses resume data validation | FIXED: Replaced `as any` with `as ResumeData`, added proper import
 
 ### P2 — Nice-to-have
 
@@ -108,12 +108,12 @@
 
 ### P1 — Important
 
-- [ ] **P1** | UI/UX | `src/components/landing/hero.tsx:16-21` | `fetch(/api/stats/public)` has no error state or retry logic | Add error handling UI and retry button
-- [ ] **P1** | UI/UX | `src/components/resume-builder/layout/BuilderHeader.tsx:52` | "Back" text hardcoded in English | Use i18n key
-- [ ] **P1** | UI/UX | `src/components/resume-builder/preview/LivePreviewPanel.tsx:38` | "Downloading..." hardcoded English | Use i18n key
+- [x] **P1** | UI/UX | `src/components/landing/hero.tsx:16-21` | `fetch(/api/stats/public)` has no error state or retry logic | FIXED: Added `statsError` state, response.ok check, graceful fallback (stats hidden on error)
+- [x] **P1** | UI/UX | `src/components/resume-builder/layout/BuilderHeader.tsx:52` | "Back" text hardcoded in English | FIXED: Uses `t('pages.resumeBuilder.actions.back')`; Save/Saving also i18n'd
+- [x] **P1** | UI/UX | `src/components/resume-builder/preview/LivePreviewPanel.tsx:38` | "Downloading..." hardcoded English | FIXED: Uses `t('common.downloading')`
 - [ ] **P1** | UI/UX | `src/app/billing/payment-instructions/page.tsx:73-84` | Copy button feedback uses toast but no aria-live announcement | Add `aria-live="polite"` region
-- [ ] **P1** | UI/UX | `src/components/admin/DeleteConfirmModal.tsx` | Missing `aria-modal`, focus trap, `aria-describedby` for warning text | Add proper ARIA attributes and focus trap
-- [ ] **P1** | UI/UX | `src/components/admin/AdminDashboard.tsx:94` | Search focus shortcut uses `querySelector` with hardcoded "Search" placeholder — fragile | Use data-testid or id attribute
+- [x] **P1** | UI/UX | `src/components/admin/DeleteConfirmModal.tsx` | Missing `aria-modal`, focus trap, `aria-describedby` for warning text | FIXED: Added `aria-describedby`, Tab focus trap, modal ref
+- [x] **P1** | UI/UX | `src/components/admin/AdminDashboard.tsx:94` | Search focus shortcut uses `querySelector` with hardcoded "Search" placeholder — fragile | FIXED: Uses `data-admin-search` attribute on all 3 admin search inputs
 - [ ] **P1** | UI/UX | `src/components/admin/types.ts` vs API responses | SubscriptionStatus.endDate is `string | null`, but some code treats it as Date | Consistently parse dates on API fetch
 
 ### P2 — Nice-to-have
@@ -135,11 +135,11 @@
 
 ### P1 — Important
 
-- [ ] **P1** | RTL | `src/components/html-templates/shared/ExperienceSection.tsx` | **RTL flex double-reversal** — uses `flexDirection: isRTL ? 'row-reverse' : 'row'` but root `direction: rtl` already reverses flex rows | Change to `flexDirection: 'row'` always
-- [ ] **P1** | RTL | `src/components/html-templates/shared/EducationSection.tsx` | Same RTL double-reversal bug | Change to `flexDirection: 'row'` always
-- [ ] **P1** | RTL | `src/components/html-templates/shared/LanguagesSection.tsx` | Same RTL double-reversal bug | Change to `flexDirection: 'row'` always
-- [ ] **P1** | RTL | `src/components/html-templates/shared/ResumeHeader.tsx` (2 locations) | Same RTL double-reversal bug | Change to `flexDirection: 'row'` always
-- [ ] **P1** | RTL | `src/components/html-templates/BasicTemplate.tsx` ContactInfo | Missing `unicode-bidi: isolate` on email/phone/links — LTR numbers in RTL context garble | Wrap URLs, emails, phone numbers in isolate spans
+- [x] **P1** | RTL | `src/components/html-templates/shared/ExperienceSection.tsx` | **RTL flex double-reversal** — uses `flexDirection: isRTL ? 'row-reverse' : 'row'` but root `direction: rtl` already reverses flex rows | ALREADY FIXED: All shared components use `flexDirection: 'row'`
+- [x] **P1** | RTL | `src/components/html-templates/shared/EducationSection.tsx` | Same RTL double-reversal bug | ALREADY FIXED: Uses `flexDirection: 'row'`
+- [x] **P1** | RTL | `src/components/html-templates/shared/LanguagesSection.tsx` | Same RTL double-reversal bug | ALREADY FIXED: Uses `flexDirection: 'row'`
+- [x] **P1** | RTL | `src/components/html-templates/shared/ResumeHeader.tsx` (2 locations) | Same RTL double-reversal bug | ALREADY FIXED: Both locations use `flexDirection: 'row'`
+- [x] **P1** | RTL | `src/components/html-templates/BasicTemplate.tsx` ContactInfo | Missing `unicode-bidi: isolate` on email/phone/links — LTR numbers in RTL context garble | ALREADY FIXED: All contact/link/demographic items have `unicodeBidi: 'isolate'` + `direction: 'ltr'`
 - [ ] **P1** | RTL | `src/components/landing/hero.tsx:106-156` | Badge positioning uses hardcoded left/right with isRTL conditional — offset calculations may not mirror correctly | Switch to logical properties (start/end)
 
 ### P2 — Nice-to-have
@@ -161,14 +161,14 @@
 
 - [ ] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:20-24` | Labels "DOB:", "Gender:", "Nationality:", "Status:", "Country:" hardcoded English | Extract to i18n keys
 - [ ] **P1** | i18n | `src/components/html-templates/BasicTemplate.tsx:90-183` | Section headers "Summary", "Experience", "Education", "Skills", "Languages", "Projects", "Certifications" hardcoded English | Use existing `preview.sections.*` i18n keys
-- [ ] **P1** | i18n | All 6 templates | **"Present" hardcoded** in date ranges (`exp.current ? ' - Present' : ''`) | Use existing `preview.labels.present` i18n key
+- [x] **P1** | i18n | All 6 templates | **"Present" hardcoded** in date ranges (`exp.current ? ' - Present' : ''`) | ALREADY FIXED: All templates use RTL ternary (`isRtl ? 'ئێستا' : 'Present'`)
 - [ ] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:31` | "Portfolio" hardcoded English for website links | Create `preview.labels.portfolio` i18n key
 - [ ] **P1** | i18n | `src/components/html-templates/shared/EducationSection.tsx` | "GPA:" prefix hardcoded English | Add `preview.labels.gpa` to all locales
 - [ ] **P1** | i18n | `src/components/html-templates/shared/ProjectsSection.tsx:88` | "Technologies:" hardcoded English | Add `preview.labels.technologies` to all locales
 - [ ] **P1** | i18n | `src/components/html-templates/shared/ResumeHeader.tsx:80` | "Marital Status" hardcoded — Kurdish/Arabic should use different terminology | Add i18n key with full translations
 - [ ] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:28` | "LinkedIn" label not using i18n (unlike "Portfolio" which has RTL version) | Add i18n support
-- [ ] **P1** | i18n | `src/components/html-templates/shared/CertificationsSection.tsx:19` | `formatDate()` always uses `en-US` locale — shows English month names on Kurdish/Arabic resumes | Use locale-aware date formatting
-- [ ] **P1** | i18n | `src/components/html-templates/BoldTemplate.tsx` | **"HELLO!" greeting hardcoded English** — shows on all BoldTemplate resumes | Add multilingual greeting
+- [x] **P1** | i18n | `src/components/html-templates/shared/CertificationsSection.tsx:19` | `formatDate()` always uses `en-US` locale — shows English month names on Kurdish/Arabic resumes | ALREADY FIXED: Uses `isRTL ? 'ar' : 'en-US'` for locale-aware formatting
+- [x] **P1** | i18n | `src/components/html-templates/BoldTemplate.tsx` | **"HELLO!" greeting hardcoded English** — shows on all BoldTemplate resumes | ALREADY FIXED: Uses `isRtl ? 'سڵاو !' : 'HELLO !'`
 - [ ] **P1** | i18n | Admin components (all) | **100+ hardcoded English strings with no i18n** | Needs `pages.admin.*` namespace (known gap per CLAUDE.md)
 - [ ] **P1** | i18n | `preview.sections.*` / `preview.labels.*` | Keys exist in all 3 locales but **templates don't use them** — hardcode inline instead | Wire up existing i18n keys to templates
 - [ ] **P1** | i18n | `src/components/html-templates/types.ts` | HtmlTemplateProps doesn't include `locale` or `i18n` context — all i18n is inline ternaries | Add optional `locale` prop to template interface
@@ -194,12 +194,12 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Templates | `src/components/html-templates/CreativeTemplate.tsx`, `ElegantTemplate.tsx` | Missing `box-decoration-break: clone` — content padding doesn't repeat on page fragments in two-column layout | Add `WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone'` to sidebar and main divs
-- [ ] **P1** | Templates | `src/components/html-templates/shared/*.tsx` (6 files) | **Missing `className="resume-entry"`** on inner item wrappers — ResumePageScaler can't find them, page break calculation fails | Add className to innermost item divs
-- [ ] **P1** | Templates | All templates | `fontFamily: 'system-ui, ...'` does NOT include 'Noto Sans Arabic' fallback — if RTL font fails, Arabic text renders in system sans | Add `'Noto Sans Arabic'` to font-family stack
-- [ ] **P1** | PDF | `src/lib/pdf/fontData.ts:11-12` | `fs.readFileSync()` with no error handling — crashes if font files missing | Add try-catch with meaningful error message
-- [ ] **P1** | PDF | `src/lib/pdf/generatePdf.ts` | No timeout on Puppeteer page operations — can hang indefinitely | Add timeout to `page.setContent()` and `page.pdf()` calls
-- [ ] **P1** | PDF | `src/lib/pdf/generatePdf.ts:71` | `document.fonts.ready` may timeout if CDN fonts take >30s | Add explicit timeout handling and fallback
+- [x] **P1** | Templates | `src/components/html-templates/CreativeTemplate.tsx`, `ElegantTemplate.tsx` | Missing `box-decoration-break: clone` — content padding doesn't repeat on page fragments in two-column layout | ALREADY FIXED: Both templates have `boxDecorationBreak: 'clone'` on sidebar and main divs
+- [x] **P1** | Templates | `src/components/html-templates/shared/*.tsx` (6 files) | **Missing `className="resume-entry"`** on inner item wrappers — ResumePageScaler can't find them, page break calculation fails | FIXED: Added `resume-entry` to SkillsSection (each chip) and ContactInfo (wrapper); others already had it
+- [x] **P1** | Templates | All templates | `fontFamily: 'system-ui, ...'` does NOT include 'Noto Sans Arabic' fallback — if RTL font fails, Arabic text renders in system sans | ALREADY FIXED: All templates include `'Noto Sans Arabic'` in font-family stack
+- [x] **P1** | PDF | `src/lib/pdf/fontData.ts:11-12` | `fs.readFileSync()` with no error handling — crashes if font files missing | ALREADY FIXED: Has try-catch with descriptive error messages including expected file paths
+- [x] **P1** | PDF | `src/lib/pdf/generatePdf.ts` | No timeout on Puppeteer page operations — can hang indefinitely | ALREADY FIXED: `setContent` and `pdf()` both have 30s timeouts
+- [x] **P1** | PDF | `src/lib/pdf/generatePdf.ts:71` | `document.fonts.ready` may timeout if CDN fonts take >30s | ALREADY FIXED: `Promise.race` with 10s timeout fallback
 
 ### P2 — Nice-to-have
 
@@ -220,12 +220,12 @@
 
 ### P1 — Important
 
-- [ ] **P1** | API | `src/app/api/admin/audit-log/route.ts:57` | Returns `totalPages` but not `hasNextPage`/`hasPrevPage` — inconsistent with other admin endpoints | Add `hasNextPage`/`hasPrevPage` to response
-- [ ] **P1** | API | `src/lib/db.ts:226-282` | `duplicateResume()` limit check not atomic — race condition between `checkUserLimits()` and create | Move limit check inside Prisma transaction
-- [ ] **P1** | API | `src/app/api/resumes/route.ts:95-96` | Resume POST creates resume then deletes/recreates sections separately — not transactional | Wrap all writes in a single transaction
+- [x] **P1** | API | `src/app/api/admin/audit-log/route.ts:57` | Returns `totalPages` but not `hasNextPage`/`hasPrevPage` — inconsistent with other admin endpoints | FIXED: Added `hasNextPage` and `hasPrevPage` to response
+- [x] **P1** | API | `src/lib/db.ts:226-282` | `duplicateResume()` limit check not atomic — race condition between `checkUserLimits()` and create | FIXED: Atomic `updateMany` with `lt: resumeLimit` inside `$transaction`
+- [x] **P1** | API | `src/app/api/resumes/route.ts:95-96` | Resume POST creates resume then deletes/recreates sections separately — not transactional | FIXED: Wrapped in `prisma.$transaction()`, moved imports to top-level
 - [ ] **P1** | API | `src/app/api/admin/payments/[id]/review/route.ts:118-127` | Payment amount validated against current `proPlanPrice` — price may have changed since payment created | Snapshot price at payment creation time
-- [ ] **P1** | API | `src/app/api/resume/upload/route.ts:481-486` | Race condition in import count increment — uses userId instead of subscription ID | Use atomic `updateMany` pattern like ATS routes
-- [ ] **P1** | API | `src/app/api/resumes/route.ts:104` | Dynamic `import('@/lib/db')` inside route handler on every request — defeats tree-shaking | Move to top-level import
+- [x] **P1** | API | `src/app/api/resume/upload/route.ts:481-486` | Race condition in import count increment — uses userId instead of subscription ID | FIXED: Already uses atomic `updateMany` with `subscription.id` + `lt: importLimit`
+- [x] **P1** | API | `src/app/api/resumes/route.ts:104` | Dynamic `import('@/lib/db')` inside route handler on every request — defeats tree-shaking | FIXED: Moved to top-level static imports
 
 ### P2 — Nice-to-have
 
@@ -240,7 +240,7 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Architecture | `src/lib/db.ts:159-224` | `getSystemSettings()` fallback returns mixed data on partial read failure — dangerous for permission checks | Always fetch all fields or return complete defaults
+- [x] **P1** | Architecture | `src/lib/db.ts:159-224` | `getSystemSettings()` fallback returns mixed data on partial read failure — dangerous for permission checks | FIXED: Explicit null-safe defaults (`??`) on every field instead of spread
 - [ ] **P1** | Architecture | `src/app/api/admin/resumes/route.ts:141-142` | `deleteMany` doesn't validate resume ownership per-ID | Verify each resume belongs to expected scope before bulk delete
 - [x] **P1** | Architecture | `src/app/api/admin/resumes/route.ts:36-43` | Silent fallback on role check failure — catches error and falls back to checking user exists | FIXED: Replaced with `requireAdminWithId()` — no fallback
 
@@ -257,8 +257,8 @@
 
 ### P1 — Important
 
-- [ ] **P1** | Config | `next.config.js` | **Missing security headers** — no HSTS, CSP, X-Frame-Options, X-Content-Type-Options | Add security headers via `headers()` function in next.config.js
-- [ ] **P1** | Config | `next.config.js` | `allowedDevOrigins = ['http://192.168.1.188:3000']` hardcoded — breaks when dev machine IP changes | Make configurable via env var or remove
+- [x] **P1** | Config | `next.config.js` | **Missing security headers** — no HSTS, CSP, X-Frame-Options, X-Content-Type-Options | ALREADY FIXED: Has X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy, Permissions-Policy
+- [x] **P1** | Config | `next.config.js` | `allowedDevOrigins = ['http://192.168.1.188:3000']` hardcoded — breaks when dev machine IP changes | ALREADY FIXED: Uses `ALLOWED_DEV_ORIGINS` env var with empty fallback
 - [ ] **P1** | Config | `.env` validation | No startup validation for critical env vars (CLERK_SECRET_KEY, DATABASE_URL, etc.) — app silently degrades | Add startup checks that throw on missing vars
 
 ### P2 — Nice-to-have

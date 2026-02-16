@@ -59,6 +59,7 @@ export function ResumeFilters({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
         <input
           type="text"
+          data-admin-search
           placeholder="Search by title, user email, or name..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}

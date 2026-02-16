@@ -4,23 +4,41 @@ import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { PLAN_NAMES } from '@/lib/constants'
 
+// Simple in-memory rate limiter for webhook endpoint
+const webhookRateLimit = new Map<string, { count: number; resetTime: number }>()
+const WEBHOOK_MAX_REQUESTS = 100
+const WEBHOOK_WINDOW_MS = 60_000 // 1 minute
+
+function checkWebhookRateLimit(identifier: string): boolean {
+  const now = Date.now()
+  const entry = webhookRateLimit.get(identifier)
+  if (!entry || now > entry.resetTime) {
+    webhookRateLimit.set(identifier, { count: 1, resetTime: now + WEBHOOK_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= WEBHOOK_MAX_REQUESTS) return false
+  entry.count++
+  return true
+}
+
 export async function POST(req: Request) {
-  // Webhook received
-  
   // Get the headers
   const headerPayload = await headers()
   const svix_id = headerPayload.get("svix-id")
   const svix_timestamp = headerPayload.get("svix-timestamp")
   const svix_signature = headerPayload.get("svix-signature")
 
-  // Headers checked
-
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    // Missing svix headers
     return new Response('Error occured -- no svix headers', {
       status: 400
     })
+  }
+
+  // Rate limit by svix-id to prevent flood attacks
+  const rateLimitKey = `webhook:${svix_id}`
+  if (!checkWebhookRateLimit(rateLimitKey)) {
+    return new Response('Too many requests', { status: 429 })
   }
 
   // Get the body

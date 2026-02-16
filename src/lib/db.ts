@@ -3,6 +3,7 @@ import { prisma } from './prisma'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
 import { getTemplateIds } from './templates'
 import { PLAN_NAMES } from './constants'
+import { parseJsonArray } from './json-utils'
 
 export async function getCurrentUser() {
   const { userId } = await auth()
@@ -156,7 +157,16 @@ export async function getUserSubscription(userId: string) {
   return subscription
 }
 
+// Module-level cache for the private getSystemSettings() — avoids DB hit on every checkUserLimits() call
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _settingsCache: { data: any; ts: number } | null = null
+const _SETTINGS_TTL = 30 * 1000 // 30 seconds
+
 async function getSystemSettings() {
+  if (_settingsCache && Date.now() - _settingsCache.ts < _SETTINGS_TTL) {
+    return _settingsCache.data
+  }
+
   try {
     const settings = await prisma.systemSettings.findFirst({
       orderBy: { id: 'asc' },
@@ -178,28 +188,31 @@ async function getSystemSettings() {
     })
 
     if (settings) {
-      // Helper to parse JSON strings or use array directly
-      const parseJsonArray = (value: unknown, fallback: string[]): string[] => {
-        if (Array.isArray(value)) return value as string[]
-        if (typeof value === 'string') {
-          try { return JSON.parse(value) as string[] } catch { return fallback }
-        }
-        return fallback
-      }
-
-      return {
-        ...settings,
+      // Apply null-safe defaults so callers never see null for any field
+      const result = {
+        maxFreeResumes: settings.maxFreeResumes ?? 1,
+        maxFreeAIUsage: settings.maxFreeAIUsage ?? 10,
+        maxFreeExports: settings.maxFreeExports ?? 0,
+        maxFreeImports: settings.maxFreeImports ?? 1,
+        maxFreeATSChecks: settings.maxFreeATSChecks ?? 0,
+        maxProResumes: settings.maxProResumes ?? -1,
+        maxProAIUsage: settings.maxProAIUsage ?? -1,
+        maxProExports: settings.maxProExports ?? -1,
+        maxProImports: settings.maxProImports ?? -1,
+        maxProATSChecks: settings.maxProATSChecks ?? -1,
         freeTemplates: parseJsonArray(settings.freeTemplates, ['modern']),
         proTemplates: parseJsonArray(settings.proTemplates, ['modern']),
         photoUploadPlans: parseJsonArray(settings.photoUploadPlans, [PLAN_NAMES.PRO]),
       }
+      _settingsCache = { data: result, ts: Date.now() }
+      return result
     }
   } catch (error) {
     console.error('[DB] Failed to get system settings:', error);
     // Table might not exist, use defaults
   }
-  
-  return {
+
+  const defaults = {
     // Free Plan Limits - Restrictive defaults to encourage upgrades
     maxFreeResumes: 1,
     maxFreeAIUsage: 10,
@@ -221,10 +234,12 @@ async function getSystemSettings() {
     // Profile Photo Upload Access Control
     photoUploadPlans: [PLAN_NAMES.PRO]
   }
+  // Don't cache defaults — retry DB on next call
+  return defaults
 }
 
 export async function duplicateResume(resumeId: string, userId: string, clerkId: string) {
-  // Check if user can create more resumes
+  // Check limits before starting (fast-fail for obvious cases)
   const limits = await checkUserLimits(clerkId)
   if (!limits.canCreateResume) {
     throw new Error('RESUME_LIMIT_REACHED')
@@ -247,7 +262,26 @@ export async function duplicateResume(resumeId: string, userId: string, clerkId:
     : 'modern'
 
   // Atomically create the copy and increment resume count
+  // Use atomic updateMany to prevent race conditions on the limit check
+  const resumeLimit = limits.resumeLimit ?? 1
   const newResume = await prisma.$transaction(async (tx) => {
+    // Atomic limit check + increment: only succeeds if under limit
+    if (resumeLimit !== -1) {
+      const updated = await tx.subscription.updateMany({
+        where: { userId, resumeCount: { lt: resumeLimit } },
+        data: { resumeCount: { increment: 1 } },
+      })
+      if (updated.count === 0) {
+        throw new Error('RESUME_LIMIT_REACHED')
+      }
+    } else {
+      // Unlimited — just increment
+      await tx.subscription.update({
+        where: { userId },
+        data: { resumeCount: { increment: 1 } },
+      })
+    }
+
     const resume = await tx.resume.create({
       data: {
         userId,
@@ -269,11 +303,6 @@ export async function duplicateResume(resumeId: string, userId: string, clerkId:
         },
       },
       include: { sections: true },
-    })
-
-    await tx.subscription.update({
-      where: { userId },
-      data: { resumeCount: { increment: 1 } },
     })
 
     return resume
@@ -318,17 +347,8 @@ export async function checkUserLimits(clerkUserId: string) {
   const userLimits = limits[subscription.plan as keyof typeof limits] || limits.FREE
 
 
-  // Helper to safely extract string array from potentially stringified JSON
-  const ensureStringArray = (value: unknown, fallback: string[]): string[] => {
-    if (Array.isArray(value)) return value as string[]
-    if (typeof value === 'string') {
-      try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : fallback } catch { return fallback }
-    }
-    return fallback
-  }
-
   // Check photo upload permission
-  const photoUploadPlans = ensureStringArray(systemSettings.photoUploadPlans, [PLAN_NAMES.PRO])
+  const photoUploadPlans = parseJsonArray(systemSettings.photoUploadPlans, [PLAN_NAMES.PRO])
   const canUploadPhoto = photoUploadPlans.includes(subscription.plan)
 
   // Get available templates for user's plan
@@ -336,11 +356,11 @@ export async function checkUserLimits(clerkUserId: string) {
   let availableTemplates: string[] = ['basic']
   switch (subscription.plan) {
     case PLAN_NAMES.FREE:
-      availableTemplates = [...new Set(['basic', ...ensureStringArray(systemSettings.freeTemplates, ['modern'])])]
+      availableTemplates = [...new Set(['basic', ...parseJsonArray(systemSettings.freeTemplates, ['modern'])])]
       break
     case PLAN_NAMES.PRO:
       // PRO always gets all registered templates plus any from settings
-      availableTemplates = [...new Set(['basic', ...allRegisteredTemplates, ...ensureStringArray(systemSettings.proTemplates, allRegisteredTemplates)])]
+      availableTemplates = [...new Set(['basic', ...allRegisteredTemplates, ...parseJsonArray(systemSettings.proTemplates, allRegisteredTemplates)])]
       break
   }
 
@@ -353,6 +373,8 @@ export async function checkUserLimits(clerkUserId: string) {
     canUploadPhoto,
     availableTemplates,
     subscription,
+    resumeLimit: userLimits.resumes,
+    importLimit: userLimits.imports,
     atsLimit: userLimits.atsChecks,
     atsUsed: subscription.atsUsageCount || 0
   }

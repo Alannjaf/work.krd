@@ -9,6 +9,7 @@ import { isResumeRTL } from '@/lib/rtl';
 import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeResumeData } from '@/lib/sanitize';
+import { ResumeData } from '@/types/resume';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize all string fields in resume data to strip script tags and event handlers
-    const sanitizedData = sanitizeResumeData(resumeData) as Record<string, unknown>;
+    const sanitizedData = sanitizeResumeData(resumeData) as Partial<ResumeData> & Record<string, unknown>;
 
     // Ensure personal info exists (required for PDF generation)
     if (!sanitizedData.personal) {
@@ -70,8 +71,8 @@ export async function POST(request: NextRequest) {
     // Generate PDF without watermark for admin users
     const entry = getHtmlTemplate(template);
     const Component = entry.component;
-    const element = React.createElement(Component, { data: sanitizedData as any });
-    const isRTL = isResumeRTL(sanitizedData as any);
+    const element = React.createElement(Component, { data: sanitizedData as ResumeData });
+    const isRTL = isResumeRTL(sanitizedData);
     const html = await renderResumeToHtml(element, isRTL);
     const buffer = await generatePdfFromHtml(html);
 

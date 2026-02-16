@@ -74,7 +74,7 @@ function CircularProgress({ percentage, color, size = 56, label, isRtl }: {
           x={size / 2} y={size / 2 + 1}
           textAnchor="middle" dominantBaseline="middle"
           fill="#ffffff" fontSize="11" fontWeight="bold"
-          fontFamily="system-ui, -apple-system, sans-serif"
+          fontFamily="system-ui, -apple-system, 'Noto Sans Arabic', sans-serif"
         >
           {percentage}%
         </text>
@@ -184,7 +184,7 @@ export function CreativeTemplate({ data, watermark }: HtmlTemplateProps) {
   return (
     <div style={{
       width: '794px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      fontFamily: "system-ui, -apple-system, 'Noto Sans Arabic', sans-serif",
       color: TEXT_COLOR,
       direction: dir,
       position: 'relative',

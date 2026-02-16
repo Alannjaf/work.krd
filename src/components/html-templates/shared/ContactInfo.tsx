@@ -33,6 +33,7 @@ export function ContactInfo({
 
   return (
     <div
+      className="resume-entry"
       style={{
         display: 'flex',
         flexDirection: 'row',

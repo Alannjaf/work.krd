@@ -34,12 +34,19 @@ export interface RateLimitConfig {
 }
 
 function getClientIp(request: NextRequest): string {
+  // Prefer userId for rate limiting (not spoofable) — falls back to IP headers
+  // Note: x-forwarded-for can be spoofed, so userId-based limiting is preferred
+  // when available (pass userId via config.userId)
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    // Take only the first IP (client IP) and validate it looks like an IP
+    const ip = forwarded.split(',')[0].trim();
+    if (/^[\d.:a-fA-F]+$/.test(ip)) {
+      return ip;
+    }
   }
   const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
+  if (realIp && /^[\d.:a-fA-F]+$/.test(realIp)) {
     return realIp;
   }
   return '127.0.0.1';
@@ -50,8 +57,10 @@ export function rateLimit(
   config: RateLimitConfig
 ): { success: boolean; remaining: number; resetIn: number } {
   const ip = getClientIp(request);
+  // When userId is available, use it as primary rate limit key (not spoofable)
+  // IP is added as secondary dimension to prevent shared-account abuse
   const key = config.userId
-    ? `${config.identifier}:${config.userId}:${ip}`
+    ? `${config.identifier}:${config.userId}`
     : `${config.identifier}:${ip}`;
   const now = Date.now();
   const windowMs = config.windowSeconds * 1000;

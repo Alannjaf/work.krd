@@ -31,6 +31,10 @@ export function useAutoSave({
   useEffect(() => { resumeTitleRef.current = resumeTitle }, [resumeTitle])
   useEffect(() => { selectedTemplateRef.current = selectedTemplate }, [selectedTemplate])
 
+  // Use ref for setResumeId to avoid stale closure in debounced callbacks
+  const setResumeIdRef = useRef(setResumeId)
+  useEffect(() => { setResumeIdRef.current = setResumeId }, [setResumeId])
+
   const performSave = useCallback(async () => {
     const currentFormData = formDataRef.current
     const currentResumeId = resumeIdRef.current
@@ -53,7 +57,7 @@ export function useAutoSave({
         if (!response.ok) return false
 
         const data = await response.json()
-        setResumeId(data.resume.id)
+        setResumeIdRef.current(data.resume.id)
         setLastSavedData({ ...currentFormData })
         return true
       } catch (error) {
@@ -82,7 +86,8 @@ export function useAutoSave({
       console.error('[AutoSave] Failed to save:', error)
       return false
     }
-  }, [setResumeId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- uses refs for all dependencies to avoid stale closures
+  }, [])
 
   // Queue a save with debouncing
   const queueSave = useCallback((_sectionType?: string) => {

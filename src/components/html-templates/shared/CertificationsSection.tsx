@@ -12,11 +12,11 @@ interface CertificationsSectionProps {
   dateStyle?: React.CSSProperties;
 }
 
-function formatDate(d: string | undefined): string {
+function formatDate(d: string | undefined, isRTL?: boolean): string {
   if (!d) return '';
   const date = new Date(d);
   if (isNaN(date.getTime())) return d;
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(isRTL ? 'ar' : 'en-US', { month: 'short', year: 'numeric' });
 }
 
 export function CertificationsSection({
@@ -43,6 +43,7 @@ export function CertificationsSection({
       {certifications.map((cert) => (
         <div
           key={cert.id}
+          className="resume-entry"
           style={{
             marginBottom: 12,
             padding: '10px 14px',
@@ -88,7 +89,7 @@ export function CertificationsSection({
                 ...dateStyle,
               }}
             >
-              {formatDate(cert.date)}
+              {formatDate(cert.date, isRTL)}
             </div>
           )}
         </div>

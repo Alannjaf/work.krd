@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { getUserResumes, createResume, checkUserLimits } from '@/lib/db'
+import { createResume, checkUserLimits, updateResume } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { SectionType } from '@prisma/client'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 
@@ -19,7 +20,6 @@ export async function GET(req: Request) {
     const offset = parseInt(searchParams.get('offset') || '0', 10)
 
     // Use a single optimized query with relation filtering to get resumes directly
-    const { prisma } = await import('@/lib/prisma')
     const resumes = await prisma.resume.findMany({
       where: { user: { clerkId } },
       orderBy: { updatedAt: 'desc' },
@@ -82,7 +82,6 @@ export async function POST(req: Request) {
     }
 
     // Get user with single query
-    const { prisma } = await import('@/lib/prisma')
     const user = await prisma.user.findUnique({
       where: { clerkId },
       select: { id: true }
@@ -101,7 +100,7 @@ export async function POST(req: Request) {
     }
 
     // Check user limits using Clerk ID
-    const { canCreateResume } = await import('@/lib/db').then(m => m.checkUserLimits(clerkId))
+    const { canCreateResume } = await checkUserLimits(clerkId)
     if (!canCreateResume) {
       return forbiddenResponse('Resume limit reached. Please upgrade your plan.')
     }
@@ -118,93 +117,53 @@ export async function POST(req: Request) {
     // Create resume with sections
     const resume = await createResume(user.id, title, template)
     
-    // If formData is provided, update the resume with the data
+    // If formData is provided, update the resume with the data in a single transaction
     if (formData) {
-      const { updateResume } = await import('@/lib/db')
-      await updateResume(resume.id, user.id, {
-        personalInfo: formData.personal,
-        summary: formData.summary
-      })
-
-      // Update sections if provided
-      if (formData.experience || formData.education || formData.skills || formData.languages || formData.projects || formData.certifications) {
-        const { prisma } = await import('@/lib/prisma')
-        
-        // Clear existing sections
-        await prisma.resumeSection.deleteMany({
-          where: { resumeId: resume.id }
+      await prisma.$transaction(async (tx) => {
+        // Update personal info and summary
+        await tx.resume.update({
+          where: { id: resume.id, userId: user.id },
+          data: {
+            personalInfo: formData.personal ?? undefined,
+            summary: formData.summary ?? undefined,
+          },
         })
 
-        // Create new sections
-        const sections = []
-        let order = 1
-
-        if (formData.experience?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.WORK_EXPERIENCE,
-            title: 'Work Experience',
-            content: formData.experience,
-            order: order++
+        // Update sections if provided
+        if (formData.experience || formData.education || formData.skills || formData.languages || formData.projects || formData.certifications) {
+          // Clear existing sections
+          await tx.resumeSection.deleteMany({
+            where: { resumeId: resume.id }
           })
-        }
 
-        if (formData.education?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.EDUCATION,
-            title: 'Education',
-            content: formData.education,
-            order: order++
-          })
-        }
+          // Build new sections
+          const sections = []
+          let order = 1
 
-        if (formData.skills?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.SKILLS,
-            title: 'Skills',
-            content: formData.skills,
-            order: order++
-          })
-        }
+          if (formData.experience?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.WORK_EXPERIENCE, title: 'Work Experience', content: formData.experience, order: order++ })
+          }
+          if (formData.education?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.EDUCATION, title: 'Education', content: formData.education, order: order++ })
+          }
+          if (formData.skills?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.SKILLS, title: 'Skills', content: formData.skills, order: order++ })
+          }
+          if (formData.languages?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.LANGUAGES, title: 'Languages', content: formData.languages, order: order++ })
+          }
+          if (formData.projects?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.PROJECTS, title: 'Projects', content: formData.projects, order: order++ })
+          }
+          if (formData.certifications?.length > 0) {
+            sections.push({ resumeId: resume.id, type: SectionType.CERTIFICATIONS, title: 'Certifications', content: formData.certifications, order: order++ })
+          }
 
-        if (formData.languages?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.LANGUAGES,
-            title: 'Languages',
-            content: formData.languages,
-            order: order++
-          })
+          if (sections.length > 0) {
+            await tx.resumeSection.createMany({ data: sections })
+          }
         }
-
-        if (formData.projects?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.PROJECTS,
-            title: 'Projects',
-            content: formData.projects,
-            order: order++
-          })
-        }
-
-        if (formData.certifications?.length > 0) {
-          sections.push({
-            resumeId: resume.id,
-            type: SectionType.CERTIFICATIONS,
-            title: 'Certifications',
-            content: formData.certifications,
-            order: order++
-          })
-        }
-
-        if (sections.length > 0) {
-          await prisma.resumeSection.createMany({
-            data: sections
-          })
-        }
-      }
+      })
     }
 
     return successResponse({

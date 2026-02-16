@@ -94,7 +94,7 @@ export function ResumeHeader({
       <div
         style={{
           display: 'flex',
-          flexDirection: isRTL ? 'row-reverse' : 'row',
+          flexDirection: 'row',
           alignItems: 'center',
         }}
       >
@@ -124,7 +124,7 @@ export function ResumeHeader({
         <div
           style={{
             display: 'flex',
-            flexDirection: isRTL ? 'row-reverse' : 'row',
+            flexDirection: 'row',
             flexWrap: 'wrap',
             gap: 12,
             marginTop: 8,

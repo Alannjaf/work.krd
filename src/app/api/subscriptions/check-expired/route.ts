@@ -69,7 +69,6 @@ export async function POST(req: Request) {
           return {
             success: true,
             userId: subscription.userId,
-            userEmail: subscription.user.email,
             previousPlan: subscription.plan,
             newPlan: PLAN_NAMES.FREE
           }
@@ -78,7 +77,6 @@ export async function POST(req: Request) {
           return {
             success: false,
             userId: subscription.userId,
-            userEmail: subscription.user.email,
             error: error instanceof Error ? error.message : 'Unknown error'
           }
         }
@@ -99,11 +97,12 @@ export async function POST(req: Request) {
       return result.value
     })
 
+    // Log only user IDs (not emails) to avoid PII in audit logs
     await logAdminAction(adminId, 'PROCESS_EXPIRED_SUBSCRIPTIONS', 'subscriptions', {
       processed: expiredSubscriptions.length,
       successful: successful.length,
       failed: failed.length,
-      downgradedUsers: successful.filter(Boolean).map(s => s?.userEmail),
+      downgradedUserIds: successful.filter(Boolean).map(s => s?.userId),
     })
 
     return successResponse({

@@ -38,6 +38,7 @@ export function ProjectsSection({
       {projects.map((project) => (
         <div
           key={project.id}
+          className="resume-entry"
           style={{
             marginBottom: 16,
             padding: '14px 16px',

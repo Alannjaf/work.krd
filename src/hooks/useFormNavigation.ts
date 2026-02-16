@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useMemo } from 'react'
 
 export interface FormNavigationOptions {
   onNext?: () => void
@@ -23,29 +23,41 @@ export function useFormNavigation({
 }: FormNavigationOptions) {
   const formRef = useRef<HTMLDivElement>(null)
 
+  // Memoize selector string to avoid re-creating on every call
+  const focusableSelector = useMemo(() => [
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'button:not([disabled])',
+    '[tabindex]:not([tabindex="-1"]):not([disabled])',
+    '[contenteditable]:not([contenteditable="false"])'
+  ].join(', '), [])
+
+  // Cache focusable elements, invalidate on section change
+  const focusableCacheRef = useRef<{ section: number | undefined; elements: HTMLElement[] } | null>(null)
+
   // Get all focusable elements in the current form section
   const getFocusableElements = useCallback((): HTMLElement[] => {
     if (!formRef.current) return []
-    
-    const selector = [
-      'input:not([disabled]):not([type="hidden"])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      'button:not([disabled])',
-      '[tabindex]:not([tabindex="-1"]):not([disabled])',
-      '[contenteditable]:not([contenteditable="false"])'
-    ].join(', ')
-    
-    return Array.from(formRef.current.querySelectorAll(selector))
+
+    // Return cached result if section hasn't changed
+    if (focusableCacheRef.current && focusableCacheRef.current.section === currentSection) {
+      return focusableCacheRef.current.elements
+    }
+
+    const elements = Array.from(formRef.current.querySelectorAll(focusableSelector))
       .filter(el => {
         const element = el as HTMLElement
         // Check if element is visible
         const style = window.getComputedStyle(element)
-        return style.display !== 'none' && 
-               style.visibility !== 'hidden' && 
+        return style.display !== 'none' &&
+               style.visibility !== 'hidden' &&
                element.offsetParent !== null
       }) as HTMLElement[]
-  }, [])
+
+    focusableCacheRef.current = { section: currentSection, elements }
+    return elements
+  }, [currentSection, focusableSelector])
 
   // Check if current element is the last focusable element
   const isLastFocusableElement = useCallback((element: HTMLElement): boolean => {

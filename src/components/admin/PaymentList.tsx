@@ -135,6 +135,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
+              data-admin-search
               placeholder="Search by user email or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

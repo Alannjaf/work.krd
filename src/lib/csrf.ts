@@ -31,9 +31,8 @@ export function generateCsrfToken(userId: string): string {
 
 /**
  * Validate a CSRF token from the request header against the stored token for a user.
- * Returns true if valid, false otherwise. Consumed tokens are NOT deleted
- * so the same token can be reused within its expiry window (admin may make
- * multiple requests before the next GET refreshes the token).
+ * Returns true if valid, false otherwise. Tokens are invalidated after single use
+ * to prevent replay attacks.
  */
 export function validateCsrfToken(userId: string, token: string | null): boolean {
   if (!token) return false
@@ -56,7 +55,14 @@ export function validateCsrfToken(userId: string, token: string | null): boolean
   for (let i = 0; i < token.length; i++) {
     mismatch |= token.charCodeAt(i) ^ stored.token.charCodeAt(i)
   }
-  return mismatch === 0
+  const isValid = mismatch === 0
+
+  // Invalidate token after use to prevent replay attacks
+  if (isValid) {
+    tokenStore.delete(userId)
+  }
+
+  return isValid
 }
 
 /**

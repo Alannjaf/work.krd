@@ -42,6 +42,7 @@ export function SkillsSection({
         {skills.map((skill) => (
           <span
             key={skill.id}
+            className="resume-entry"
             style={{
               backgroundColor: '#3b82f6',
               color: '#ffffff',

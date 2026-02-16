@@ -50,6 +50,7 @@ export function EducationSection({
       {education.map((edu) => (
         <div
           key={edu.id}
+          className="resume-entry"
           style={{
             marginBottom: 14,
             padding: '12px 16px',
@@ -102,7 +103,7 @@ export function EducationSection({
           <div
             style={{
               display: 'flex',
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: 'row',
               justifyContent: 'space-between',
               fontSize: 9,
               color: '#6b7280',

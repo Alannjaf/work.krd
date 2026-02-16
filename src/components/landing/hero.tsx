@@ -10,14 +10,15 @@ import { ArrowRight, Users, Check, Sparkles, Upload } from 'lucide-react'
 export function Hero() {
   const { t, isRTL } = useLanguage()
   const [stats, setStats] = useState<{ userCount: number } | null>(null)
+  const [statsError, setStatsError] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
     fetch('/api/stats/public')
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(() => {})
+      .then(res => { if (!res.ok) throw new Error('fetch failed'); return res.json() })
+      .then(data => { setStats(data); setStatsError(false) })
+      .catch(() => setStatsError(true))
   }, [])
 
   const circumference = 2 * Math.PI * 20
@@ -101,9 +102,9 @@ export function Hero() {
                 />
               </div>
 
-              {/* Badge 1: Resume Score (top-left / top-right RTL) */}
+              {/* Badge 1: Resume Score (top-start) */}
               <div
-                className={`absolute -top-4 ${isRTL ? '-right-4 sm:-right-8' : '-left-4 sm:-left-8'} transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                className={`absolute -top-4 -start-4 sm:-start-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '0.4s' }}
               >
                 <div className="animate-float bg-white rounded-xl shadow-lg border border-gray-100 p-3 flex items-center gap-2" style={{ animationDelay: '0.4s' }}>
@@ -129,9 +130,9 @@ export function Hero() {
                 </div>
               </div>
 
-              {/* Badge 2: ATS Perfect (right side / left RTL) */}
+              {/* Badge 2: ATS Perfect (end side) */}
               <div
-                className={`absolute top-1/3 ${isRTL ? '-left-4 sm:-left-12' : '-right-4 sm:-right-12'} transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                className={`absolute top-1/3 -end-4 sm:-end-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '0.6s' }}
               >
                 <div className="animate-float bg-emerald-50 text-emerald-700 rounded-full px-4 py-2 shadow-lg border border-emerald-200 flex items-center gap-2 text-sm font-medium" style={{ animationDelay: '0.6s' }}>
@@ -140,9 +141,9 @@ export function Hero() {
                 </div>
               </div>
 
-              {/* Badge 3: Skills Card (bottom-right / bottom-left RTL) — hidden on mobile */}
+              {/* Badge 3: Skills Card (bottom-end) — hidden on mobile */}
               <div
-                className={`absolute -bottom-4 ${isRTL ? '-left-4 sm:-left-10' : '-right-4 sm:-right-10'} hidden sm:block transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                className={`absolute -bottom-4 -end-4 sm:-end-10 hidden sm:block transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '0.8s' }}
               >
                 <div className="animate-float bg-white rounded-xl shadow-lg border border-gray-100 p-3" style={{ animationDelay: '0.8s' }}>

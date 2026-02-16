@@ -18,44 +18,26 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-// Import translation files
-const translations = {
-  en: () => import('@/locales/en/common.json').then(m => m.default),
-  ar: () => import('@/locales/ar/common.json').then(m => m.default),
-  ckb: () => import('@/locales/ckb/common.json').then(m => m.default)}
-
-// Pre-import English translations for faster initial load
+// Pre-import all locale files at build time — eliminates dynamic import() race conditions
 import enTranslations from '@/locales/en/common.json'
+import arTranslations from '@/locales/ar/common.json'
+import ckbTranslations from '@/locales/ckb/common.json'
+
+const translationCache: Record<Language, Record<string, unknown>> = {
+  en: enTranslations,
+  ar: arTranslations,
+  ckb: ckbTranslations,
+}
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en')
   const [messages, setMessages] = useState<Record<string, unknown>>(enTranslations)
-  const [isLoading, setIsLoading] = useState(false)
+  // isLoading kept for API compat — always false since translations are preloaded
+  const isLoading = false
 
-  // Load translations when language changes
+  // Load translations when language changes — synchronous from preloaded cache
   useEffect(() => {
-    const loadTranslations = async () => {
-      // Skip loading for English since it's pre-loaded
-      if (language === 'en') {
-        setMessages(enTranslations)
-        return
-      }
-      
-      setIsLoading(true)
-      try {
-        const translationLoader = translations[language]
-        const loadedMessages = await translationLoader()
-        setMessages(loadedMessages)
-      } catch (error) {
-        console.error('[LanguageContext] Failed to load translations:', error);
-        // Fallback to English on error
-        setMessages(enTranslations)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadTranslations()
+    setMessages(translationCache[language] ?? enTranslations)
   }, [language])
 
   // Translation function that supports nested keys and variable interpolation

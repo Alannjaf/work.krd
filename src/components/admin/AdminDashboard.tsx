@@ -91,7 +91,7 @@ export function AdminDashboard() {
 
       if (e.key === '/' && !isInInput) {
         e.preventDefault()
-        const searchInput = document.querySelector<HTMLInputElement>('input[type="text"][placeholder*="Search"], input[type="text"][placeholder*="search"]')
+        const searchInput = document.querySelector<HTMLInputElement>('[data-admin-search]')
         searchInput?.focus()
       }
 

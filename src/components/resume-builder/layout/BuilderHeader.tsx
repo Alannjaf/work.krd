@@ -49,7 +49,7 @@ export function BuilderHeader({
         className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors shrink-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className="hidden sm:inline">Back</span>
+        <span className="hidden sm:inline">{t('pages.resumeBuilder.actions.back')}</span>
       </button>
 
       {/* Separator */}
@@ -133,7 +133,7 @@ export function BuilderHeader({
           disabled={isSaving || isAutoSaving}
           className="h-8 px-3 text-xs"
         >
-          {isSaving ? 'Saving...' : 'Save'}
+          {isSaving ? t('pages.resumeBuilder.actions.saving') : t('pages.resumeBuilder.actions.save')}
         </Button>
       </div>
     </header>

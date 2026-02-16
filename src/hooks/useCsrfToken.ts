@@ -1,11 +1,22 @@
 import { useCallback } from 'react'
 
 const CSRF_HEADER = 'x-csrf-token'
+const STORAGE_KEY = 'csrf-token'
 
-// Module-level token store shared across all hook instances.
-// This ensures a token captured by one component's GET is available
-// for another component's POST (e.g., ResumeManagement GET → AdminResumePreview POST).
-let csrfToken: string | null = null
+/**
+ * Get CSRF token from sessionStorage (scoped to this browser tab).
+ * Using sessionStorage instead of module-level variable prevents XSS from
+ * stealing tokens across different admin sessions.
+ */
+function getStoredToken(): string | null {
+  if (typeof sessionStorage === 'undefined') return null
+  return sessionStorage.getItem(STORAGE_KEY)
+}
+
+function setStoredToken(token: string): void {
+  if (typeof sessionStorage === 'undefined') return
+  sessionStorage.setItem(STORAGE_KEY, token)
+}
 
 /**
  * Hook to manage CSRF tokens for admin fetch requests.
@@ -22,9 +33,10 @@ export function useCsrfToken() {
     const method = (init?.method || 'GET').toUpperCase()
 
     // For state-changing requests, attach the CSRF token
-    if (method !== 'GET' && method !== 'HEAD' && csrfToken) {
+    const currentToken = getStoredToken()
+    if (method !== 'GET' && method !== 'HEAD' && currentToken) {
       const headers = new Headers(init?.headers)
-      headers.set(CSRF_HEADER, csrfToken)
+      headers.set(CSRF_HEADER, currentToken)
       init = { ...init, headers }
     }
 
@@ -33,7 +45,7 @@ export function useCsrfToken() {
     // Capture CSRF token from any response that includes one
     const newToken = response.headers.get(CSRF_HEADER)
     if (newToken) {
-      csrfToken = newToken
+      setStoredToken(newToken)
     }
 
     return response

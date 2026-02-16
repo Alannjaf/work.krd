@@ -92,8 +92,14 @@ export async function POST(
       return validationErrorResponse('Action must be "approve" or "reject"')
     }
 
-    if (note && note.length > 1000) {
-      return validationErrorResponse('Note must be 1000 characters or less')
+    // Validate note length before DB write (must match 1000 char max constraint)
+    if (note !== undefined && note !== null) {
+      if (typeof note !== 'string') {
+        return validationErrorResponse('Note must be a string')
+      }
+      if (note.length > 1000) {
+        return validationErrorResponse('Note must be 1000 characters or less')
+      }
     }
 
     const now = new Date()
@@ -116,6 +122,9 @@ export async function POST(
       if (!payment) throw new Error('Payment not found')
 
       // Validate payment amount when approving
+      // NOTE: Price is validated against the CURRENT proPlanPrice. If the price was changed
+      // after the user submitted payment, this check may reject a legitimately paid amount.
+      // Admin should manually verify the amount and use the note field to document discrepancies.
       if (action === 'approve') {
         if (!payment.amount || payment.amount <= 0) {
           throw new Error('Invalid payment amount')
@@ -123,7 +132,8 @@ export async function POST(
         const settings = await getSystemSettings()
         const expectedPrice = settings.proPlanPrice || 5000
         if (payment.amount !== expectedPrice) {
-          throw new Error(`Payment amount (${payment.amount}) does not match plan price (${expectedPrice})`)
+          console.warn(`[AdminPaymentReview] Payment ${id} amount (${payment.amount}) differs from current plan price (${expectedPrice}). Price may have changed since payment was created.`)
+          // Allow approval — admin has discretion to approve payments at prior price points
         }
       }
 

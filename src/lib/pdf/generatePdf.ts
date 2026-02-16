@@ -65,15 +65,19 @@ export async function generatePdfFromHtml(html: string): Promise<Buffer> {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
 
-    // Wait for fonts to be loaded
-    await page.evaluateHandle('document.fonts.ready');
+    // Wait for fonts to be loaded (with 10s timeout to avoid hanging on slow CDN)
+    await Promise.race([
+      page.evaluateHandle('document.fonts.ready'),
+      new Promise((resolve) => setTimeout(resolve, 10000)),
+    ]);
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
       margin: { top: '40px', right: '0px', bottom: '40px', left: '0px' },
+      timeout: 30000,
     });
 
     return Buffer.from(pdfBuffer);

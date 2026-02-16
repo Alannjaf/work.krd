@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse('Missing required fields');
     }
 
-    // Generate a simple ID
-    const id = Math.random().toString(36).substring(2, 15);
+    // Generate a cryptographically secure ID to prevent guessing
+    const id = crypto.randomUUID();
     
     // Store temporarily
     tempStore.set(id, {

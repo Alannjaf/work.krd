@@ -1,9 +1,10 @@
 import { prisma } from './prisma'
 import { PLAN_NAMES } from './constants'
+import { parseJsonArray } from './json-utils'
 
 // Module-level cache
 let settingsCache: { data: Awaited<ReturnType<typeof prisma.systemSettings.findFirst>>; timestamp: number } | null = null
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL_MS = 60 * 1000 // 60 seconds — short TTL for serverless (no cross-instance invalidation)
 
 export function invalidateSettingsCache() {
   settingsCache = null
@@ -88,14 +89,6 @@ export async function updateSystemSettings(data: SystemSettingsUpdateData) {
   try {
     const existing = await prisma.systemSettings.findFirst()
 
-    const ensureArray = (value: unknown, fallback: string[]): string[] => {
-      if (Array.isArray(value)) return value
-      if (typeof value === 'string') {
-        try { return JSON.parse(value) } catch { return fallback }
-      }
-      return fallback
-    }
-
     const settingsData = {
       maxFreeResumes: data.maxFreeResumes,
       maxFreeAIUsage: data.maxFreeAIUsage,
@@ -107,9 +100,9 @@ export async function updateSystemSettings(data: SystemSettingsUpdateData) {
       maxProExports: data.maxProExports,
       maxProImports: data.maxProImports,
       maxProATSChecks: data.maxProATSChecks,
-      freeTemplates: ensureArray(data.freeTemplates, ['modern']),
-      proTemplates: ensureArray(data.proTemplates, ['modern']),
-      photoUploadPlans: ensureArray(data.photoUploadPlans, [PLAN_NAMES.PRO]),
+      freeTemplates: parseJsonArray(data.freeTemplates, ['modern']),
+      proTemplates: parseJsonArray(data.proTemplates, ['modern']),
+      photoUploadPlans: parseJsonArray(data.photoUploadPlans, [PLAN_NAMES.PRO]),
       proPlanPrice: data.proPlanPrice,
       maintenanceMode: data.maintenanceMode
     }

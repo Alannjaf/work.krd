@@ -68,6 +68,7 @@ export function ExperienceSection({
       {experiences.map((exp, index) => (
         <div
           key={exp.id}
+          className="resume-entry"
           style={{
             marginBottom: 18,
             paddingBottom: 16,
@@ -79,7 +80,7 @@ export function ExperienceSection({
           <div
             style={{
               display: 'flex',
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               marginBottom: 8,

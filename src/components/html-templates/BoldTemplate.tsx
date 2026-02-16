@@ -93,7 +93,7 @@ export function BoldTemplate({ data, watermark }: HtmlTemplateProps) {
   return (
     <div style={{
       width: '794px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      fontFamily: "system-ui, -apple-system, 'Noto Sans Arabic', sans-serif",
       color: MAIN_TEXT,
       direction: dir,
       position: 'relative',
