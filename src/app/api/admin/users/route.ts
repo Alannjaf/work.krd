@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { UserWithSubscription } from '@/types/api'
-import { successResponse, forbiddenResponse } from '@/lib/api-helpers'
+import { forbiddenResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken } from '@/lib/csrf'
+import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,9 +18,41 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50')))
     const skip = (page - 1) * limit
+    const search = searchParams.get('search')?.trim() || ''
+    const plan = searchParams.get('plan') || ''
+    const dateFrom = searchParams.get('dateFrom') || ''
+    const dateTo = searchParams.get('dateTo') || ''
+
+    // Build dynamic where clause
+    const where: Prisma.UserWhereInput = {}
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    if (plan === 'FREE' || plan === 'PRO') {
+      where.subscription = { plan }
+    }
+
+    if (dateFrom || dateTo) {
+      where.createdAt = {}
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom)
+      }
+      if (dateTo) {
+        // Include the entire end date day
+        const endDate = new Date(dateTo)
+        endDate.setHours(23, 59, 59, 999)
+        where.createdAt.lte = endDate
+      }
+    }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
+        where,
         include: {
           subscription: {
             select: {
@@ -44,7 +77,7 @@ export async function GET(req: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.user.count()
+      prisma.user.count({ where })
     ])
 
     const usersWithRole = users.map((user: UserWithSubscription) => ({

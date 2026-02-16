@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Pagination } from '@/components/ui/Pagination'
 import { AppHeader } from '@/components/shared/AppHeader'
 import {
   Search,
@@ -14,10 +15,14 @@ import {
   Calendar,
   CreditCard,
   Check,
-  Crown
+  Crown,
+  X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { useDebounce } from '@/hooks/useDebounce'
+
+const LIMIT = 20
 
 interface UserData {
   id: string
@@ -43,13 +48,52 @@ export function UserManagement() {
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [plan, setPlan] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgrading, setUpgrading] = useState(false)
 
+  const debouncedSearch = useDebounce(searchTerm, 500)
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      params.set('page', String(page))
+      params.set('limit', String(LIMIT))
+      if (debouncedSearch) params.set('search', debouncedSearch)
+      if (plan) params.set('plan', plan)
+      if (dateFrom) params.set('dateFrom', dateFrom)
+      if (dateTo) params.set('dateTo', dateTo)
+
+      const response = await csrfFetch(`/api/admin/users?${params.toString()}`)
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.users)
+        setTotal(data.total)
+        setTotalPages(Math.max(1, Math.ceil(data.total / LIMIT)))
+      }
+    } catch (error) {
+      console.error('[UserManagement] Failed to fetch users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [csrfFetch, page, debouncedSearch, plan, dateFrom, dateTo])
+
+  // Fetch users whenever fetchUsers dependencies change
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [fetchUsers])
+
+  // Reset page to 1 when any filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, plan, dateFrom, dateTo])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -63,21 +107,6 @@ export function UserManagement() {
       return () => document.removeEventListener('keydown', handleEscape)
     }
   }, [showUpgradeModal])
-
-  const fetchUsers = async () => {
-    setLoading(true)
-    try {
-      const response = await csrfFetch('/api/admin/users')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users)
-      }
-    } catch (error) {
-      console.error('[UserManagement] Failed to fetch users:', error);
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const upgradeUserPlan = async (userId: string, newPlan: string) => {
     setUpgrading(true)
@@ -97,17 +126,21 @@ export function UserManagement() {
         toast.error('Failed to update user plan')
       }
     } catch (error) {
-      console.error('[UserManagement] Failed to update user plan:', error);
+      console.error('[UserManagement] Failed to update user plan:', error)
       toast.error('Error updating user plan')
     } finally {
       setUpgrading(false)
     }
   }
 
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const hasActiveFilters = searchTerm || plan || dateFrom || dateTo
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setPlan('')
+    setDateFrom('')
+    setDateTo('')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -124,22 +157,70 @@ export function UserManagement() {
           <p className="text-gray-600 mt-2">Manage users and their subscriptions</p>
         </div>
 
-        {/* Search and Actions */}
+        {/* Search, Filters, and Actions */}
         <Card className="p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by email or name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            {/* Row 1: Search + Plan Filter + Refresh */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search by email or name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <select
+                value={plan}
+                onChange={(e) => setPlan(e.target.value)}
+                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">All Plans</option>
+                <option value="FREE">FREE</option>
+                <option value="PRO">PRO</option>
+              </select>
+              <Button onClick={fetchUsers} variant="outline" type="button">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
             </div>
-            <Button onClick={fetchUsers} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
+
+            {/* Row 2: Date Range + Clear Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="dateFrom" className="text-xs font-medium text-gray-500">
+                    From date
+                  </label>
+                  <input
+                    id="dateFrom"
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="dateTo" className="text-xs font-medium text-gray-500">
+                    To date
+                  </label>
+                  <input
+                    id="dateTo"
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+              </div>
+              {hasActiveFilters && (
+                <Button onClick={clearFilters} variant="ghost" size="sm" type="button" className="text-gray-500">
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Filters
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
 
@@ -148,80 +229,103 @@ export function UserManagement() {
           <div className="text-center py-8">
             <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
           </div>
+        ) : users.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-gray-500">No users found matching your filters.</p>
+          </Card>
         ) : (
-          <div className="grid gap-4">
-            {filteredUsers.map((user) => (
-              <Card key={user.id} className="p-4 sm:p-6">
-                <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          {user.name || 'No name'}
-                        </h3>
-                        {user.role === 'ADMIN' && (
-                          <Badge variant="secondary" className="flex items-center gap-1 flex-shrink-0">
-                            <Crown className="h-3 w-3" />
-                            Admin
-                          </Badge>
-                        )}
+          <>
+            <div className="grid gap-4">
+              {users.map((user) => (
+                <Card key={user.id} className="p-4 sm:p-6">
+                  <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
                       </div>
-                      <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center truncate">
-                          <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
-                          <span className="truncate">{user.email}</span>
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
-                          Joined {new Date(user.createdAt).toLocaleDateString()}
-                        </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {user.name || 'No name'}
+                          </h3>
+                          {user.role === 'ADMIN' && (
+                            <Badge variant="secondary" className="flex items-center gap-1 flex-shrink-0">
+                              <Crown className="h-3 w-3" />
+                              Admin
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
+                          <span className="flex items-center truncate">
+                            <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{user.email}</span>
+                          </span>
+                          <span className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                            Joined {new Date(user.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
-                    <div className="text-left sm:text-right">
-                      <Badge variant={user.subscription?.plan === 'PRO' ? 'default' : 'outline'}>
-                        {user.subscription?.plan || 'NO PLAN'}
-                      </Badge>
-                      {user.subscription?.endDate && (
-                        <span className="text-xs text-gray-500">
-                          Expires: {new Date(user.subscription.endDate).toLocaleDateString()}
-                        </span>
-                      )}
-                      <div className="text-xs text-gray-600 mt-1">
-                        {user.subscription && (
-                          <>
-                            {user.subscription.resumeCount} resumes •{' '}
-                            {user.subscription.aiUsageCount} AI uses •{' '}
-                            {user.subscription.exportCount} exports •{' '}
-                            {user.subscription.importCount} imports •{' '}
-                            ATS: {user.subscription.atsUsageCount ?? 0}
-                          </>
+                    <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
+                      <div className="text-left sm:text-right">
+                        <Badge variant={user.subscription?.plan === 'PRO' ? 'default' : 'outline'}>
+                          {user.subscription?.plan || 'NO PLAN'}
+                        </Badge>
+                        {user.subscription?.endDate && (
+                          <span className="text-xs text-gray-500">
+                            Expires: {new Date(user.subscription.endDate).toLocaleDateString()}
+                          </span>
                         )}
+                        <div className="text-xs text-gray-600 mt-1">
+                          {user.subscription && (
+                            <>
+                              {user.subscription.resumeCount} resumes •{' '}
+                              {user.subscription.aiUsageCount} AI uses •{' '}
+                              {user.subscription.exportCount} exports •{' '}
+                              {user.subscription.importCount} imports •{' '}
+                              ATS: {user.subscription.atsUsageCount ?? 0}
+                            </>
+                          )}
+                        </div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUser(user)
+                          setShowUpgradeModal(true)
+                        }}
+                        className="flex-shrink-0"
+                        type="button"
+                      >
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">Manage Plan</span>
+                        <span className="sm:hidden">Manage</span>
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedUser(user)
-                        setShowUpgradeModal(true)
-                      }}
-                      className="flex-shrink-0"
-                    >
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Manage Plan</span>
-                      <span className="sm:hidden">Manage</span>
-                    </Button>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
+
+            {/* Page info */}
+            <p className="text-center text-sm text-gray-500 mt-3">
+              Page {page} of {totalPages} — {total} users total
+            </p>
+          </>
         )}
 
         {/* Upgrade Modal */}
@@ -255,6 +359,7 @@ export function UserManagement() {
                   variant={selectedUser.subscription?.plan === 'FREE' ? 'default' : 'outline'}
                   onClick={() => upgradeUserPlan(selectedUser.id, 'FREE')}
                   disabled={upgrading || selectedUser.subscription?.plan === 'FREE'}
+                  type="button"
                 >
                   {selectedUser.subscription?.plan === 'FREE' && <Check className="h-4 w-4 mr-2" />}
                   Free Plan
@@ -265,6 +370,7 @@ export function UserManagement() {
                   variant={selectedUser.subscription?.plan === 'PRO' ? 'default' : 'outline'}
                   onClick={() => upgradeUserPlan(selectedUser.id, 'PRO')}
                   disabled={upgrading || selectedUser.subscription?.plan === 'PRO'}
+                  type="button"
                 >
                   {selectedUser.subscription?.plan === 'PRO' && <Check className="h-4 w-4 mr-2" />}
                   Pro Plan (5,000 IQD/mo)
@@ -279,6 +385,7 @@ export function UserManagement() {
                     setSelectedUser(null)
                   }}
                   disabled={upgrading}
+                  type="button"
                 >
                   Cancel
                 </Button>

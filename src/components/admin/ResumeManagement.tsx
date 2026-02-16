@@ -51,6 +51,7 @@ export function ResumeManagement() {
   const [template, setTemplate] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewResumeData, setPreviewResumeData] = useState<ResumeData | null>(
     null
@@ -87,6 +88,7 @@ export function ResumeManagement() {
       const data = await response.json();
       setResumes(data.resumes || []);
       setTotalPages(data.pagination?.totalPages || 1);
+      setTotalCount(data.pagination?.total || 0);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to fetch resumes";
@@ -269,12 +271,15 @@ export function ResumeManagement() {
               onDeleteResume={(id) => handleDeleteResumes([id])}
             />
 
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
               <Pagination
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={setPage}
               />
+              <p className="text-sm text-gray-500">
+                Page {page} of {totalPages} — {totalCount} resume{totalCount !== 1 ? 's' : ''} total
+              </p>
             </div>
           </div>
         )}

@@ -40,7 +40,7 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Template access**: `freeTemplates`, `basicTemplates`, `proTemplates` arrays in SystemSettings (Prisma Json fields — pass arrays directly, never JSON.stringify)
 
 ### Admin Dashboard
-- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement
+- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement, PaymentItem, PaymentList, PaymentApprovalForm
 - **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record, POST validated with Zod schema (partial updates supported)
 - **Subscription check**: GET (status) / POST (process expired → downgrade to FREE) `/api/subscriptions/check-expired`
 - **Stats API**: Revenue uses dynamic `proPlanPrice` from SystemSettings (not hardcoded)
@@ -48,6 +48,9 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Admin auth** (`lib/admin.ts`): `isAdmin()` returns false for non-admins, throws on DB errors (callers handle 500 vs 403)
 - **Dashboard data loading**: Uses `Promise.allSettled()` for parallel fetch of stats + settings + subscription status, with error state UI + retry
 - **AdminSystemSettings**: Dirty state tracking (save disabled when pristine, "Unsaved changes" indicator), all inputs have id/htmlFor associations
+- **UserManagement**: Server-side pagination (20/page), search (debounced 500ms), plan filter (FREE/PRO), date range filter — uses `Pagination` component from `@/components/ui/Pagination`
+- **AdminPayments refactored**: Split into `PaymentItem.tsx` (single card + shared types/helpers), `PaymentList.tsx` (list + filters + pagination), `PaymentApprovalForm.tsx` (review modal). `AdminPayments.tsx` is now a thin wrapper (AppHeader + PaymentList)
+- **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs support `?page=&limit=`
 - **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
 
 ## Creating New Templates
@@ -370,7 +373,10 @@ src/components/resume-builder/
   preview/                    # LivePreviewPanel, TemplateSwitcher, MobilePreviewSheet
   layout/CompletionProgressBar.tsx  # Overall resume completion bar (avg of 6 sections, color-coded, i18n)
 
-src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes, AdminPayments)
+src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes, payments)
+  PaymentItem.tsx              # Single payment card + shared types (Payment, PaymentUser) + helpers (formatDate, formatAmount, statusBadgeClass)
+  PaymentList.tsx              # Payment list with filters, search, pagination — renders PaymentItem + PaymentApprovalForm
+  PaymentApprovalForm.tsx      # Review modal (screenshot, approve/reject, notes) — self-contained state
 src/contexts/SubscriptionContext.tsx  # Client provider for subscription + permissions
 src/hooks/useAutoSave.ts      # Refs-based debounced auto-save
 src/hooks/useDownloadPDF.ts   # PDF download with 403 → billing redirect
