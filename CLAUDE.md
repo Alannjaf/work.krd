@@ -49,10 +49,13 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Analytics**: GET `/api/admin/analytics` — 12-month time-series via raw SQL (signups, revenue, active users, resumes). `AdminAnalytics` component renders 4 Recharts charts (2 line + 2 bar)
 - **Subscription check**: GET (status) / POST (process expired → downgrade to FREE) `/api/subscriptions/check-expired`
 - **Stats API**: Revenue uses dynamic `proPlanPrice` from SystemSettings (not hardcoded)
-- **Payment review**: Approve/reject inside `$transaction` with PENDING check (race-condition safe), note max 1000 chars
+- **Payment review**: Approve/reject inside `$transaction` with PENDING check (race-condition safe), note max 1000 chars. Refund button on APPROVED payments (POST `/api/admin/payments/[id]/refund`) marks as REFUNDED + downgrades user to FREE
+- **PaymentStatus enum**: PENDING, APPROVED, REJECTED, REFUNDED — PaymentList has filter tabs for all 4 statuses + date range filter (dateFrom/dateTo)
 - **Admin auth** (`lib/admin.ts`): `isAdmin()` returns false for non-admins, throws on DB errors (callers handle 500 vs 403). `logAdminAction()` writes to `AdminAuditLog` table
 - **Dashboard data loading**: Uses `Promise.allSettled()` for parallel fetch of stats + settings + subscription status, with per-section error state UI + retry
-- **Dashboard flow**: Stats Cards → Analytics → Subscription Status → System Settings → Quick Actions → Audit Log
+- **Dashboard flow**: Stats Cards → Analytics → Subscription Status → System Settings → Quick Actions → Recently Viewed → Audit Log
+- **Keyboard shortcuts**: `/` focuses search, `?` toggles shortcuts help panel (AdminDashboard). Escape closes modals (UserManagement, PaymentApprovalForm, DeleteConfirmModal)
+- **Recently viewed**: `useRecentlyViewed` hook (`src/hooks/useRecentlyViewed.ts`) — localStorage-based, tracks last 10 admin items (users/resumes/payments), shown in AdminDashboard
 - **AdminSystemSettings**: Dirty state tracking, "Saved!" toast on success (auto-dismiss 3s), history panel with restore buttons, tooltip hints on limit inputs (`cursor-help`)
 - **AdminStatsCards**: Loading skeleton with animated pulse bars (including sub-stats for Payments card)
 - **UserManagement**: Server-side pagination (20/page), search (debounced 500ms), plan filter (FREE/PRO), date range filter, bulk actions (upgrade/downgrade/delete), CSV export — uses `Pagination` component from `@/components/ui/Pagination`
@@ -60,12 +63,15 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Bulk user API**: POST `/api/admin/users/bulk` — supports `upgrade`, `downgrade`, `delete` actions. Skips admin users on delete. Processes in Prisma transaction, logs to audit trail
 - **aria-live**: `aria-live="polite"` on AdminDashboard error banner for screen reader announcements
 - **AdminPayments refactored**: Split into `PaymentItem.tsx` (single card + shared types/helpers), `PaymentList.tsx` (list + filters + pagination), `PaymentApprovalForm.tsx` (review modal). `AdminPayments.tsx` is now a thin wrapper (AppHeader + PaymentList)
-- **ResumeTable**: Sortable column headers (opt-in via `sortBy`/`sortOrder`/`onSort` props, defaults to client-side sort). API already supports `sortBy` + `sortOrder` query params
+- **ResumeTable**: Sortable column headers (opt-in via `sortBy`/`sortOrder`/`onSort` props, defaults to client-side sort). Column visibility toggle dropdown (Columns3 icon). API already supports `sortBy` + `sortOrder` query params
 - **DeleteConfirmModal**: Reusable modal with warning icon, item details, "cannot be undone" text, red delete button, Escape key, focus-on-cancel. Used by ResumeManagement (replaces native `confirm()`)
 - **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs return `hasNextPage`/`hasPrevPage` in response
 - **Pagination constants**: `ADMIN_PAGINATION` in `src/lib/constants.ts` — `{ PAYMENTS: 20, RESUMES: 10, USERS: 20, AUDIT_LOGS: 20, MAX_LIMIT: 100 }`
 - **CSV export pattern**: Build CSV string with proper escaping (double quotes), create Blob, trigger download via temporary anchor element. Used in UserManagement and AuditLogPanel
+- **Naming convention**: No semicolons, single quotes for JS strings (double quotes OK in JSX attributes). All admin components follow this convention
+- **TypeScript strict**: No `any` in admin code — use `Prisma.PaymentWhereInput`, `Prisma.InputJsonValue`, `Record<string, unknown> | object | unknown[]` for response data
 - **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
+- **Gotcha**: Prisma schema changes (like adding enum values) need `npx prisma db push` + `npx prisma generate` from Windows terminal (not WSL) when DATABASE_URL is configured there
 
 ## Creating New Templates
 
