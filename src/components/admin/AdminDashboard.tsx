@@ -306,15 +306,7 @@ export function AdminDashboard() {
           </section>
         </AdminErrorBoundary>
 
-        {errors.subscriptions ? null : (
-          <AdminErrorBoundary sectionName="Subscription Status">
-            <AdminSubscriptionStatus
-              subscriptionStatus={subscriptionStatus}
-              checkingSubscriptions={checkingSubscriptions}
-              onCheckExpired={checkExpiredSubscriptions}
-            />
-          </AdminErrorBoundary>
-        )}
+        {/* Subscription expiration is now automated via Netlify cron — manual UI removed */}
 
         {errors.settings ? null : (
           <AdminErrorBoundary sectionName="System Settings">
