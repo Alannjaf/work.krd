@@ -1,10 +1,12 @@
 import { Header } from '@/components/landing/header'
 import { Hero } from '@/components/landing/hero'
 import { StatsBar } from '@/components/landing/stats-bar'
-import { Templates } from '@/components/landing/templates'
-import { HowItWorks } from '@/components/landing/how-it-works'
-import { Features } from '@/components/landing/features'
-import { Pricing } from '@/components/landing/pricing'
+import { ToolsSection } from '@/components/landing/tools-section'
+import { TemplateCarousel } from '@/components/landing/template-carousel'
+import { AIFeatures } from '@/components/landing/ai-features'
+import { LogosBar } from '@/components/landing/logos-bar'
+import { Testimonials } from '@/components/landing/testimonials'
+import { FAQ } from '@/components/landing/faq'
 import { FinalCTA } from '@/components/landing/final-cta'
 import { Footer } from '@/components/landing/footer'
 
@@ -58,10 +60,12 @@ export default function Home() {
         <Header />
         <Hero />
         <StatsBar />
-        <Templates />
-        <HowItWorks />
-        <Features />
-        <Pricing />
+        <ToolsSection />
+        <TemplateCarousel />
+        <AIFeatures />
+        <LogosBar />
+        <Testimonials />
+        <FAQ />
         <FinalCTA />
         <Footer />
       </main>
