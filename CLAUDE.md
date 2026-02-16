@@ -40,17 +40,26 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **Template access**: `freeTemplates`, `basicTemplates`, `proTemplates` arrays in SystemSettings (Prisma Json fields — pass arrays directly, never JSON.stringify)
 
 ### Admin Dashboard
-- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement, PaymentItem, PaymentList, PaymentApprovalForm
-- **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record, POST validated with Zod schema (partial updates supported)
+- **Components** in `src/components/admin/`: AdminDashboard, AdminStatsCards, AdminSubscriptionStatus, AdminSystemSettings, AdminQuickActions, UserManagement, ResumeManagement, PaymentItem, PaymentList, PaymentApprovalForm, AdminAnalytics, DeleteConfirmModal, AuditLogPanel, AdminErrorBoundary
+- **Layout**: `src/app/admin/layout.tsx` — wraps all admin pages with skip-to-content link (`<a href="#main-content">`) + `<main id="main-content">`
+- **Settings API**: GET/POST `/api/admin/settings` — singleton SystemSettings record, POST validated with Zod schema (partial updates supported). Auto-snapshots settings before each save (last 5 kept)
+- **Settings history**: GET/POST `/api/admin/settings/history` — list last 5 snapshots / revert to a snapshot. `SettingsSnapshot` Prisma model stores JSON data + savedBy + createdAt
+- **Settings cache**: `getSystemSettings()` has 5-min TTL in-memory cache, invalidated by `invalidateSettingsCache()` on POST save
+- **Analytics**: GET `/api/admin/analytics` — 12-month time-series via raw SQL (signups, revenue, active users, resumes). `AdminAnalytics` component renders 4 Recharts charts (2 line + 2 bar)
 - **Subscription check**: GET (status) / POST (process expired → downgrade to FREE) `/api/subscriptions/check-expired`
 - **Stats API**: Revenue uses dynamic `proPlanPrice` from SystemSettings (not hardcoded)
 - **Payment review**: Approve/reject inside `$transaction` with PENDING check (race-condition safe), note max 1000 chars
-- **Admin auth** (`lib/admin.ts`): `isAdmin()` returns false for non-admins, throws on DB errors (callers handle 500 vs 403)
-- **Dashboard data loading**: Uses `Promise.allSettled()` for parallel fetch of stats + settings + subscription status, with error state UI + retry
-- **AdminSystemSettings**: Dirty state tracking (save disabled when pristine, "Unsaved changes" indicator), all inputs have id/htmlFor associations
+- **Admin auth** (`lib/admin.ts`): `isAdmin()` returns false for non-admins, throws on DB errors (callers handle 500 vs 403). `logAdminAction()` writes to `AdminAuditLog` table
+- **Dashboard data loading**: Uses `Promise.allSettled()` for parallel fetch of stats + settings + subscription status, with per-section error state UI + retry
+- **Dashboard flow**: Stats Cards → Analytics → Subscription Status → System Settings → Quick Actions → Audit Log
+- **AdminSystemSettings**: Dirty state tracking, "Saved!" toast on success (auto-dismiss 3s), history panel with restore buttons, tooltip hints on limit inputs (`cursor-help`)
+- **AdminStatsCards**: Loading skeleton with animated pulse bars (including sub-stats for Payments card)
 - **UserManagement**: Server-side pagination (20/page), search (debounced 500ms), plan filter (FREE/PRO), date range filter — uses `Pagination` component from `@/components/ui/Pagination`
 - **AdminPayments refactored**: Split into `PaymentItem.tsx` (single card + shared types/helpers), `PaymentList.tsx` (list + filters + pagination), `PaymentApprovalForm.tsx` (review modal). `AdminPayments.tsx` is now a thin wrapper (AppHeader + PaymentList)
-- **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs support `?page=&limit=`
+- **ResumeTable**: Sortable column headers (opt-in via `sortBy`/`sortOrder`/`onSort` props, defaults to client-side sort). API already supports `sortBy` + `sortOrder` query params
+- **DeleteConfirmModal**: Reusable modal with warning icon, item details, "cannot be undone" text, red delete button, Escape key, focus-on-cancel. Used by ResumeManagement (replaces native `confirm()`)
+- **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs return `hasNextPage`/`hasPrevPage` in response
+- **Pagination constants**: `ADMIN_PAGINATION` in `src/lib/constants.ts` — `{ PAYMENTS: 20, RESUMES: 10, USERS: 20, MAX_LIMIT: 100 }`
 - **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
 
 ## Creating New Templates
@@ -227,11 +236,20 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Template fallback**: If user's plan can't access the original's template, copy uses `'modern'`
 - **i18n keys**: `pages.dashboard.resumes.actions.duplicateResume`, `pages.dashboard.resumes.messages.duplicateSuccess`, `pages.dashboard.resumes.messages.duplicateLimitReached`
 
+## Admin Shared Utilities
+- **`src/lib/admin-utils.ts`**: Shared admin utilities
+  - `formatAdminDate(date)` — relative time for recent (<7d: "Just now", "5m ago", "3h ago", "2d ago"), ISO `YYYY-MM-DD` for older
+  - `formatAdminDateFull(date)` — full ISO datetime `YYYY-MM-DD HH:MM` for title/tooltip attributes
+  - `devError(...args)` — `console.error` gated behind `NODE_ENV !== 'production'`, tree-shaken in prod builds
+- **All admin components use `devError`** instead of `console.error` (18 call sites migrated)
+- **All admin dates use `formatAdminDate`** with `title={formatAdminDateFull(...)}` for hover tooltips
+- **PaymentItem.tsx** exports `formatDate` as alias for `formatAdminDate` (backwards compat for PaymentApprovalForm import)
+
 ## Key Patterns & Gotchas
 - **Prisma Json fields**: Pass arrays directly (`proTemplates: ['modern']`), never `JSON.stringify()` — causes double-encoding
 - **PRO template access**: `checkUserLimits` always includes all `getTemplateIds()` for PRO, regardless of DB settings
 - **Export tracking**: Only `action: 'download'` increments `exportCount`; preview doesn't count
-- **Two getSystemSettings()**: Private one in `db.ts` (parses JSON arrays, used by `checkUserLimits`) and exported one in `system-settings.ts` (raw Prisma result, used by admin API)
+- **Two getSystemSettings()**: Private one in `db.ts` (parses JSON arrays, used by `checkUserLimits`) and exported one in `system-settings.ts` (raw Prisma result, used by admin API). The exported one has 5-min TTL cache
 - **Subscription expiry**: Manual via admin button, not scheduled — downgrades to FREE, preserves usage counts
 - **Auto-save refs pattern**: `formDataRef`, `resumeIdRef`, `templateRef` — prevents stale closures in debounced saves
 - Buttons without `type="button"` cause page refresh
@@ -248,6 +266,8 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - Mobile toolbar → flex-wrap, smaller icons (no horizontal scroll)
 - **Hydration**: Never use `new Date()`, `Date.now()`, or `Math.random()` in `useState` initializers — they differ server vs client. Use empty default + `useEffect` to set client-only values
 - **Dev mobile testing (WSL)**: Access via `http://<WSL_IP>:3000`. Requires `allowedDevOrigins` in `next.config.js` for Next.js 15.3+ (validates Host header). Chunk load errors → `error.tsx` auto-reloads on `ChunkLoadError`
+- **WSL Prisma dll lock**: `prisma generate` fails when a Windows process (Next dev server, Cursor) holds `query_engine-windows.dll.node`. Workaround: temporarily remove `"windows"` from `binaryTargets` in schema, run generate, restore schema: `sed -i 's/"windows", //' prisma/schema.prisma && npx prisma generate && git checkout prisma/schema.prisma`
+- **Admin audit pattern**: When adding new admin API routes, always include: `requireAdminWithId()`, `rateLimit()`, CSRF validation on POST/DELETE, `devError()` not `console.error`, `logAdminAction()` for mutations
 
 ## Onboarding Wizard
 - **3-step flow**: Welcome+Name → Template Picker → Upload CV or Start from Scratch
@@ -355,8 +375,10 @@ src/components/html-templates/
 src/lib/
   templates.ts                # Template metadata (getAllTemplates, getTemplateIds, getTemplateTier)
   template-config.ts          # Per-template crop configs for profile photos
+  constants.ts                # Plan names, default limits, ADMIN_PAGINATION, subscription duration
+  admin-utils.ts              # formatAdminDate, formatAdminDateFull, devError — shared admin utilities
   db.ts                       # getCurrentUser, checkUserLimits, duplicateResume (private getSystemSettings)
-  system-settings.ts          # getSystemSettings (exported), updateSystemSettings
+  system-settings.ts          # getSystemSettings (cached, 5-min TTL), updateSystemSettings, invalidateSettingsCache
   rtl.ts                      # isRTLText(), isResumeRTL() — Arabic/Kurdish detection
   ats-utils.ts                # Shared ATS utilities: stripHtml, buildResumeText, Zod schema, AI config, timeout
   quick-start-templates.ts    # 5 role-based pre-filled resume data for quick-start feature
@@ -374,9 +396,13 @@ src/components/resume-builder/
   layout/CompletionProgressBar.tsx  # Overall resume completion bar (avg of 6 sections, color-coded, i18n)
 
 src/components/admin/         # AdminDashboard + sub-components (stats, settings, users, resumes, payments)
-  PaymentItem.tsx              # Single payment card + shared types (Payment, PaymentUser) + helpers (formatDate, formatAmount, statusBadgeClass)
+  AdminAnalytics.tsx           # 4 Recharts charts (signups line, revenue bar, active users line, resumes bar)
+  AdminErrorBoundary.tsx       # Error boundary wrapper for each admin section
+  DeleteConfirmModal.tsx       # Reusable delete confirmation dialog (warning icon, item detail, red button)
+  PaymentItem.tsx              # Single payment card + shared types (Payment, PaymentUser) + helpers (formatDate→formatAdminDate, formatAmount, statusBadgeClass)
   PaymentList.tsx              # Payment list with filters, search, pagination — renders PaymentItem + PaymentApprovalForm
   PaymentApprovalForm.tsx      # Review modal (screenshot, approve/reject, notes) — self-contained state
+  AuditLogPanel.tsx            # Admin audit log viewer (filterable by action type)
 src/contexts/SubscriptionContext.tsx  # Client provider for subscription + permissions
 src/hooks/useAutoSave.ts      # Refs-based debounced auto-save
 src/hooks/useDownloadPDF.ts   # PDF download with 403 → billing redirect
@@ -384,7 +410,9 @@ src/hooks/useDownloadPDF.ts   # PDF download with 403 → billing redirect
 src/app/api/
   pdf/generate/               # POST: generate PDF (checks limits + template access)
   resumes/[id]/duplicate/     # POST: duplicate resume (checks limits + template fallback)
-  admin/settings/             # GET/POST: system settings (requires admin)
+  admin/settings/             # GET/POST: system settings (auto-snapshots before save)
+  admin/settings/history/     # GET: last 5 snapshots; POST: revert to snapshot
+  admin/analytics/            # GET: 12-month time-series (signups, revenue, users, resumes)
   admin/stats/                # GET: platform metrics
   admin/users/                # GET: user listing; [userId]/upgrade POST
   subscriptions/check-expired/# GET: status; POST: process expired
@@ -407,6 +435,7 @@ src/app/billing/
   page.tsx                    # Billing page (Free vs Pro pricing, payment status banners)
   payment-instructions/page.tsx # FIB payment flow (QR code, copy fields, screenshot upload)
 
-src/app/admin/payments/
-  page.tsx                    # Server component with admin guard → AdminPayments
+src/app/admin/
+  layout.tsx                  # Skip-to-content link + <main id="main-content"> wrapper
+  payments/page.tsx           # Server component with admin guard → AdminPayments
 ```
