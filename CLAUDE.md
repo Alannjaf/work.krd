@@ -64,7 +64,7 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **aria-live**: `aria-live="polite"` on AdminDashboard error banner for screen reader announcements
 - **AdminPayments refactored**: Split into `PaymentItem.tsx` (single card + shared types/helpers), `PaymentList.tsx` (list + filters + pagination), `PaymentApprovalForm.tsx` (review modal). `AdminPayments.tsx` is now a thin wrapper (AppHeader + PaymentList)
 - **ResumeTable**: Sortable column headers (opt-in via `sortBy`/`sortOrder`/`onSort` props, defaults to client-side sort). Column visibility toggle dropdown (Columns3 icon). API already supports `sortBy` + `sortOrder` query params
-- **DeleteConfirmModal**: Reusable modal with warning icon, item details, "cannot be undone" text, red delete button, Escape key, focus-on-cancel. Used by ResumeManagement (replaces native `confirm()`)
+- **DeleteConfirmModal**: Reusable modal with warning icon, item details, "cannot be undone" text, red delete button, Escape key, focus-on-cancel. Used by ResumeManagement AND Dashboard (replaces both native `confirm()` and toast-based delete)
 - **All admin lists use server-side pagination**: Users (20/page), Payments (20/page), Resumes (10/page) — all APIs return `hasNextPage`/`hasPrevPage` in response
 - **Pagination constants**: `ADMIN_PAGINATION` in `src/lib/constants.ts` — `{ PAYMENTS: 20, RESUMES: 10, USERS: 20, AUDIT_LOGS: 20, MAX_LIMIT: 100 }`
 - **CSV export pattern**: Build CSV string with proper escaping (double quotes), create Blob, trigger download via temporary anchor element. Used in UserManagement and AuditLogPanel
@@ -291,6 +291,11 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Recharts typing**: Import `TooltipProps` from `'recharts'` and use `TooltipProps<number, string>['formatter']` for typed tooltip formatters — never `as any`
 - **Subscription data**: `/api/user/subscription-data` returns `Cache-Control: private, no-store` — sensitive user permissions must not be cached
 - **Settings API**: Returns `warning` field if snapshot fails — admin sees save succeeded but no rollback point
+- **Watermark component**: Accepts `isRTL` prop — Kurdish translations rendered for RTL resumes. All 5 main templates pass `isRTL={isRtl}` to `<Watermark />`
+- **Template shared ARIA**: All section title divs in shared components use `role="heading" aria-level={2}` for screen reader accessibility
+- **ContactInfo link labels**: `unicodeBidi: 'isolate'` on link labels prevents RTL reordering of brand names (LinkedIn, Portfolio)
+- **admin.ts hardened**: `auth()` wrapped in try-catch, explicit `typeof userId !== 'string'` check, null user vs non-admin handled separately
+- **admin/resumes deleteMany**: IDs validated non-empty + capped at 100 + pre-deletion count check detects mismatched IDs
 
 ## Onboarding Wizard
 - **3-step flow**: Welcome+Name → Template Picker → Upload CV or Start from Scratch
