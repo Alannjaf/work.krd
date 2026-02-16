@@ -18,7 +18,8 @@ import {
   Crown,
   X,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Trash2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
@@ -64,7 +65,7 @@ export function UserManagement() {
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [bulkAction, setBulkAction] = useState<'upgrade' | 'downgrade' | null>(null)
+  const [bulkAction, setBulkAction] = useState<'upgrade' | 'downgrade' | 'delete' | null>(null)
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
   const [bulkProcessing, setBulkProcessing] = useState(false)
 
@@ -183,7 +184,7 @@ export function UserManagement() {
 
       if (response.ok) {
         const data = await response.json()
-        const actionLabel = bulkAction === 'upgrade' ? 'upgraded to PRO' : 'downgraded to FREE'
+        const actionLabel = bulkAction === 'upgrade' ? 'upgraded to PRO' : bulkAction === 'downgrade' ? 'downgraded to FREE' : 'deleted'
         toast.success(`${data.successCount} user(s) ${actionLabel}${data.failureCount > 0 ? ` (${data.failureCount} failed)` : ''}`)
         setSelectedIds([])
         fetchUsers()
@@ -333,6 +334,18 @@ export function UserManagement() {
                 >
                   <ArrowDown className="h-4 w-4 mr-2" />
                   Bulk Downgrade to FREE
+                </Button>
+                <Button
+                  onClick={() => {
+                    setBulkAction('delete')
+                    setShowBulkConfirm(true)
+                  }}
+                  variant="destructive"
+                  size="sm"
+                  type="button"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected
                 </Button>
               </div>
             </div>
@@ -554,25 +567,33 @@ export function UserManagement() {
           >
             <Card className="w-full max-w-md p-6">
               <h3 className="text-lg font-semibold mb-4">
-                Confirm Bulk {bulkAction === 'upgrade' ? 'Upgrade' : 'Downgrade'}
+                Confirm Bulk {bulkAction === 'upgrade' ? 'Upgrade' : bulkAction === 'downgrade' ? 'Downgrade' : 'Delete'}
               </h3>
 
-              <p className="text-sm text-gray-600 mb-2">
-                Are you sure you want to {bulkAction === 'upgrade' ? 'upgrade' : 'downgrade'}{' '}
-                <strong>{selectedIds.length}</strong> user(s) to{' '}
-                <strong>{bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE}</strong>?
-              </p>
-
-              {bulkAction === 'upgrade' && (
-                <p className="text-xs text-gray-500 mb-4">
-                  Each user will receive a 30-day PRO subscription.
+              {bulkAction === 'delete' ? (
+                <p className="text-sm text-red-600 mb-4 font-medium">
+                  This will permanently delete <strong>{selectedIds.length}</strong> user(s) and all their data (resumes, subscriptions, payments). This action cannot be undone. Admin users in the selection will be skipped.
                 </p>
-              )}
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Are you sure you want to {bulkAction === 'upgrade' ? 'upgrade' : 'downgrade'}{' '}
+                    <strong>{selectedIds.length}</strong> user(s) to{' '}
+                    <strong>{bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE}</strong>?
+                  </p>
 
-              {bulkAction === 'downgrade' && (
-                <p className="text-xs text-gray-500 mb-4">
-                  Users will be downgraded to the FREE plan. Their usage counts will be preserved.
-                </p>
+                  {bulkAction === 'upgrade' && (
+                    <p className="text-xs text-gray-500 mb-4">
+                      Each user will receive a 30-day PRO subscription.
+                    </p>
+                  )}
+
+                  {bulkAction === 'downgrade' && (
+                    <p className="text-xs text-gray-500 mb-4">
+                      Users will be downgraded to the FREE plan. Their usage counts will be preserved.
+                    </p>
+                  )}
+                </>
               )}
 
               <div className="flex justify-end space-x-2">
@@ -596,7 +617,7 @@ export function UserManagement() {
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                       : ''
                   }
-                  variant={bulkAction === 'downgrade' ? 'destructive' : 'default'}
+                  variant={bulkAction === 'downgrade' || bulkAction === 'delete' ? 'destructive' : 'default'}
                 >
                   {bulkProcessing ? (
                     <>
@@ -605,7 +626,7 @@ export function UserManagement() {
                     </>
                   ) : (
                     <>
-                      {bulkAction === 'upgrade' ? 'Upgrade' : 'Downgrade'} {selectedIds.length} User(s)
+                      {bulkAction === 'upgrade' ? 'Upgrade' : bulkAction === 'downgrade' ? 'Downgrade' : 'Delete'} {selectedIds.length} User(s)
                     </>
                   )}
                 </Button>

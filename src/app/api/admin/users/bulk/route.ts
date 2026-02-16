@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server'
-import { requireAdminWithId } from '@/lib/admin'
+import { requireAdminWithId, logAdminAction } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 import { PLAN_NAMES, SUBSCRIPTION_DURATION_MS } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,11 +31,10 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('Cannot process more than 100 users at once')
     }
 
-    if (!['upgrade', 'downgrade'].includes(action)) {
-      return validationErrorResponse('action must be "upgrade" or "downgrade"')
+    if (!['upgrade', 'downgrade', 'delete'].includes(action)) {
+      return validationErrorResponse('action must be "upgrade", "downgrade", or "delete"')
     }
 
-    const plan = action === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE
     let successCount = 0
     let failureCount = 0
 
@@ -49,37 +49,56 @@ export async function POST(req: NextRequest) {
             continue
           }
 
-          const existingSubscription = await tx.subscription.findUnique({
-            where: { userId }
-          })
+          if (action === 'delete') {
+            // Skip admin users — don't allow deleting admins
+            if (user.role === 'ADMIN') {
+              failureCount++
+              continue
+            }
 
-          if (existingSubscription) {
-            await tx.subscription.update({
-              where: { userId },
-              data: {
-                plan,
-                status: 'ACTIVE',
-                startDate: new Date(),
-                endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
-              }
-            })
+            await tx.user.delete({ where: { id: userId } })
+            successCount++
           } else {
-            await tx.subscription.create({
-              data: {
-                userId,
-                plan,
-                status: 'ACTIVE',
-                startDate: new Date(),
-                endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
-              }
-            })
-          }
+            const plan = action === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE
 
-          successCount++
+            const existingSubscription = await tx.subscription.findUnique({
+              where: { userId }
+            })
+
+            if (existingSubscription) {
+              await tx.subscription.update({
+                where: { userId },
+                data: {
+                  plan,
+                  status: 'ACTIVE',
+                  startDate: new Date(),
+                  endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
+                }
+              })
+            } else {
+              await tx.subscription.create({
+                data: {
+                  userId,
+                  plan,
+                  status: 'ACTIVE',
+                  startDate: new Date(),
+                  endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
+                }
+              })
+            }
+
+            successCount++
+          }
         } catch {
           failureCount++
         }
       }
+    })
+
+    await logAdminAction(adminId, action === 'delete' ? 'BULK_DELETE_USERS' : `BULK_${action.toUpperCase()}`, 'users', {
+      userIds,
+      successCount,
+      failureCount
     })
 
     return successResponse({
@@ -89,7 +108,7 @@ export async function POST(req: NextRequest) {
       failureCount
     })
   } catch (error) {
-    console.error('[AdminBulkUsers] Failed to process bulk action:', error)
+    devError('[AdminBulkUsers] Failed to process bulk action:', error)
     return errorResponse('Failed to process bulk action', 500)
   }
 }

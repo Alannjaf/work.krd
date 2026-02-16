@@ -2,9 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { RefreshCw } from 'lucide-react'
+import { Pagination } from '@/components/ui/Pagination'
+import { RefreshCw, X } from 'lucide-react'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { formatAdminDate, formatAdminDateFull, devError } from '@/lib/admin-utils'
+import { ADMIN_PAGINATION } from '@/lib/constants'
+
+const LIMIT = ADMIN_PAGINATION.AUDIT_LOGS
 
 interface AuditEntry {
   id: string
@@ -21,7 +25,21 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   REJECT_PAYMENT: { label: 'Payment Rejected', color: 'bg-red-100 text-red-800' },
   CHANGE_USER_PLAN: { label: 'Plan Changed', color: 'bg-purple-100 text-purple-800' },
   PROCESS_EXPIRED_SUBSCRIPTIONS: { label: 'Expired Processed', color: 'bg-amber-100 text-amber-800' },
+  REVERT_SETTINGS: { label: 'Settings Reverted', color: 'bg-orange-100 text-orange-800' },
+  BULK_UPGRADE: { label: 'Bulk Upgrade', color: 'bg-indigo-100 text-indigo-800' },
+  BULK_DOWNGRADE: { label: 'Bulk Downgrade', color: 'bg-rose-100 text-rose-800' },
 }
+
+const ACTION_OPTIONS = [
+  'UPDATE_SETTINGS',
+  'APPROVE_PAYMENT',
+  'REJECT_PAYMENT',
+  'CHANGE_USER_PLAN',
+  'PROCESS_EXPIRED_SUBSCRIPTIONS',
+  'REVERT_SETTINGS',
+  'BULK_UPGRADE',
+  'BULK_DOWNGRADE',
+] as const
 
 function getActionInfo(action: string) {
   return ACTION_LABELS[action] ?? { label: action, color: 'bg-gray-100 text-gray-800' }
@@ -39,38 +57,75 @@ function AuditEntrySkeleton() {
   )
 }
 
+const dateInputClassName = 'h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+
 export function AuditLogPanel() {
   const { csrfFetch } = useCsrfToken()
   const [logs, setLogs] = useState<AuditEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Filter state
+  const [actionFilter, setActionFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+
+  const hasActiveFilters = actionFilter !== '' || dateFrom !== '' || dateTo !== ''
+
   const fetchLogs = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await csrfFetch('/api/admin/audit-log')
+      const params = new URLSearchParams()
+      params.set('page', String(page))
+      params.set('limit', String(LIMIT))
+      if (actionFilter) params.set('action', actionFilter)
+      if (dateFrom) params.set('dateFrom', dateFrom)
+      if (dateTo) params.set('dateTo', dateTo)
+
+      const res = await csrfFetch(`/api/admin/audit-log?${params.toString()}`)
       if (!res.ok) throw new Error(`API returned ${res.status}`)
       const data = await res.json()
       setLogs(data.logs)
+      setTotal(data.total)
+      setTotalPages(data.totalPages)
     } catch (err) {
       devError('[AuditLogPanel] Failed to fetch audit logs:', err)
       setError('Failed to load audit logs')
     } finally {
       setLoading(false)
     }
-  }, [csrfFetch])
+  }, [csrfFetch, page, actionFilter, dateFrom, dateTo])
 
   useEffect(() => {
     fetchLogs()
   }, [fetchLogs])
 
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [actionFilter, dateFrom, dateTo])
+
+  const clearFilters = () => {
+    setActionFilter('')
+    setDateFrom('')
+    setDateTo('')
+  }
+
   return (
     <div className="mt-8 bg-white rounded-lg border border-gray-200 shadow-sm">
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Audit Log</h2>
-          <p className="text-sm text-gray-500">Recent admin actions</p>
+          <p className="text-sm text-gray-500">
+            {total > 0 ? `${total} total entries` : 'Recent admin actions'}
+          </p>
         </div>
         <Button
           variant="ghost"
@@ -83,6 +138,74 @@ export function AuditLogPanel() {
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="px-6 py-4 border-b border-gray-200 space-y-3">
+        <div className="flex flex-wrap items-end gap-3">
+          {/* Action type filter */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="audit-action-filter" className="text-xs font-medium text-gray-500">
+              Action Type
+            </label>
+            <select
+              id="audit-action-filter"
+              value={actionFilter}
+              onChange={(e) => setActionFilter(e.target.value)}
+              className={dateInputClassName}
+            >
+              <option value="">All Actions</option>
+              {ACTION_OPTIONS.map((action) => (
+                <option key={action} value={action}>
+                  {ACTION_LABELS[action]?.label ?? action}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date from */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="audit-date-from" className="text-xs font-medium text-gray-500">
+              From
+            </label>
+            <input
+              id="audit-date-from"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className={dateInputClassName}
+            />
+          </div>
+
+          {/* Date to */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="audit-date-to" className="text-xs font-medium text-gray-500">
+              To
+            </label>
+            <input
+              id="audit-date-to"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className={dateInputClassName}
+            />
+          </div>
+
+          {/* Clear filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              type="button"
+              className="h-10 text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear filters
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Log entries */}
       <div className="divide-y divide-gray-100">
         {loading && logs.length === 0 ? (
           <>
@@ -93,7 +216,9 @@ export function AuditLogPanel() {
         ) : error ? (
           <div className="p-6 text-center text-sm text-red-600">{error}</div>
         ) : logs.length === 0 ? (
-          <div className="p-6 text-center text-sm text-gray-500">No audit entries yet</div>
+          <div className="p-6 text-center text-sm text-gray-500">
+            {hasActiveFilters ? 'No entries match the current filters' : 'No audit entries yet'}
+          </div>
         ) : (
           logs.map((entry) => {
             const { label, color } = getActionInfo(entry.action)
@@ -112,13 +237,29 @@ export function AuditLogPanel() {
                       <span className="text-gray-500"> &mdash; {(entry.details.updatedFields as string[]).join(', ')}</span>
                     )}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5" title={formatAdminDateFull(entry.createdAt)}>{formatAdminDate(entry.createdAt)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5" title={formatAdminDateFull(entry.createdAt)}>
+                    {formatAdminDate(entry.createdAt)}
+                  </p>
                 </div>
               </div>
             )
           })
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-200 space-y-2">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+          <p className="text-xs text-gray-500 text-center">
+            Page {page} of {totalPages} ({total} entries)
+          </p>
+        </div>
+      )}
     </div>
   )
 }

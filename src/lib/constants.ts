@@ -53,6 +53,7 @@ export const ADMIN_PAGINATION = {
   PAYMENTS: 20,
   RESUMES: 10,
   USERS: 20,
+  AUDIT_LOGS: 20,
   MAX_LIMIT: 100,
 } as const
 
