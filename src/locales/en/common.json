@@ -988,6 +988,124 @@
           "desc": "Stand out with modern, professional designs"
         }
       },
+      "toolsSection": {
+        "title": "Every Tool You Need",
+        "subtitle": "One platform with everything to create a standout resume",
+        "tabs": {
+          "builder": {
+            "title": "Resume Builder",
+            "desc": "Our intuitive drag-and-drop builder makes creating a professional resume effortless. See changes in real-time as you build.",
+            "f1": "Real-time preview as you type",
+            "f2": "Smart section ordering and layout",
+            "f3": "One-click professional formatting"
+          },
+          "multilingual": {
+            "title": "Multilingual Support",
+            "desc": "Create resumes in Kurdish, Arabic, and English with full RTL support. Switch languages anytime without losing your content.",
+            "f1": "Full right-to-left (RTL) support",
+            "f2": "Kurdish, Arabic & English interfaces",
+            "f3": "Automatic text direction detection"
+          },
+          "templates": {
+            "title": "ATS Templates",
+            "desc": "Every template is designed to pass Applicant Tracking Systems. Modern designs that look great and get past automated screeners.",
+            "f1": "6 professionally designed templates",
+            "f2": "Optimized for ATS compatibility",
+            "f3": "Print-perfect A4 PDF output"
+          },
+          "ai": {
+            "title": "AI Assistance",
+            "desc": "Let AI help you write compelling content for every section. Get smart suggestions tailored to your industry and experience level.",
+            "f1": "AI-generated professional summaries",
+            "f2": "Smart content suggestions per section",
+            "f3": "Industry-specific keyword optimization"
+          }
+        }
+      },
+      "templateCarousel": {
+        "title": "Templates That Get You Hired",
+        "subtitle": "Professional designs optimized for ATS and human reviewers",
+        "browseAll": "Browse all templates"
+      },
+      "aiFeatures": {
+        "title": "Way Beyond a Resume Builder",
+        "subtitle": "AI-powered tools that give you an unfair advantage",
+        "cards": {
+          "guidance": {
+            "title": "Step-by-Step Guidance",
+            "desc": "Our builder walks you through each section with tips and examples. Never stare at a blank page again."
+          },
+          "aiWriter": {
+            "title": "AI Writes for You",
+            "desc": "Describe your experience and our AI transforms it into polished, professional resume content instantly."
+          },
+          "jobMatch": {
+            "title": "Job Description Matching",
+            "desc": "Paste a job link and our ATS scanner identifies missing keywords to optimize your resume for that specific role."
+          }
+        }
+      },
+      "testimonials": {
+        "title": "Loved by Job Seekers",
+        "subtitle": "See what our users say about their experience",
+        "reviews": {
+          "t1": {
+            "quote": "I built my CV in 20 minutes and got called for an interview the next week. The Kurdish language support is amazing!",
+            "name": "Aram K.",
+            "role": "Software Engineer"
+          },
+          "t2": {
+            "quote": "The AI suggestions helped me describe my experience much better than I could on my own. Highly recommended!",
+            "name": "Sara M.",
+            "role": "Marketing Manager"
+          },
+          "t3": {
+            "quote": "As a fresh graduate, I had no idea how to write a CV. Work.krd made it so simple and professional.",
+            "name": "Dara H.",
+            "role": "Fresh Graduate"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "items": {
+          "q1": {
+            "question": "Is work.krd free to use?",
+            "answer": "Yes! You can create up to 10 resumes, use basic templates, and get 100 AI suggestions completely free. Upgrade to Pro for unlimited access to all features."
+          },
+          "q2": {
+            "question": "What languages are supported?",
+            "answer": "Work.krd fully supports Kurdish (Sorani), Arabic, and English. All templates work perfectly with right-to-left (RTL) text, and you can switch languages anytime."
+          },
+          "q3": {
+            "question": "What is ATS and why does it matter?",
+            "answer": "ATS (Applicant Tracking System) is software companies use to scan resumes before a human sees them. Our templates are optimized to pass these systems, ensuring your resume reaches hiring managers."
+          },
+          "q4": {
+            "question": "Can I download my resume as PDF?",
+            "answer": "Absolutely! Export your resume as a professional A4 PDF with perfect formatting. Free users get 20 exports, Pro users get unlimited."
+          },
+          "q5": {
+            "question": "How does AI assistance work?",
+            "answer": "Our AI analyzes your input and generates professional content suggestions for each section of your resume. It understands context in English, Arabic, and Kurdish."
+          },
+          "q6": {
+            "question": "Is my data secure?",
+            "answer": "Yes. Your data is encrypted and stored securely. We never share your personal information with third parties. You can delete your account and data at any time."
+          }
+        }
+      },
+      "logosBar": {
+        "title": "Trusted by professionals across Kurdistan",
+        "badges": {
+          "b1": "SSL Secured",
+          "b2": "Data Protected",
+          "b3": "Top Rated",
+          "b4": "1000+ Users",
+          "b5": "3 Languages",
+          "b6": "ATS Verified"
+        }
+      },
       "pricing": {
         "title": "Simple, Affordable Pricing",
         "subtitle": "Start free, upgrade when you need more",

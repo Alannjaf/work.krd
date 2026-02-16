@@ -293,24 +293,29 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Mobile-first**: Full-width cards, stacked vertically, `max-w-lg` for steps 1/3, `max-w-4xl` for step 2 (template grid)
 
 ## Landing Page
-- **Components** in `src/components/landing/`: header, hero, stats-bar (NEW), templates, how-it-works, features, pricing, final-cta, footer
-- **Removed sections**: about.tsx, contact.tsx — deleted in earlier homepage redesign
-- **Page structure** (`src/app/page.tsx`): Header → Hero → StatsBar → Templates → HowItWorks → Features → Pricing → FinalCTA → Footer
+- **Components** in `src/components/landing/`: header, hero, stats-bar, tools-section (NEW), template-carousel (NEW), ai-features (NEW), logos-bar (NEW), testimonials (NEW), faq (NEW), pricing, final-cta, footer. **Retired but kept**: templates.tsx, how-it-works.tsx, features.tsx (no longer in page.tsx)
+- **Page structure** (`src/app/page.tsx`): Header → Hero → StatsBar → ToolsSection → TemplateCarousel → AIFeatures → LogosBar → Testimonials → Pricing → FAQ → FinalCTA → Footer
 - **Hero (redesigned)**: Two-column layout — left: headline with blue-highlighted phrase (titleBefore + titleHighlight + titleAfter), subtitle, dual CTAs (Create my resume + Upload my resume), trust indicators (trustStat + user count). Right: floating resume card (modern.svg) with 4 absolutely-positioned animated badges (Resume Score SVG ring, ATS Perfect pill, Skills card, AI Coach bar). Badges fade in with staggered delays + `animate-float` (3s infinite). Skills + AI Coach hidden on mobile (`hidden sm:block`)
 - **StatsBar** (NEW): `src/components/landing/stats-bar.tsx` — animated counter (useCountUp hook) + 4 feature cards. Fetches resumeCount from `/api/stats/public`. Counter uses IntersectionObserver-triggered rAF animation with ease-out-cubic. `Intl.NumberFormat` handles Eastern Arabic numerals for AR/CKB
 - **useCountUp hook** (NEW): `src/hooks/useCountUp.ts` — takes target number + options (duration, locale, enabled). Returns `{ ref, displayValue }`. CKB locale maps to 'ar' for Intl. Server-renders "0" (no hydration mismatch)
-- **Templates section**: 5 template thumbnail grid (modern, elegant, bold, developer, creative) with hover effects, `bg-white` + `border-t border-gray-100`
-- **How It Works**: 3 steps (Choose Template → Fill Details → Download PDF) with connecting line on desktop
-- **Features grid**: 6 items (AI, ATS, Multilingual, Mobile, PDF, Pro Templates) in 2x3 grid
+- **ToolsSection** (NEW): `tools-section.tsx` — Tabbed "Every tool you need" section. 4 tabs (Resume Builder, Multilingual, ATS Templates, AI Assistance). Desktop: left sidebar tabs + right content area. Mobile: horizontal scrollable tab pills. Active tab has blue left/right border (RTL-aware). Content fades in via `@keyframes fadeIn` (injected `<style>` tag). Each tab: icon, title, description, 3 checkmark feature bullets
+- **TemplateCarousel** (NEW): `template-carousel.tsx` — Dark background (`bg-gray-900`) horizontal scrolling carousel. 6 template thumbnails (modern, elegant, bold, developer, creative, basic). Scroll-snap, left/right arrow navigation (hidden on mobile), scrollbar hidden via CSS. CTA button (Browse all templates) with Clerk SignUpButton/Link pattern. RTL: arrow positions swap, scroll direction auto-reverses
+- **AIFeatures** (NEW): `ai-features.tsx` — "Way beyond a resume builder" 3-card grid. Cards: Step-by-step Guidance (Compass), AI Writes for You (Sparkles), Job Description Matching (Link2). Light gray bg, hover shadow/lift
+- **LogosBar** (NEW): `logos-bar.tsx` — Trust indicator bar with 6 icon+label badges (SSL Secured, Data Protected, Top Rated, 1000+ Users, 3 Languages, ATS Verified). Muted gray icons/text, border-y separator
+- **Testimonials** (NEW): `testimonials.tsx` — 3 review cards (Aram K./Sara M./Dara H.) with 5-star ratings, quote text, colored avatar initials. Kurdish-appropriate names
+- **FAQ** (NEW): `faq.tsx` — 6-item accordion (Is it free? / Languages? / What is ATS? / PDF download? / AI? / Data security?). `grid-rows-[1fr]/[0fr]` animation trick for smooth expand. Multiple items can be open. ChevronDown rotates 180deg
+- **Retired sections**: templates.tsx, how-it-works.tsx, features.tsx — files kept but no longer imported in page.tsx
 - **Pricing**: Free vs Pro (5,000 IQD/month) cards, Pro highlighted with "Most Popular" badge
 - **FinalCTA**: Blue gradient section with "Ready to Land Your Dream Job?" + CTA button
 - **Footer**: Minimal — logo text, tagline, privacy/terms links, language switcher, copyright
 - **Scroll animations**: CSS `transition-all` + IntersectionObserver (no framer-motion), staggered delays via `transitionDelay`
 - **Public stats API** (`/api/stats/public`): No auth required, returns `{ resumeCount, userCount }`, 5min `s-maxage` cache
-- **i18n keys**: All under `pages.home.*` namespace (hero, statsBar, templates, howItWorks, features, pricing, finalCta, footer)
+- **i18n keys**: All under `pages.home.*` namespace (hero, statsBar, toolsSection, templateCarousel, aiFeatures, testimonials, faq, logosBar, pricing, finalCta, footer)
 - **Nav keys**: Added `nav.templates` and `nav.howItWorks` to all 3 locales
 - **Header**: Sticky, transparent→white on scroll, language switcher dropdown, Clerk auth buttons, mobile hamburger menu
 - **RTL**: Arrow icons flip via `isRTL ? 'rotate-180' : ''`, language dropdown positioned with `isRTL ? 'left-0' : 'right-0'`, floating cards position swaps
+- **Tailwind `animate-float`**: Custom keyframe in `tailwind.config.js` — `translateY(-6px)` 3s ease-in-out infinite, used by hero floating badges
+- **Features section**: Icon containers `w-14 h-14 rounded-xl` (slightly larger than before)
 - **No framer-motion** — all animations are pure CSS transitions + IntersectionObserver
 
 ## ATS Feature

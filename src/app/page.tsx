@@ -6,6 +6,7 @@ import { TemplateCarousel } from '@/components/landing/template-carousel'
 import { AIFeatures } from '@/components/landing/ai-features'
 import { LogosBar } from '@/components/landing/logos-bar'
 import { Testimonials } from '@/components/landing/testimonials'
+import { Pricing } from '@/components/landing/pricing'
 import { FAQ } from '@/components/landing/faq'
 import { FinalCTA } from '@/components/landing/final-cta'
 import { Footer } from '@/components/landing/footer'
@@ -65,6 +66,7 @@ export default function Home() {
         <AIFeatures />
         <LogosBar />
         <Testimonials />
+        <Pricing />
         <FAQ />
         <FinalCTA />
         <Footer />
