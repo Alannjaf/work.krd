@@ -252,7 +252,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
   - `formatAdminDate(date)` — relative time for recent (<7d: "Just now", "5m ago", "3h ago", "2d ago"), ISO `YYYY-MM-DD` for older
   - `formatAdminDateFull(date)` — full ISO datetime `YYYY-MM-DD HH:MM` for title/tooltip attributes
   - `devError(...args)` — `console.error` gated behind `NODE_ENV !== 'production'`, tree-shaken in prod builds
-- **All admin components use `devError`** instead of `console.error` (18 call sites migrated)
+- **All API routes and admin components use `devError`** instead of `console.error` (30+ call sites migrated)
 - **All admin dates use `formatAdminDate`** with `title={formatAdminDateFull(...)}` for hover tooltips
 - **PaymentItem.tsx** exports `formatDate` as alias for `formatAdminDate` (backwards compat for PaymentApprovalForm import)
 
@@ -270,7 +270,7 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Preview break algorithm** (`ResumePageScaler.tsx`): Column-aware 2-phase approach:
   - Phase 1: Converge ALL entries (sidebar + main) — stable base break
   - Phase 2: Fix heading orphans (heading on page but `firstEntryTop >= adjustedEnd`), re-converge ONLY main-content entries (skip sidebar via `isSidebar` flag)
-  - `isSidebar` determined by horizontal center position < 40% of content width
+  - `isSidebar` determined by horizontal center position — RTL-aware (checks `getComputedStyle(content).direction`)
   - **Why column-aware**: Sidebar entries (e.g., skill rings) are densely packed → cascading re-convergence pushes break far back, wasting page space. Skipping sidebar in Phase 2 prevents this cascade while keeping main content sections grouped with their headings
 - Mixed LTR/RTL text garbles → use `unicode-bidi: isolate` spans
 - AI max_tokens 200 cuts Kurdish text → use 500+ (Kurdish uses more tokens/word)
@@ -279,6 +279,14 @@ Follow this EXACTLY to avoid the multi-iteration mistakes made on ModernTemplate
 - **Dev mobile testing (WSL)**: Access via `http://<WSL_IP>:3000`. Requires `allowedDevOrigins` in `next.config.js` for Next.js 15.3+ (validates Host header). Chunk load errors → `error.tsx` auto-reloads on `ChunkLoadError`
 - **WSL Prisma dll lock**: `prisma generate` fails when a Windows process (Next dev server, Cursor) holds `query_engine-windows.dll.node`. Workaround: temporarily remove `"windows"` from `binaryTargets` in schema, run generate, restore schema: `sed -i 's/"windows", //' prisma/schema.prisma && npx prisma generate && git checkout prisma/schema.prisma`
 - **Admin audit pattern**: When adding new admin API routes, always include: `requireAdminWithId()`, `rateLimit()`, CSRF validation on POST/DELETE, `devError()` not `console.error`, `logAdminAction()` for mutations
+- **ID generation**: Use `crypto.randomUUID()` everywhere — never `Date.now() + Math.random()` (collision risk + hydration mismatch)
+- **Env var parsing**: Use `clampNumber(value, fallback, min, max)` from `ats-utils.ts` for bounded validation of `parseInt`/`parseFloat` env vars
+- **Template date formatting**: Always pass `isRtl ? 'ar' : 'en-US'` to `toLocaleDateString()` — never hardcode `'en-US'`
+- **TemplateRenderer**: Has `TemplateErrorBoundary` — malformed data won't crash the entire preview
+- **useAutoTranslation**: `buildTranslationTasks()` extracted as standalone function — collects all non-English fields for bulk API translation
+- **Recharts typing**: Import `TooltipProps` from `'recharts'` and use `TooltipProps<number, string>['formatter']` for typed tooltip formatters — never `as any`
+- **Subscription data**: `/api/user/subscription-data` returns `Cache-Control: private, no-store` — sensitive user permissions must not be cached
+- **Settings API**: Returns `warning` field if snapshot fails — admin sees save succeeded but no rollback point
 
 ## Onboarding Wizard
 - **3-step flow**: Welcome+Name → Template Picker → Upload CV or Start from Scratch
