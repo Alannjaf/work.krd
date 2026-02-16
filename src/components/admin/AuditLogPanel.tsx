@@ -28,6 +28,7 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   REVERT_SETTINGS: { label: 'Settings Reverted', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' },
   BULK_UPGRADE: { label: 'Bulk Upgrade', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' },
   BULK_DOWNGRADE: { label: 'Bulk Downgrade', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200' },
+  REFUND_PAYMENT: { label: 'Payment Refunded', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
 }
 
 const ACTION_OPTIONS = [
@@ -39,6 +40,7 @@ const ACTION_OPTIONS = [
   'REVERT_SETTINGS',
   'BULK_UPGRADE',
   'BULK_DOWNGRADE',
+  'REFUND_PAYMENT',
 ] as const
 
 function getActionInfo(action: string) {

@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 export async function isAdmin(): Promise<boolean> {
@@ -55,7 +56,7 @@ export async function logAdminAction(
         adminId,
         action,
         target,
-        details: details ? (details as any) : null,
+        details: details ? (details as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
     })
   } catch (error) {

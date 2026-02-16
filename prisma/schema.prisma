@@ -161,6 +161,7 @@ enum PaymentStatus {
   PENDING
   APPROVED
   REJECTED
+  REFUNDED
 }
 
 model AdminAuditLog {

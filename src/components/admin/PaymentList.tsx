@@ -28,7 +28,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
     if (typeof window === 'undefined') return { search: '', status: 'PENDING' as StatusFilter }
     const params = new URLSearchParams(window.location.search)
     const status = params.get('status')
-    const validStatuses: StatusFilter[] = ['ALL', 'PENDING', 'APPROVED', 'REJECTED']
+    const validStatuses: StatusFilter[] = ['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'REFUNDED']
     return {
       search: params.get('search') || '',
       status: (status && validStatuses.includes(status as StatusFilter) ? status : 'PENDING') as StatusFilter,
@@ -41,6 +41,8 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<StatusFilter>(initialParams.status)
   const [searchTerm, setSearchTerm] = useState(initialParams.search)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   // Review modal state
   const [reviewPayment, setReviewPayment] = useState<Payment | null>(null)
@@ -62,6 +64,8 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
       if (searchTerm.trim()) {
         params.set('search', searchTerm.trim())
       }
+      if (dateFrom) params.set('dateFrom', dateFrom)
+      if (dateTo) params.set('dateTo', dateTo)
       const res = await csrfFetch(`/api/admin/payments?${params}`)
       if (!res.ok) throw new Error('Failed to fetch payments')
       const data: PaymentsResponse = await res.json()
@@ -73,7 +77,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
     } finally {
       setLoading(false)
     }
-  }, [page, filter, searchTerm, csrfFetch])
+  }, [page, filter, searchTerm, dateFrom, dateTo, csrfFetch])
 
   useEffect(() => {
     fetchPayments()
@@ -82,7 +86,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
   // Reset page when filter or search changes
   useEffect(() => {
     setPage(1)
-  }, [filter, searchTerm])
+  }, [filter, searchTerm, dateFrom, dateTo])
 
   // ─── Review handlers ────────────────────────────────────────────────────
 
@@ -106,6 +110,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
     { label: 'Pending', value: 'PENDING' },
     { label: 'Approved', value: 'APPROVED' },
     { label: 'Rejected', value: 'REJECTED' },
+    { label: 'Refunded', value: 'REFUNDED' },
   ]
 
   // ─── Render ─────────────────────────────────────────────────────────────
@@ -173,6 +178,46 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
               {f.label}
             </button>
           ))}
+        </div>
+
+        {/* Date range filter */}
+        <div className="flex flex-wrap items-end gap-3 mb-6">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="payment-date-from" className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              From
+            </label>
+            <input
+              id="payment-date-from"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="payment-date-to" className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              To
+            </label>
+            <input
+              id="payment-date-to"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            />
+          </div>
+          {(dateFrom || dateTo) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setDateFrom(''); setDateTo('') }}
+              type="button"
+              className="h-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear dates
+            </Button>
+          )}
         </div>
 
         {/* Loading state */}

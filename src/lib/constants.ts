@@ -1,3 +1,8 @@
+/**
+ * Shared constants — plan names, default limits, pagination, subscription duration.
+ * Single source of truth for values used across API routes and admin components.
+ */
+
 // Plan names — single source of truth for subscription plan identifiers
 export const PLAN_NAMES = {
   FREE: 'FREE' as const,

@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import { useEffect, useRef, useState } from 'react';
-import { X, Download, ZoomIn, ZoomOut, FileText, RotateCcw } from 'lucide-react';
-import { ResumeData } from '@/types/resume';
-import { ResumePreview } from '@/components/resume-builder/ResumePreview';
-import { toast } from 'react-hot-toast';
-import { useCsrfToken } from '@/hooks/useCsrfToken';
-import { devError } from '@/lib/admin-utils';
+import { useEffect, useRef, useState } from 'react'
+import { X, Download, ZoomIn, ZoomOut, FileText, RotateCcw } from 'lucide-react'
+import { ResumeData } from '@/types/resume'
+import { ResumePreview } from '@/components/resume-builder/ResumePreview'
+import { toast } from 'react-hot-toast'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { devError } from '@/lib/admin-utils'
 
 interface AdminResumePreviewProps {
-  isOpen: boolean;
-  onClose: () => void;
-  data: ResumeData;
-  template: string;
-  resumeTitle: string;
+  isOpen: boolean
+  onClose: () => void
+  data: ResumeData
+  template: string
+  resumeTitle: string
 }
 
 export function AdminResumePreview({
@@ -23,25 +23,25 @@ export function AdminResumePreview({
   template,
   resumeTitle
 }: AdminResumePreviewProps) {
-  const { csrfFetch } = useCsrfToken();
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [viewMode, setViewMode] = useState<'pdf' | 'html'>('pdf'); // Start with PDF by default
-  const pdfUrlRef = useRef<string | null>(null);
+  const { csrfFetch } = useCsrfToken()
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [zoom, setZoom] = useState(1)
+  const [viewMode, setViewMode] = useState<'pdf' | 'html'>('pdf') // Start with PDF by default
+  const pdfUrlRef = useRef<string | null>(null)
 
   const generatePDF = async () => {
     if (!data.personal.fullName && !data.personal.email) {
-      toast.error('Resume appears to be empty');
-      return;
+      toast.error('Resume appears to be empty')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       // Clean up previous URL
       if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current);
-        pdfUrlRef.current = null;
+        URL.revokeObjectURL(pdfUrlRef.current)
+        pdfUrlRef.current = null
       }
 
       // Use admin-specific server-side PDF generation (no watermarks)
@@ -54,65 +54,65 @@ export function AdminResumePreview({
           resumeData: data,
           template: template,
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to generate PDF');
+        throw new Error('Failed to generate PDF')
       }
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      pdfUrlRef.current = url;
-      setPdfUrl(url);
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      pdfUrlRef.current = url
+      setPdfUrl(url)
     } catch (error) {
-      devError('[AdminResumePreview] Failed to generate PDF preview:', error);
-      toast.error('Failed to generate PDF preview');
+      devError('[AdminResumePreview] Failed to generate PDF preview:', error)
+      toast.error('Failed to generate PDF preview')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleDownload = async () => {
-    if (!pdfUrl) return;
+    if (!pdfUrl) return
 
     try {
-      const response = await fetch(pdfUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${resumeTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_resume.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success('Resume downloaded successfully!');
+      const response = await fetch(pdfUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${resumeTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_resume.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      toast.success('Resume downloaded successfully!')
     } catch (error) {
-      devError('[AdminResumePreview] Failed to download resume:', error);
-      toast.error('Failed to download resume');
+      devError('[AdminResumePreview] Failed to download resume:', error)
+      toast.error('Failed to download resume')
     }
-  };
+  }
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
-  const handleResetZoom = () => setZoom(1);
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3))
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5))
+  const handleResetZoom = () => setZoom(1)
 
   useEffect(() => {
     if (isOpen && viewMode === 'pdf') {
-      generatePDF();
+      generatePDF()
     }
-  }, [isOpen, viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, viewMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return () => {
       if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current);
-        pdfUrlRef.current = null;
+        URL.revokeObjectURL(pdfUrlRef.current)
+        pdfUrlRef.current = null
       }
-    };
-  }, []);
+    }
+  }, [])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-center justify-center p-4">
@@ -128,6 +128,7 @@ export function AdminResumePreview({
             {/* View Mode Toggle */}
             <div className="flex items-center gap-1 px-3 py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
               <button
+                type="button"
                 onClick={() => setViewMode('html')}
                 className={`px-2 py-1 rounded text-sm ${
                   viewMode === 'html'
@@ -139,6 +140,7 @@ export function AdminResumePreview({
                 HTML
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('pdf')}
                 className={`px-2 py-1 rounded text-sm ${
                   viewMode === 'pdf'
@@ -154,6 +156,7 @@ export function AdminResumePreview({
             {!loading && (
               <div className="flex items-center gap-1 px-3 py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <button
+                  type="button"
                   onClick={handleZoomOut}
                   className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded dark:text-gray-300"
                   disabled={zoom <= 0.5}
@@ -165,6 +168,7 @@ export function AdminResumePreview({
                   {Math.round(zoom * 100)}%
                 </span>
                 <button
+                  type="button"
                   onClick={handleZoomIn}
                   className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded dark:text-gray-300"
                   disabled={zoom >= 3}
@@ -173,6 +177,7 @@ export function AdminResumePreview({
                   <ZoomIn className="h-4 w-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={handleResetZoom}
                   className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded ml-1 dark:text-gray-300"
                   aria-label="Reset zoom"
@@ -185,6 +190,7 @@ export function AdminResumePreview({
             {/* Download Button */}
             {viewMode === 'pdf' && pdfUrl && !loading && (
               <button
+                type="button"
                 onClick={handleDownload}
                 className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
               >
@@ -196,6 +202,7 @@ export function AdminResumePreview({
             {/* Generate PDF Button for HTML mode */}
             {viewMode === 'html' && (
               <button
+                type="button"
                 onClick={() => setViewMode('pdf')}
                 className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
               >
@@ -206,6 +213,7 @@ export function AdminResumePreview({
 
             {/* Close Button */}
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg dark:text-gray-300"
               aria-label="Close"
@@ -220,13 +228,10 @@ export function AdminResumePreview({
           {viewMode === 'html' ? (
             <div className="flex justify-center">
               <div
-                className="mx-auto bg-white shadow-lg"
+                className="mx-auto bg-white shadow-lg w-[210mm] min-h-[297mm] transition-transform duration-200 ease-in-out"
                 style={{
                   transform: `scale(${zoom})`,
                   transformOrigin: 'top center',
-                  transition: 'transform 0.2s ease',
-                  width: '210mm',
-                  minHeight: '297mm'
                 }}
               >
                 <ResumePreview data={data} template={template} />
@@ -242,22 +247,15 @@ export function AdminResumePreview({
           ) : pdfUrl ? (
             <div className="w-full">
               <div
-                className="mx-auto bg-white shadow-lg"
+                className="mx-auto bg-white shadow-lg w-[210mm] min-h-[297mm] transition-transform duration-200 ease-in-out"
                 style={{
                   transform: `scale(${zoom})`,
                   transformOrigin: 'top center',
-                  transition: 'transform 0.2s ease',
-                  width: '210mm',
-                  minHeight: '297mm'
                 }}
               >
                 <iframe
                   src={`${pdfUrl}#view=FitV&toolbar=0&navpanes=0&scrollbar=1`}
-                  className="w-full border-0"
-                  style={{
-                    height: '800px', // Fixed height to ensure content is visible
-                    minHeight: '800px'
-                  }}
+                  className="w-full border-0 h-[800px] min-h-[800px]"
                   title="Resume Preview"
                 />
               </div>
@@ -269,6 +267,7 @@ export function AdminResumePreview({
                   Failed to generate PDF preview. The resume data might be incomplete.
                 </p>
                 <button
+                  type="button"
                   onClick={generatePDF}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
@@ -280,5 +279,5 @@ export function AdminResumePreview({
         </div>
       </div>
     </div>
-  );
+  )
 }

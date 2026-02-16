@@ -16,7 +16,7 @@ export interface Payment {
   id: string
   plan: string
   amount: number
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED'
   createdAt: string
   reviewedAt: string | null
   adminNote: string | null
@@ -30,12 +30,9 @@ export interface PaymentsResponse {
   limit: number
 }
 
-export type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
+export type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-/** @deprecated Use formatAdminDate directly — kept for backwards compatibility */
-export const formatDate = formatAdminDate
 
 export function formatAmount(amount: number) {
   return new Intl.NumberFormat('en-IQ', {
@@ -52,6 +49,8 @@ export function statusBadgeClass(status: Payment['status']) {
       return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800'
     case 'REJECTED':
       return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800'
+    case 'REFUNDED':
+      return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900 dark:text-purple-200 dark:border-purple-800'
   }
 }
 

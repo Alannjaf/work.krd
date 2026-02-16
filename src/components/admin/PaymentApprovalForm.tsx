@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
-import { Check, X, Loader2, ImageIcon } from 'lucide-react'
-import { type Payment, formatDate, formatAmount, statusBadgeClass } from './PaymentItem'
-import { devError } from '@/lib/admin-utils'
+import { Check, X, Loader2, ImageIcon, RotateCcw } from 'lucide-react'
+import { type Payment, formatAmount, statusBadgeClass } from './PaymentItem'
+import { devError, formatAdminDate } from '@/lib/admin-utils'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ export function PaymentApprovalForm({
   const [loadingScreenshot, setLoadingScreenshot] = useState(true)
   const [rejectNote, setRejectNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [refunding, setRefunding] = useState(false)
 
   // Load screenshot on mount
   useEffect(() => {
@@ -110,6 +111,42 @@ export function PaymentApprovalForm({
     }
   }
 
+  // ─── Refund handler ──────────────────────────────────────────────────
+
+  const handleRefund = async () => {
+    if (!window.confirm('Are you sure you want to refund this payment? This will downgrade the user to FREE.')) return
+
+    setRefunding(true)
+    try {
+      const body: { note?: string } = {}
+      if (rejectNote.trim()) {
+        body.note = rejectNote.trim()
+      }
+
+      const res = await csrfFetch(`/api/admin/payments/${payment.id}/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Refund failed')
+      }
+
+      toast.success('Payment refunded successfully')
+      onClose()
+      onActionComplete()
+    } catch (error) {
+      devError('[PaymentApprovalForm] Refund failed:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to refund payment'
+      )
+    } finally {
+      setRefunding(false)
+    }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
@@ -174,7 +211,7 @@ export function PaymentApprovalForm({
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Submitted</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {formatDate(payment.createdAt)}
+                  {formatAdminDate(payment.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -229,7 +266,7 @@ export function PaymentApprovalForm({
                       Reviewed At
                     </span>
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      {formatDate(payment.reviewedAt)}
+                      {formatAdminDate(payment.reviewedAt)}
                     </span>
                   </div>
                 )}
@@ -298,12 +335,46 @@ export function PaymentApprovalForm({
             </div>
           )}
 
-          {/* Close button for reviewed payments */}
+          {/* Close button (+ refund for approved) for reviewed payments */}
           {payment.status !== 'PENDING' && (
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={onClose}>
-                Close
-              </Button>
+            <div className="space-y-4">
+              {payment.status === 'APPROVED' && (
+                <div>
+                  <label
+                    htmlFor="refund-note"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Refund note (optional)
+                  </label>
+                  <textarea
+                    id="refund-note"
+                    value={rejectNote}
+                    onChange={(e) => setRejectNote(e.target.value)}
+                    placeholder="Reason for refund..."
+                    rows={2}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                  />
+                </div>
+              )}
+              <div className="flex justify-end gap-3">
+                {payment.status === 'APPROVED' && (
+                  <Button
+                    onClick={handleRefund}
+                    disabled={refunding}
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    {refunding ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    Refund
+                  </Button>
+                )}
+                <Button variant="outline" onClick={onClose}>
+                  Close
+                </Button>
+              </div>
             </div>
           )}
         </div>

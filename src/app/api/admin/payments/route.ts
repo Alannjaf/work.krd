@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { requireAdminWithId } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { errorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken } from '@/lib/csrf'
 import { ADMIN_PAGINATION } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
-const VALID_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const
+const VALID_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'] as const
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,13 +25,12 @@ export async function GET(req: NextRequest) {
 
     // Validate status filter if provided
     if (status && !VALID_STATUSES.includes(status as typeof VALID_STATUSES[number])) {
-      return validationErrorResponse('Invalid status filter. Must be PENDING, APPROVED, or REJECTED.')
+      return validationErrorResponse('Invalid status filter. Must be PENDING, APPROVED, REJECTED, or REFUNDED.')
     }
 
     const search = searchParams.get('search')?.trim()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {}
+    const where: Prisma.PaymentWhereInput = {}
     if (status) {
       where.status = status as typeof VALID_STATUSES[number]
     }
@@ -39,6 +40,21 @@ export async function GET(req: NextRequest) {
           { email: { contains: search, mode: 'insensitive' } },
           { name: { contains: search, mode: 'insensitive' } }
         ]
+      }
+    }
+
+    const dateFrom = searchParams.get('dateFrom') || ''
+    const dateTo = searchParams.get('dateTo') || ''
+
+    if (dateFrom || dateTo) {
+      where.createdAt = {}
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom)
+      }
+      if (dateTo) {
+        const endDate = new Date(dateTo)
+        endDate.setHours(23, 59, 59, 999)
+        where.createdAt.lte = endDate
       }
     }
 
@@ -82,7 +98,7 @@ export async function GET(req: NextRequest) {
     if (error instanceof Error && error.message.includes('Admin access required')) {
       return errorResponse('Unauthorized', 403)
     }
-    console.error('[AdminPayments] Failed to fetch payments:', error)
+    devError('[AdminPayments] Failed to fetch payments:', error)
     return errorResponse('Failed to fetch payments', 500)
   }
 }

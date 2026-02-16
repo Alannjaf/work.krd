@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { ResumeStatus } from '@prisma/client';
-import { Search } from 'lucide-react';
-import { getAllTemplates, TemplateInfo } from '@/lib/templates';
-import { devError } from '@/lib/admin-utils';
+import { useEffect, useState } from 'react'
+import { ResumeStatus } from '@prisma/client'
+import { Search } from 'lucide-react'
+import { getAllTemplates, TemplateInfo } from '@/lib/templates'
+import { devError } from '@/lib/admin-utils'
 
 interface ResumeFiltersProps {
-  search: string;
-  status: ResumeStatus | '';
-  template: string;
-  onSearchChange: (search: string) => void;
-  onStatusChange: (status: ResumeStatus | '') => void;
-  onTemplateChange: (template: string) => void;
+  search: string
+  status: ResumeStatus | ''
+  template: string
+  onSearchChange: (search: string) => void
+  onStatusChange: (status: ResumeStatus | '') => void
+  onTemplateChange: (template: string) => void
 }
 
 interface TemplatesByTier {
-  free: Array<TemplateInfo & { tier: 'free' }>;
-  pro: Array<TemplateInfo & { tier: 'pro' }>;
+  free: Array<TemplateInfo & { tier: 'free' }>
+  pro: Array<TemplateInfo & { tier: 'pro' }>
 }
 
 export function ResumeFilters({
@@ -27,31 +27,31 @@ export function ResumeFilters({
   onSearchChange,
   onStatusChange,
   onTemplateChange}: ResumeFiltersProps) {
-  const [templates, setTemplates] = useState<TemplateInfo[]>(getAllTemplates());
+  const [templates, setTemplates] = useState<TemplateInfo[]>(getAllTemplates())
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await fetch('/api/templates');
+        const response = await fetch('/api/templates')
         if (response.ok) {
-          const data: TemplatesByTier = await response.json();
+          const data: TemplatesByTier = await response.json()
           const allTemplates = [
             ...(data.free || []),
             ...(data.pro || [])
-          ];
+          ]
           const uniqueTemplates = Array.from(
             new Map(allTemplates.map(t => [t.id, { id: t.id, name: t.name, description: t.description, category: t.category }])).values()
-          );
-          setTemplates(uniqueTemplates.length > 0 ? uniqueTemplates : getAllTemplates());
+          )
+          setTemplates(uniqueTemplates.length > 0 ? uniqueTemplates : getAllTemplates())
         }
       } catch (error) {
-        devError('[ResumeFilters] Failed to fetch templates:', error);
-        setTemplates(getAllTemplates());
+        devError('[ResumeFilters] Failed to fetch templates:', error)
+        setTemplates(getAllTemplates())
       }
-    };
+    }
 
-    fetchTemplates();
-  }, []);
+    fetchTemplates()
+  }, [])
 
   return (
     <div className="space-y-4">
@@ -108,5 +108,5 @@ export function ResumeFilters({
         </div>
       </div>
     </div>
-  );
+  )
 }

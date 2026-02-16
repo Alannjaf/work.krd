@@ -1,199 +1,199 @@
-"use client";
+'use client'
 
-import { useEffect, useState, useCallback } from "react";
-import { ResumeStatus } from "@prisma/client";
-import { toast } from "react-hot-toast";
-import { Loader2, Trash2, Download } from "lucide-react";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ResumeFilters } from "./ResumeFilters";
-import { ResumeTable } from "./ResumeTable";
-import { Pagination } from "@/components/ui/Pagination";
-import dynamic from "next/dynamic";
-import { ResumeData } from "@/types/resume";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { ADMIN_PAGINATION } from "@/lib/constants";
-import { devError } from "@/lib/admin-utils";
+import { useEffect, useState, useCallback } from 'react'
+import { ResumeStatus } from '@prisma/client'
+import { toast } from 'react-hot-toast'
+import { Loader2, Trash2, Download } from 'lucide-react'
+import { DeleteConfirmModal } from './DeleteConfirmModal'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { ResumeFilters } from './ResumeFilters'
+import { ResumeTable } from './ResumeTable'
+import { Pagination } from '@/components/ui/Pagination'
+import dynamic from 'next/dynamic'
+import { ResumeData } from '@/types/resume'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { ADMIN_PAGINATION } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 // Dynamic import for PreviewModal to match user experience
 const PreviewModal = dynamic(
   () =>
-    import("@/components/resume-builder/PreviewModal").then((mod) => ({
+    import('@/components/resume-builder/PreviewModal').then((mod) => ({
       default: mod.PreviewModal,
     })),
   {
     ssr: false,
   }
-);
+)
 
 interface ResumeWithUser {
-  id: string;
-  title: string;
-  status: ResumeStatus;
-  template: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  title: string
+  status: ResumeStatus
+  template: string
+  createdAt: string
+  updatedAt: string
   user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
+    id: string
+    email: string
+    name: string | null
+  }
   _count: {
-    sections: number;
-  };
+    sections: number
+  }
 }
 
 export function ResumeManagement() {
-  const { csrfFetch } = useCsrfToken();
-  const [resumes, setResumes] = useState<ResumeWithUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<ResumeStatus | "">("");
-  const [template, setTemplate] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { csrfFetch } = useCsrfToken()
+  const [resumes, setResumes] = useState<ResumeWithUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<ResumeStatus | ''>('')
+  const [template, setTemplate] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [previewResumeData, setPreviewResumeData] = useState<ResumeData | null>(
     null
-  );
+  )
   const [previewResumeInfo, setPreviewResumeInfo] = useState<{
-    id: string;
-    title: string;
-    template: string;
-  } | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[]; label: string } | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+    id: string
+    title: string
+    template: string
+  } | null>(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[]; label: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, 500)
 
   const fetchResumes = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const params = new URLSearchParams({
         page: page.toString(),
         limit: String(ADMIN_PAGINATION.RESUMES),
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(status && { status }),
         ...(template && { template }),
-      });
+      })
 
-      const response = await csrfFetch(`/api/admin/resumes?${params}`);
+      const response = await csrfFetch(`/api/admin/resumes?${params}`)
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json()
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
-        );
+        )
       }
 
-      const data = await response.json();
-      setResumes(data.resumes || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotalCount(data.pagination?.total || 0);
+      const data = await response.json()
+      setResumes(data.resumes || [])
+      setTotalPages(data.pagination?.totalPages || 1)
+      setTotalCount(data.pagination?.total || 0)
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to fetch resumes";
-      toast.error(message);
+        error instanceof Error ? error.message : 'Failed to fetch resumes'
+      toast.error(message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [page, debouncedSearch, status, template]);
+  }, [page, debouncedSearch, status, template])
 
   useEffect(() => {
-    fetchResumes();
+    fetchResumes()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch, status, template]);
+  }, [page, debouncedSearch, status, template])
 
   // Reset to page 1 when filters change
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, status, template]);
+    setPage(1)
+  }, [debouncedSearch, status, template])
 
   // Clear checkbox selection when page or filters change
   useEffect(() => {
-    setSelectedIds([]);
-  }, [page, debouncedSearch, status, template]);
+    setSelectedIds([])
+  }, [page, debouncedSearch, status, template])
 
   const handleSelectId = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id)
         ? prev.filter((selectedId) => selectedId !== id)
         : [...prev, id]
-    );
-  };
+    )
+  }
 
   const handleSelectAll = () => {
     setSelectedIds((prev) =>
       prev.length === resumes.length
         ? []
         : resumes.map((resume) => resume.id)
-    );
-  };
+    )
+  }
 
   const handleDeleteResumes = (ids: string[]) => {
     const label =
       ids.length === 1
-        ? resumes.find((r) => r.id === ids[0])?.title || "this resume"
-        : `${ids.length} resumes`;
-    setDeleteConfirm({ ids, label });
-  };
+        ? resumes.find((r) => r.id === ids[0])?.title || 'this resume'
+        : `${ids.length} resumes`
+    setDeleteConfirm({ ids, label })
+  }
 
   const confirmDelete = async () => {
-    if (!deleteConfirm) return;
-    const { ids } = deleteConfirm;
-    setIsDeleting(true);
+    if (!deleteConfirm) return
+    const { ids } = deleteConfirm
+    setIsDeleting(true)
     try {
-      const response = await csrfFetch("/api/admin/resumes", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      const response = await csrfFetch('/api/admin/resumes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids }),
-      });
+      })
 
-      if (!response.ok) throw new Error("Failed to delete resumes");
+      if (!response.ok) throw new Error('Failed to delete resumes')
 
-      toast.success(`Deleted ${ids.length} resume(s)`);
-      setSelectedIds([]);
-      fetchResumes();
+      toast.success(`Deleted ${ids.length} resume(s)`)
+      setSelectedIds([])
+      fetchResumes()
     } catch (error) {
-      devError('[ResumeManagement] Failed to delete resumes:', error);
-      toast.error("Failed to delete resumes");
+      devError('[ResumeManagement] Failed to delete resumes:', error)
+      toast.error('Failed to delete resumes')
     } finally {
-      setIsDeleting(false);
-      setDeleteConfirm(null);
+      setIsDeleting(false)
+      setDeleteConfirm(null)
     }
-  };
+  }
 
   const handleViewResume = async (resume: ResumeWithUser) => {
-    setIsLoadingPreview(true);
+    setIsLoadingPreview(true)
     try {
-      const response = await fetch(`/api/admin/resumes/${resume.id}/preview`);
+      const response = await fetch(`/api/admin/resumes/${resume.id}/preview`)
       if (!response.ok) {
-        throw new Error("Failed to fetch resume data");
+        throw new Error('Failed to fetch resume data')
       }
 
-      const data = await response.json();
-      setPreviewResumeData(data);
+      const data = await response.json()
+      setPreviewResumeData(data)
       setPreviewResumeInfo({
         id: resume.id,
         title: resume.title,
         template: resume.template,
-      });
+      })
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "Failed to load resume preview";
-      toast.error(message);
+          : 'Failed to load resume preview'
+      toast.error(message)
       // Fallback to opening in new tab
-      window.open(`/resumes/${resume.id}`, "_blank");
+      window.open(`/resumes/${resume.id}`, '_blank')
     } finally {
-      setIsLoadingPreview(false);
+      setIsLoadingPreview(false)
     }
-  };
+  }
 
   const handleExport = () => {
     const data = resumes.map((resume) => ({
@@ -203,22 +203,22 @@ export function ResumeManagement() {
       template: resume.template,
       sections: resume._count.sections,
       created: resume.createdAt,
-    }));
+    }))
 
     const csv = [
-      ["Title", "User", "Status", "Template", "Sections", "Created"],
+      ['Title', 'User', 'Status', 'Template', 'Sections', 'Created'],
       ...data.map((row) => Object.values(row)),
     ]
-      .map((row) => row.join(","))
-      .join("\n");
+      .map((row) => row.join(','))
+      .join('\n')
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `resumes-${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-  };
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `resumes-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+  }
 
   return (
     <div className="space-y-6">
@@ -272,8 +272,8 @@ export function ResumeManagement() {
             <p className="text-gray-500 dark:text-gray-400 text-lg">No resumes found</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
               {search || status || template
-                ? "Try adjusting your search filters"
-                : "Resumes will appear here once users create them"}
+                ? 'Try adjusting your search filters'
+                : 'Resumes will appear here once users create them'}
             </p>
           </div>
         ) : (
@@ -306,8 +306,8 @@ export function ResumeManagement() {
         <PreviewModal
           isOpen={true}
           onClose={() => {
-            setPreviewResumeData(null);
-            setPreviewResumeInfo(null);
+            setPreviewResumeData(null)
+            setPreviewResumeInfo(null)
           }}
           data={previewResumeData}
           template={previewResumeInfo.template}
@@ -344,5 +344,5 @@ export function ResumeManagement() {
         confirming={isDeleting}
       />
     </div>
-  );
+  )
 }

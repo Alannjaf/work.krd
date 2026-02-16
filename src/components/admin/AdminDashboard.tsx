@@ -18,7 +18,11 @@ import { AuditLogPanel } from './AuditLogPanel'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { Stats, SubscriptionStatus, SystemSettings } from './types'
 import { PLAN_NAMES, DEFAULT_SYSTEM_SETTINGS } from '@/lib/constants'
-import { devError } from '@/lib/admin-utils'
+import { devError, formatAdminDate } from '@/lib/admin-utils'
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Clock } from 'lucide-react'
 
 const DEFAULT_SETTINGS: SystemSettings = {
   maxFreeResumes: DEFAULT_SYSTEM_SETTINGS.maxFreeResumes,
@@ -59,7 +63,9 @@ export function AdminDashboard() {
   }>({})
   const [settingsDirty, setSettingsDirty] = useState(false)
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const settingsDirtyRef = useRef(false)
+  const { items: recentItems, clearItems: clearRecentItems } = useRecentlyViewed()
 
   const handleSettingsDirtyChange = useCallback((dirty: boolean) => {
     setSettingsDirty(dirty)
@@ -75,6 +81,26 @@ export function AdminDashboard() {
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+      if (e.key === '/' && !isInInput) {
+        e.preventDefault()
+        const searchInput = document.querySelector<HTMLInputElement>('input[type="text"][placeholder*="Search"], input[type="text"][placeholder*="search"]')
+        searchInput?.focus()
+      }
+
+      if (e.key === '?' && !isInInput) {
+        setShowShortcuts(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const handleBackClick = () => {
@@ -302,6 +328,31 @@ export function AdminDashboard() {
           <AdminQuickActions />
         </AdminErrorBoundary>
 
+        {recentItems.length > 0 && (
+          <Card className="p-6 mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                Recently Viewed
+              </h2>
+              <Button variant="ghost" size="sm" onClick={clearRecentItems} type="button">
+                Clear
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {recentItems.slice(0, 5).map((item) => (
+                <div key={`${item.type}-${item.id}`} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="text-xs capitalize">{item.type}</Badge>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-xs">{item.label}</span>
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{formatAdminDate(item.viewedAt)}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <AdminErrorBoundary sectionName="Audit Log">
           <AuditLogPanel />
         </AdminErrorBoundary>
@@ -312,6 +363,26 @@ export function AdminDashboard() {
         onCancel={() => setShowUnsavedDialog(false)}
         onDiscard={handleConfirmDiscard}
       />
+
+      {showShortcuts && (
+        <div className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg shadow-lg p-4 max-w-xs">
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2">Keyboard Shortcuts</h4>
+          <dl className="space-y-1 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-500 dark:text-gray-400">Focus search</dt>
+              <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">/</kbd></dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-500 dark:text-gray-400">Close modal</dt>
+              <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Esc</kbd></dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-500 dark:text-gray-400">Toggle shortcuts</dt>
+              <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">?</kbd></dd>
+            </div>
+          </dl>
+        </div>
+      )}
     </div>
   )
 }
