@@ -17,6 +17,7 @@ import { AuditLogPanel } from './AuditLogPanel'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { Stats, SubscriptionStatus, SystemSettings } from './types'
 import { PLAN_NAMES, DEFAULT_SYSTEM_SETTINGS } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 const DEFAULT_SETTINGS: SystemSettings = {
   maxFreeResumes: DEFAULT_SYSTEM_SETTINGS.maxFreeResumes,
@@ -106,7 +107,7 @@ export function AdminDashboard() {
       setStats(data)
       setErrors(prev => { const { stats: _, ...rest } = prev; return rest })
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch stats:', error)
+      devError('[AdminDashboard] Failed to fetch stats:', error)
       setErrors(prev => ({ ...prev, stats: 'Failed to load stats' }))
       toast.error('Failed to load stats')
     }
@@ -146,7 +147,7 @@ export function AdminDashboard() {
       })
       setErrors(prev => { const { settings: _, ...rest } = prev; return rest })
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch settings:', error)
+      devError('[AdminDashboard] Failed to fetch settings:', error)
       setErrors(prev => ({ ...prev, settings: 'Failed to load settings' }))
       toast.error('Failed to load settings')
     }
@@ -160,7 +161,7 @@ export function AdminDashboard() {
       setSubscriptionStatus(data)
       setErrors(prev => { const { subscriptions: _, ...rest } = prev; return rest })
     } catch (error) {
-      console.error('[AdminDashboard] Failed to fetch subscription status:', error)
+      devError('[AdminDashboard] Failed to fetch subscription status:', error)
       setErrors(prev => ({ ...prev, subscriptions: 'Failed to load subscription status' }))
       toast.error('Failed to load subscription status')
     }
@@ -184,7 +185,7 @@ export function AdminDashboard() {
         toast.error('Failed to check subscriptions')
       }
     } catch (error) {
-      console.error('[AdminDashboard] Failed to check expired subscriptions:', error);
+      devError('[AdminDashboard] Failed to check expired subscriptions:', error);
       toast.error('Failed to check subscriptions')
     } finally {
       setCheckingSubscriptions(false)
@@ -205,7 +206,7 @@ export function AdminDashboard() {
         toast.error('Failed to save settings')
       }
     } catch (error) {
-      console.error('[AdminDashboard] Failed to save settings:', error);
+      devError('[AdminDashboard] Failed to save settings:', error);
       toast.error('Failed to save settings')
     } finally {
       setSaving(false)

@@ -14,6 +14,7 @@ import { ResumeData } from "@/types/resume";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { ADMIN_PAGINATION } from "@/lib/constants";
+import { devError } from "@/lib/admin-utils";
 
 // Dynamic import for PreviewModal to match user experience
 const PreviewModal = dynamic(
@@ -153,7 +154,7 @@ export function ResumeManagement() {
       setSelectedIds([]);
       fetchResumes();
     } catch (error) {
-      console.error('[ResumeManagement] Failed to delete resumes:', error);
+      devError('[ResumeManagement] Failed to delete resumes:', error);
       toast.error("Failed to delete resumes");
     } finally {
       setIsDeleting(false);

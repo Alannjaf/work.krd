@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Eye } from 'lucide-react'
+import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,15 +34,8 @@ export type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-export function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+/** @deprecated Use formatAdminDate directly — kept for backwards compatibility */
+export const formatDate = formatAdminDate
 
 export function formatAmount(amount: number) {
   return new Intl.NumberFormat('en-IQ', {
@@ -100,8 +94,8 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
             </div>
             <div>
               <span className="text-gray-500">Date:</span>{' '}
-              <span className="text-gray-700">
-                {formatDate(payment.createdAt)}
+              <span className="text-gray-700" title={formatAdminDateFull(payment.createdAt)}>
+                {formatAdminDate(payment.createdAt)}
               </span>
             </div>
           </div>
@@ -111,7 +105,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
             <div className="mt-3 pt-3 border-t border-gray-100">
               {payment.reviewedAt && (
                 <p className="text-xs text-gray-400">
-                  Reviewed: {formatDate(payment.reviewedAt)}
+                  Reviewed: <span title={formatAdminDateFull(payment.reviewedAt)}>{formatAdminDate(payment.reviewedAt)}</span>
                 </p>
               )}
               {payment.adminNote && (

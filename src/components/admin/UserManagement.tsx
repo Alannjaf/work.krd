@@ -24,6 +24,7 @@ import toast from 'react-hot-toast'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PLAN_NAMES, VALID_PLANS, ADMIN_PAGINATION } from '@/lib/constants'
+import { formatAdminDate, formatAdminDateFull, devError } from '@/lib/admin-utils'
 
 const LIMIT = ADMIN_PAGINATION.USERS
 
@@ -88,7 +89,7 @@ export function UserManagement() {
         setTotalPages(Math.max(1, Math.ceil(data.total / LIMIT)))
       }
     } catch (error) {
-      console.error('[UserManagement] Failed to fetch users:', error)
+      devError('[UserManagement] Failed to fetch users:', error)
     } finally {
       setLoading(false)
     }
@@ -145,7 +146,7 @@ export function UserManagement() {
         toast.error('Failed to update user plan')
       }
     } catch (error) {
-      console.error('[UserManagement] Failed to update user plan:', error)
+      devError('[UserManagement] Failed to update user plan:', error)
       toast.error('Error updating user plan')
     } finally {
       setUpgrading(false)
@@ -190,7 +191,7 @@ export function UserManagement() {
         toast.error('Failed to process bulk action')
       }
     } catch (error) {
-      console.error('[UserManagement] Failed to process bulk action:', error)
+      devError('[UserManagement] Failed to process bulk action:', error)
       toast.error('Error processing bulk action')
     } finally {
       setBulkProcessing(false)
@@ -405,7 +406,7 @@ export function UserManagement() {
                           </span>
                           <span className="flex items-center">
                             <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
-                            Joined {new Date(user.createdAt).toLocaleDateString()}
+                            Joined <span title={formatAdminDateFull(user.createdAt)}>{formatAdminDate(user.createdAt)}</span>
                           </span>
                         </div>
                       </div>
@@ -418,7 +419,7 @@ export function UserManagement() {
                         </Badge>
                         {user.subscription?.endDate && (
                           <span className="text-xs text-gray-500">
-                            Expires: {new Date(user.subscription.endDate).toLocaleDateString()}
+                            Expires: <span title={formatAdminDateFull(user.subscription.endDate)}>{formatAdminDate(user.subscription.endDate)}</span>
                           </span>
                         )}
                         <div className="text-xs text-gray-600 mt-1">

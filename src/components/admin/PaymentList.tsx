@@ -15,6 +15,7 @@ import { PaymentItem } from './PaymentItem'
 import { PaymentApprovalForm } from './PaymentApprovalForm'
 import type { Payment, PaymentsResponse, StatusFilter } from './PaymentItem'
 import { ADMIN_PAGINATION } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
       setPayments(data.payments)
       setTotal(data.total)
     } catch (error) {
-      console.error('[PaymentList] Failed to fetch:', error)
+      devError('[PaymentList] Failed to fetch:', error)
       toast.error('Failed to load payments')
     } finally {
       setLoading(false)

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { Check, X, Loader2, ImageIcon } from 'lucide-react'
 import { type Payment, formatDate, formatAmount, statusBadgeClass } from './PaymentItem'
+import { devError } from '@/lib/admin-utils'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ export function PaymentApprovalForm({
           setReviewScreenshot(data.screenshot || null)
         }
       } catch (error) {
-        console.error('[PaymentApprovalForm] Failed to load review:', error)
+        devError('[PaymentApprovalForm] Failed to load review:', error)
         if (!cancelled) {
           toast.error('Failed to load screenshot')
         }
@@ -100,7 +101,7 @@ export function PaymentApprovalForm({
       onClose()
       onActionComplete()
     } catch (error) {
-      console.error('[PaymentApprovalForm] Action failed:', error)
+      devError('[PaymentApprovalForm] Action failed:', error)
       toast.error(
         error instanceof Error ? error.message : 'Failed to process payment'
       )

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { RefreshCw } from 'lucide-react'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
+import { formatAdminDate, formatAdminDateFull, devError } from '@/lib/admin-utils'
 
 interface AuditEntry {
   id: string
@@ -20,21 +21,6 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   REJECT_PAYMENT: { label: 'Payment Rejected', color: 'bg-red-100 text-red-800' },
   CHANGE_USER_PLAN: { label: 'Plan Changed', color: 'bg-purple-100 text-purple-800' },
   PROCESS_EXPIRED_SUBSCRIPTIONS: { label: 'Expired Processed', color: 'bg-amber-100 text-amber-800' },
-}
-
-function formatTimestamp(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function getActionInfo(action: string) {
@@ -68,7 +54,7 @@ export function AuditLogPanel() {
       const data = await res.json()
       setLogs(data.logs)
     } catch (err) {
-      console.error('[AuditLogPanel] Failed to fetch audit logs:', err)
+      devError('[AuditLogPanel] Failed to fetch audit logs:', err)
       setError('Failed to load audit logs')
     } finally {
       setLoading(false)
@@ -126,7 +112,7 @@ export function AuditLogPanel() {
                       <span className="text-gray-500"> &mdash; {(entry.details.updatedFields as string[]).join(', ')}</span>
                     )}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatTimestamp(entry.createdAt)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5" title={formatAdminDateFull(entry.createdAt)}>{formatAdminDate(entry.createdAt)}</p>
                 </div>
               </div>
             )

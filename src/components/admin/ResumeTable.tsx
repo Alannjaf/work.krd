@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Eye, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { ResumeStatus } from '@prisma/client';
+import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils';
 
 interface ResumeWithUser {
   id: string;
@@ -31,6 +32,12 @@ interface ResumeTableProps {
   onSelectAll: () => void;
   onViewResume: (resume: ResumeWithUser) => void;
   onDeleteResume: (id: string) => void;
+  /** Server-side sort field (when provided, overrides client-side sort for that column) */
+  sortBy?: string;
+  /** Server-side sort direction */
+  sortOrder?: 'asc' | 'desc';
+  /** Callback for server-side sorting — called with column name */
+  onSort?: (column: string) => void;
 }
 
 export function ResumeTable({
@@ -40,11 +47,23 @@ export function ResumeTable({
   onSelectAll,
   onViewResume,
   onDeleteResume,
+  sortBy: serverSortBy,
+  sortOrder: serverSortOrder,
+  onSort: serverOnSort,
 }: ResumeTableProps) {
+  // Server-side sort mode: when onSort callback is provided, delegate sorting to the parent/API
+  const isServerSort = !!serverOnSort;
+
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const handleSort = (field: SortField) => {
+    if (isServerSort) {
+      // Delegate to server-side sort callback
+      serverOnSort(field);
+      return;
+    }
+    // Client-side sort toggle
     if (sortField === field) {
       if (sortDirection === 'asc') {
         setSortDirection('desc');
@@ -59,7 +78,17 @@ export function ResumeTable({
     }
   };
 
+  // Resolve active sort state: server-side props take precedence when available
+  const activeSortField: SortField | null = isServerSort
+    ? (serverSortBy as SortField | undefined) ?? null
+    : sortField;
+  const activeSortDirection: SortDirection = isServerSort
+    ? (serverSortOrder ?? 'desc')
+    : sortDirection;
+
   const sortedResumes = useMemo(() => {
+    // When server-side sorting is active, data arrives pre-sorted from the API
+    if (isServerSort) return resumes;
     if (!sortField) return resumes;
 
     return [...resumes].sort((a, b) => {
@@ -83,13 +112,13 @@ export function ResumeTable({
       }
       return sortDirection === 'desc' ? -cmp : cmp;
     });
-  }, [resumes, sortField, sortDirection]);
+  }, [resumes, sortField, sortDirection, isServerSort]);
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
+    if (activeSortField !== field) {
       return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
     }
-    return sortDirection === 'asc'
+    return activeSortDirection === 'asc'
       ? <ArrowUp className="h-3 w-3 ml-1" />
       : <ArrowDown className="h-3 w-3 ml-1" />;
   };
@@ -196,7 +225,9 @@ export function ResumeTable({
                   {resume._count.sections}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {new Date(resume.createdAt).toLocaleDateString()}
+                  <span title={formatAdminDateFull(resume.createdAt)}>
+                    {formatAdminDate(resume.createdAt)}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">

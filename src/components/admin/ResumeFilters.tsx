@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ResumeStatus } from '@prisma/client';
 import { Search } from 'lucide-react';
 import { getAllTemplates, TemplateInfo } from '@/lib/templates';
+import { devError } from '@/lib/admin-utils';
 
 interface ResumeFiltersProps {
   search: string;
@@ -44,7 +45,7 @@ export function ResumeFilters({
           setTemplates(uniqueTemplates.length > 0 ? uniqueTemplates : getAllTemplates());
         }
       } catch (error) {
-        console.error('[ResumeFilters] Failed to fetch templates:', error);
+        devError('[ResumeFilters] Failed to fetch templates:', error);
         setTemplates(getAllTemplates());
       }
     };

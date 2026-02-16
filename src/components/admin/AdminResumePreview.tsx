@@ -6,6 +6,7 @@ import { ResumeData } from '@/types/resume';
 import { ResumePreview } from '@/components/resume-builder/ResumePreview';
 import { toast } from 'react-hot-toast';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { devError } from '@/lib/admin-utils';
 
 interface AdminResumePreviewProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ export function AdminResumePreview({
       pdfUrlRef.current = url;
       setPdfUrl(url);
     } catch (error) {
-      console.error('[AdminResumePreview] Failed to generate PDF preview:', error);
+      devError('[AdminResumePreview] Failed to generate PDF preview:', error);
       toast.error('Failed to generate PDF preview');
     } finally {
       setLoading(false);
@@ -87,7 +88,7 @@ export function AdminResumePreview({
       document.body.removeChild(a);
       toast.success('Resume downloaded successfully!');
     } catch (error) {
-      console.error('[AdminResumePreview] Failed to download resume:', error);
+      devError('[AdminResumePreview] Failed to download resume:', error);
       toast.error('Failed to download resume');
     }
   };

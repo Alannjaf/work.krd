@@ -2,6 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { devError } from '@/lib/admin-utils'
 
 interface AdminErrorBoundaryProps {
   children: ReactNode
@@ -24,7 +25,7 @@ export class AdminErrorBoundary extends Component<AdminErrorBoundaryProps, Admin
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(`[AdminErrorBoundary] ${this.props.sectionName} crashed:`, error, errorInfo)
+    devError(`[AdminErrorBoundary] ${this.props.sectionName} crashed:`, error, errorInfo)
   }
 
   handleRetry = () => {
