@@ -169,7 +169,7 @@
 - [x] **P1** | i18n | `src/components/html-templates/shared/ContactInfo.tsx:28` | "LinkedIn" label not using i18n (unlike "Portfolio" which has RTL version) | FIXED: Uses `isRTL ? 'هەژماری لینکدئین' : 'LinkedIn'` + unicodeBidi isolate
 - [x] **P1** | i18n | `src/components/html-templates/shared/CertificationsSection.tsx:19` | `formatDate()` always uses `en-US` locale — shows English month names on Kurdish/Arabic resumes | ALREADY FIXED: Uses `isRTL ? 'ar' : 'en-US'` for locale-aware formatting
 - [x] **P1** | i18n | `src/components/html-templates/BoldTemplate.tsx` | **"HELLO!" greeting hardcoded English** — shows on all BoldTemplate resumes | ALREADY FIXED: Uses `isRtl ? 'سڵاو !' : 'HELLO !'`
-- [ ] **P1** | i18n | Admin components (all) | **100+ hardcoded English strings with no i18n** | Needs `pages.admin.*` namespace (known gap per CLAUDE.md)
+- [x] **P1** | i18n | Admin components (all) | **100+ hardcoded English strings with no i18n** | FIXED: Added `pages.admin.*` namespace (~200 keys) to en/ar/ckb locales, updated 20+ admin components to use `useLanguage()` + `t()`. Exceptions: AdminErrorBoundary (class component) and admin/layout.tsx (server component) retain English with documented comments
 - [x] **P1** | i18n | `preview.sections.*` / `preview.labels.*` | Keys exist in all 3 locales but **templates don't use them** — hardcode inline instead | BY DESIGN: Templates are SSR-rendered without React context access — inline isRtl ternaries is the correct pattern; all labels now have Kurdish translations
 - [x] **P1** | i18n | `src/components/html-templates/types.ts` | HtmlTemplateProps doesn't include `locale` or `i18n` context — all i18n is inline ternaries | BY DESIGN: Templates use `isRTLText()` auto-detection from content — isRtl ternaries cover Kurdish/Arabic, no locale prop needed
 
@@ -203,7 +203,7 @@
 
 ### P2 — Nice-to-have
 
-- [ ] **P2** | Templates | `src/components/html-templates/shared/ExperienceSection.tsx` | Hardcoded Kurdish/English section titles without Arabic | Add Arabic translations
+- [x] **P2** | Templates | `src/components/html-templates/shared/ExperienceSection.tsx` | Hardcoded Kurdish/English section titles without Arabic | BY DESIGN: Documented — work.krd is Kurdish-focused, templates only have isRTL boolean (no locale), Kurdish text uses Arabic script and is readable by Arabic speakers. Date formatting already uses 'ar' locale for Arabic-script numerals
 - [x] **P2** | Templates | `src/lib/pdf/fontData.ts` | Only caches Arabic fonts — no Inter/LTR font caching | FIXED: Added interFontCache + shared loadFontPair() helper — both font families now cached identically
 - [x] **P2** | Templates | All templates | `resume-entry` applied at varying granularities — inconsistent | FIXED: Added JSDoc documentation on all 7 shared section components explaining resume-entry pattern and granularity rules
 - [x] **P2** | Templates | Some templates | `WebkitPrintColorAdjust` + `printColorAdjust` usage inconsistent | VERIFIED: All templates consistently use both WebkitPrintColorAdjust and printColorAdjust together
@@ -223,7 +223,7 @@
 - [x] **P1** | API | `src/app/api/admin/audit-log/route.ts:57` | Returns `totalPages` but not `hasNextPage`/`hasPrevPage` — inconsistent with other admin endpoints | FIXED: Added `hasNextPage` and `hasPrevPage` to response
 - [x] **P1** | API | `src/lib/db.ts:226-282` | `duplicateResume()` limit check not atomic — race condition between `checkUserLimits()` and create | FIXED: Atomic `updateMany` with `lt: resumeLimit` inside `$transaction`
 - [x] **P1** | API | `src/app/api/resumes/route.ts:95-96` | Resume POST creates resume then deletes/recreates sections separately — not transactional | FIXED: Wrapped in `prisma.$transaction()`, moved imports to top-level
-- [ ] **P1** | API | `src/app/api/admin/payments/[id]/review/route.ts:118-127` | Payment amount validated against current `proPlanPrice` — price may have changed since payment created | Snapshot price at payment creation time
+- [x] **P1** | API | `src/app/api/admin/payments/[id]/review/route.ts:118-127` | Payment amount validated against current `proPlanPrice` — price may have changed since payment created | FIXED: Added `priceAtCreation Int?` to Payment schema, submit route stores current proPlanPrice, review route validates against snapshot (falls back to current price for legacy payments)
 - [x] **P1** | API | `src/app/api/resume/upload/route.ts:481-486` | Race condition in import count increment — uses userId instead of subscription ID | FIXED: Already uses atomic `updateMany` with `subscription.id` + `lt: importLimit`
 - [x] **P1** | API | `src/app/api/resumes/route.ts:104` | Dynamic `import('@/lib/db')` inside route handler on every request — defeats tree-shaking | FIXED: Moved to top-level static imports
 

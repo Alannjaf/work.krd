@@ -10,6 +10,7 @@ import { SystemSettings } from './types'
 import { VALID_PLANS } from '@/lib/constants'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface SettingsSnapshot {
   id: string
@@ -39,6 +40,7 @@ export function AdminSystemSettings({
   onRevert
 }: AdminSystemSettingsProps) {
   const { csrfFetch } = useCsrfToken()
+  const { t } = useLanguage()
   const [isDirty, setIsDirty] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -93,12 +95,12 @@ export function AdminSystemSettings({
         }
         setIsDirty(false)
         setShowHistory(false)
-        toast.success('Settings reverted successfully')
+        toast.success(t('pages.admin.settings.settingsReverted'))
       } else {
-        toast.error('Failed to revert settings')
+        toast.error(t('pages.admin.settings.revertFailed'))
       }
     } catch {
-      toast.error('Failed to revert settings')
+      toast.error(t('pages.admin.settings.revertFailed'))
     }
     setRevertingId(null)
   }
@@ -114,17 +116,17 @@ export function AdminSystemSettings({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <Settings className="h-5 w-5" />
-          System Settings
+          {t('pages.admin.settings.title')}
         </h2>
         <Button onClick={onRefresh} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+          {t('pages.admin.settings.refresh')}
         </Button>
       </div>
 
       <div className="space-y-8">
         <PlanLimitsSection
-          title="Free Plan Limits"
+          title={t('pages.admin.settings.freePlanLimits')}
           resumes={settings.maxFreeResumes}
           aiUsage={settings.maxFreeAIUsage}
           exports={settings.maxFreeExports}
@@ -136,7 +138,7 @@ export function AdminSystemSettings({
         />
 
         <PlanLimitsSection
-          title="Pro Plan Limits"
+          title={t('pages.admin.settings.proPlanLimits')}
           resumes={settings.maxProResumes}
           aiUsage={settings.maxProAIUsage}
           exports={settings.maxProExports}
@@ -165,28 +167,28 @@ export function AdminSystemSettings({
         {saveSuccess && (
           <span className="text-green-600 text-sm font-medium flex items-center gap-1">
             <Check className="h-4 w-4" />
-            Saved!
+            {t('pages.admin.settings.saved')}
           </span>
         )}
         {isDirty && (
           <span className="text-sm text-amber-600 font-medium">
-            Unsaved changes
+            {t('pages.admin.settings.unsavedChanges')}
           </span>
         )}
         <Button variant="outline" size="sm" onClick={toggleHistory} type="button">
           <History className="h-4 w-4 mr-1" />
-          History
+          {t('pages.admin.settings.history')}
         </Button>
         <Button onClick={handleSave} disabled={saving || !isDirty}>
           {saving ? (
             <>
               <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-              Saving...
+              {t('pages.admin.settings.saving')}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Save Settings
+              {t('pages.admin.settings.saveSettings')}
             </>
           )}
         </Button>
@@ -194,11 +196,11 @@ export function AdminSystemSettings({
 
       {showHistory && (
         <div className="bg-white dark:bg-gray-900 border rounded-lg shadow-lg p-4 mt-4 space-y-2">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Recent Snapshots</h4>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('pages.admin.settings.recentSnapshots')}</h4>
           {loadingHistory ? (
-            <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{t('pages.admin.settings.loadingSnapshots')}</div>
           ) : snapshots.length === 0 ? (
-            <div className="text-sm text-gray-500 dark:text-gray-400">No snapshots yet. Snapshots are created automatically each time you save.</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{t('pages.admin.settings.noSnapshots')}</div>
           ) : (
             snapshots.map((s) => (
               <div key={s.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
@@ -213,7 +215,7 @@ export function AdminSystemSettings({
                   className="text-xs h-7"
                   type="button"
                 >
-                  {revertingId === s.id ? 'Reverting...' : 'Restore'}
+                  {revertingId === s.id ? t('pages.admin.settings.reverting') : t('pages.admin.settings.restore')}
                 </Button>
               </div>
             ))
@@ -249,6 +251,7 @@ function PlanLimitsSection({
   idPrefix,
   allowUnlimited
 }: PlanLimitsSectionProps) {
+  const { t } = useLanguage()
   const min = allowUnlimited ? -1 : 0
   const hintId = allowUnlimited ? `${idPrefix}-unlimited-hint` : undefined
 
@@ -257,13 +260,13 @@ function PlanLimitsSection({
       <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{title}</h3>
       {allowUnlimited && (
         <p id={hintId} className="text-xs text-gray-400 dark:text-gray-500 mb-3 cursor-help" title="Set to -1 for unlimited usage on any limit field">
-          (-1 = unlimited)
+          {t('pages.admin.settings.unlimitedHint')}
         </p>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label htmlFor={`${idPrefix}-max-resumes`} className="block text-sm font-medium mb-2">
-            Max Resumes
+            {t('pages.admin.settings.maxResumes')}
           </label>
           <Input
             id={`${idPrefix}-max-resumes`}
@@ -276,7 +279,7 @@ function PlanLimitsSection({
         </div>
         <div>
           <label htmlFor={`${idPrefix}-max-ai-usage`} className="block text-sm font-medium mb-2">
-            Max AI Usage
+            {t('pages.admin.settings.maxAIUsage')}
           </label>
           <Input
             id={`${idPrefix}-max-ai-usage`}
@@ -289,7 +292,7 @@ function PlanLimitsSection({
         </div>
         <div>
           <label htmlFor={`${idPrefix}-max-exports`} className="block text-sm font-medium mb-2">
-            Max Exports
+            {t('pages.admin.settings.maxExports')}
           </label>
           <Input
             id={`${idPrefix}-max-exports`}
@@ -302,7 +305,7 @@ function PlanLimitsSection({
         </div>
         <div>
           <label htmlFor={`${idPrefix}-max-imports`} className="block text-sm font-medium mb-2">
-            Max Imports
+            {t('pages.admin.settings.maxImports')}
           </label>
           <Input
             id={`${idPrefix}-max-imports`}
@@ -315,7 +318,7 @@ function PlanLimitsSection({
         </div>
         <div>
           <label htmlFor={`${idPrefix}-max-ats-checks`} className="block text-sm font-medium mb-2">
-            Max ATS Checks
+            {t('pages.admin.settings.maxATSChecks')}
           </label>
           <Input
             id={`${idPrefix}-max-ats-checks`}
@@ -338,6 +341,7 @@ interface TemplateAccessSectionProps {
 }
 
 function TemplateAccessSection({ settings, setSettings, availableTemplates }: TemplateAccessSectionProps) {
+  const { t } = useLanguage()
   const toggleTemplate = (plan: 'free' | 'pro', template: string, checked: boolean) => {
     const field = `${plan}Templates` as keyof SystemSettings
     const current = settings[field] as string[]
@@ -347,7 +351,7 @@ function TemplateAccessSection({ settings, setSettings, availableTemplates }: Te
 
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Template Access Control</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{t('pages.admin.settings.templateAccess')}</h3>
       <div className="space-y-4">
         {(['free', 'pro'] as const).map(plan => (
           <div key={plan}>
@@ -355,7 +359,7 @@ function TemplateAccessSection({ settings, setSettings, availableTemplates }: Te
               id={`${plan}-tpl-group-label`}
               className="block text-sm font-medium mb-2 capitalize"
             >
-              {plan} Plan Templates
+              {t('pages.admin.settings.planTemplates', { plan: plan.charAt(0).toUpperCase() + plan.slice(1) })}
             </div>
             <div
               role="group"
@@ -388,12 +392,13 @@ interface PhotoUploadSectionProps {
 }
 
 function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) {
+  const { t } = useLanguage()
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Profile Photo Upload Access</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{t('pages.admin.settings.photoUploadAccess')}</h3>
       <div>
         <div id="photo-upload-group-label" className="block text-sm font-medium mb-2">
-          Plans with Photo Upload Access
+          {t('pages.admin.settings.plansWithPhotoUpload')}
         </div>
         <div role="group" aria-labelledby="photo-upload-group-label" className="space-y-2">
           {VALID_PLANS.map(plan => (
@@ -415,7 +420,7 @@ function PhotoUploadSection({ settings, setSettings }: PhotoUploadSectionProps) 
           ))}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Select which subscription plans can upload profile photos
+          {t('pages.admin.settings.photoUploadHint')}
         </p>
       </div>
     </div>
@@ -428,11 +433,12 @@ interface PricingSectionProps {
 }
 
 function PricingSection({ settings, setSettings }: PricingSectionProps) {
+  const { t } = useLanguage()
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">Pricing Settings</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{t('pages.admin.settings.pricingSettings')}</h3>
       <div className="max-w-xs">
-        <label htmlFor="pro-plan-price" className="block text-sm font-medium mb-2">Pro Plan Price (IQD)</label>
+        <label htmlFor="pro-plan-price" className="block text-sm font-medium mb-2">{t('pages.admin.settings.proPlanPrice')}</label>
         <Input
           id="pro-plan-price"
           type="number"
@@ -454,9 +460,10 @@ interface MaintenanceModeSectionProps {
 }
 
 function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectionProps) {
+  const { t } = useLanguage()
   return (
     <div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">System Settings</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b">{t('pages.admin.settings.systemSettings')}</h3>
       <div>
         <label htmlFor="maintenance-mode" className="flex items-center space-x-2">
           <input
@@ -466,10 +473,10 @@ function MaintenanceModeSection({ settings, setSettings }: MaintenanceModeSectio
             onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
             className="rounded"
           />
-          <span className="text-sm font-medium">Maintenance Mode</span>
+          <span className="text-sm font-medium">{t('pages.admin.settings.maintenanceMode')}</span>
         </label>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          When enabled, only admins can access the site
+          {t('pages.admin.settings.maintenanceHint')}
         </p>
       </div>
     </div>

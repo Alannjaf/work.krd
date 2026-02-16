@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Users, DollarSign, FileText, CreditCard } from 'lucide-react'
 import { Stats } from './types'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface AdminStatsCardsProps {
   stats: Stats | null
@@ -31,9 +32,11 @@ function StatSkeleton({ colSpan, showSubStats }: { colSpan?: string; showSubStat
 }
 
 export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
+  const { t } = useLanguage()
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" role="region" aria-label="Platform statistics loading">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" role="region" aria-label={t('pages.admin.stats.loadingLabel')}>
         <StatSkeleton />
         <StatSkeleton />
         <StatSkeleton />
@@ -53,57 +56,57 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
   const revenueAmount = stats?.revenue ?? 0
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${loading ? 'opacity-60 transition-opacity' : ''}`} role="region" aria-label="Platform statistics">
-      <Card className="p-6" aria-label={`Total users: ${userCount}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${loading ? 'opacity-60 transition-opacity' : ''}`} role="region" aria-label={t('pages.admin.stats.statsLabel')}>
+      <Card className="p-6" aria-label={`${t('pages.admin.stats.totalUsers')}: ${userCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Total Users</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.stats.totalUsers')}</p>
             <p className="text-2xl font-bold">{userCount}</p>
           </div>
           <Users className="h-8 w-8 text-blue-500" />
         </div>
       </Card>
 
-      <Card className="p-6" aria-label={`Total resumes: ${resumeCount}`}>
+      <Card className="p-6" aria-label={`${t('pages.admin.stats.totalResumes')}: ${resumeCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Total Resumes</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.stats.totalResumes')}</p>
             <p className="text-2xl font-bold">{resumeCount}</p>
           </div>
           <FileText className="h-8 w-8 text-green-500" />
         </div>
       </Card>
 
-      <Card className="p-6" aria-label={`Pro subscriptions: ${subCount}`}>
+      <Card className="p-6" aria-label={`${t('pages.admin.stats.proSubscriptions')}: ${subCount}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Pro Subscriptions</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.stats.proSubscriptions')}</p>
             <p className="text-2xl font-bold">{subCount}</p>
           </div>
           <DollarSign className="h-8 w-8 text-purple-500" />
         </div>
       </Card>
 
-      <Card className="p-6" aria-label={`Monthly revenue: ${revenueAmount.toLocaleString()} IQD`}>
+      <Card className="p-6" aria-label={`${t('pages.admin.stats.monthlyRevenue')}: ${revenueAmount.toLocaleString()} IQD`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Revenue</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.stats.monthlyRevenue')}</p>
             <p className="text-2xl font-bold">{revenueAmount.toLocaleString()} IQD</p>
           </div>
           <DollarSign className="h-8 w-8 text-yellow-500" />
         </div>
       </Card>
 
-      <Card className="p-6 md:col-span-2 lg:col-span-2" aria-label={`Payments: ${totalPayments}`}>
+      <Card className="p-6 md:col-span-2 lg:col-span-2" aria-label={`${t('pages.admin.stats.payments')}: ${totalPayments}`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Payments</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.stats.payments')}</p>
             <p className="text-2xl font-bold">{totalPayments}</p>
             {stats?.payments && (
               <div className="flex gap-3 mt-1 text-xs">
-                <span className="text-amber-600">{stats.payments.pending} pending</span>
-                <span className="text-green-600">{stats.payments.approved} approved</span>
-                <span className="text-red-600">{stats.payments.rejected} rejected</span>
+                <span className="text-amber-600">{stats.payments.pending} {t('pages.admin.stats.pending')}</span>
+                <span className="text-green-600">{stats.payments.approved} {t('pages.admin.stats.approved')}</span>
+                <span className="text-red-600">{stats.payments.rejected} {t('pages.admin.stats.rejected')}</span>
               </div>
             )}
           </div>

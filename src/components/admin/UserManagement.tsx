@@ -27,6 +27,7 @@ import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PLAN_NAMES, VALID_PLANS, ADMIN_PAGINATION } from '@/lib/constants'
 import { formatAdminDate, formatAdminDateFull, devError } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 const LIMIT = ADMIN_PAGINATION.USERS
 
@@ -51,6 +52,7 @@ interface UserData {
 
 export function UserManagement() {
   const { csrfFetch } = useCsrfToken()
+  const { t } = useLanguage()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -140,16 +142,16 @@ export function UserManagement() {
       })
 
       if (response.ok) {
-        toast.success('User plan updated successfully!')
+        toast.success(t('pages.admin.users.planUpdated'))
         setShowUpgradeModal(false)
         setSelectedUser(null)
         fetchUsers()
       } else {
-        toast.error('Failed to update user plan')
+        toast.error(t('pages.admin.users.planUpdateFailed'))
       }
     } catch (error) {
       devError('[UserManagement] Failed to update user plan:', error)
-      toast.error('Error updating user plan')
+      toast.error(t('pages.admin.users.planUpdateError'))
     } finally {
       setUpgrading(false)
     }
@@ -161,7 +163,7 @@ export function UserManagement() {
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev.filter((selectedId) => selectedId !== id)
       if (prev.length >= MAX_BULK_SELECTION) {
-        toast.error(`Maximum ${MAX_BULK_SELECTION} users can be selected at once`)
+        toast.error(t('pages.admin.users.maxBulkSelection', { count: String(MAX_BULK_SELECTION) }))
         return prev
       }
       return [...prev, id]
@@ -189,16 +191,17 @@ export function UserManagement() {
 
       if (response.ok) {
         const data = await response.json()
-        const actionLabel = bulkAction === 'upgrade' ? 'upgraded to PRO' : bulkAction === 'downgrade' ? 'downgraded to FREE' : 'deleted'
-        toast.success(`${data.successCount} user(s) ${actionLabel}${data.failureCount > 0 ? ` (${data.failureCount} failed)` : ''}`)
+        const actionLabel = bulkAction === 'upgrade' ? t('pages.admin.users.upgradedToPro') : bulkAction === 'downgrade' ? t('pages.admin.users.downgradedToFree') : t('pages.admin.users.deleted')
+        const msg = t('pages.admin.users.bulkSuccess', { count: String(data.successCount), action: actionLabel }) + (data.failureCount > 0 ? t('pages.admin.users.bulkPartialFail', { failCount: String(data.failureCount) }) : '')
+        toast.success(msg)
         setSelectedIds([])
         fetchUsers()
       } else {
-        toast.error('Failed to process bulk action')
+        toast.error(t('pages.admin.users.bulkActionFailed'))
       }
     } catch (error) {
       devError('[UserManagement] Failed to process bulk action:', error)
-      toast.error('Error processing bulk action')
+      toast.error(t('pages.admin.users.bulkActionError'))
     } finally {
       setBulkProcessing(false)
       setShowBulkConfirm(false)
@@ -245,16 +248,16 @@ export function UserManagement() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AppHeader
-        title="User Management"
+        title={t('pages.admin.users.title')}
         showBackButton={true}
-        backButtonText="Back to Admin Dashboard"
+        backButtonText={t('pages.admin.users.backToAdmin')}
         backButtonHref="/admin"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage users and their subscriptions</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('pages.admin.users.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">{t('pages.admin.users.subtitle')}</p>
         </div>
 
         {/* Search, Filters, and Actions */}
@@ -266,7 +269,7 @@ export function UserManagement() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   data-admin-search
-                  placeholder="Search by email or name..."
+                  placeholder={t('pages.admin.users.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-10"
@@ -276,7 +279,7 @@ export function UserManagement() {
                     type="button"
                     onClick={() => setSearchTerm('')}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                    aria-label="Clear search"
+                    aria-label={t('pages.admin.users.clearSearch')}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -287,18 +290,18 @@ export function UserManagement() {
                 onChange={(e) => setPlan(e.target.value)}
                 className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
               >
-                <option value="">All Plans</option>
+                <option value="">{t('pages.admin.users.allPlans')}</option>
                 {VALID_PLANS.map(p => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
               <Button onClick={handleExportCSV} variant="outline" type="button">
                 <Download className="h-4 w-4 mr-2" />
-                Export CSV
+                {t('pages.admin.users.exportCSV')}
               </Button>
               <Button onClick={fetchUsers} variant="outline" type="button">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                {t('pages.admin.common.refresh')}
               </Button>
             </div>
 
@@ -307,7 +310,7 @@ export function UserManagement() {
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 <div className="flex flex-col gap-1">
                   <label htmlFor="dateFrom" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    From date
+                    {t('pages.admin.users.fromDate')}
                   </label>
                   <input
                     id="dateFrom"
@@ -319,7 +322,7 @@ export function UserManagement() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label htmlFor="dateTo" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    To date
+                    {t('pages.admin.users.toDate')}
                   </label>
                   <input
                     id="dateTo"
@@ -333,7 +336,7 @@ export function UserManagement() {
               {hasActiveFilters && (
                 <Button onClick={clearFilters} variant="ghost" size="sm" type="button" className="text-gray-500 dark:text-gray-400">
                   <X className="h-4 w-4 mr-1" />
-                  Clear Filters
+                  {t('pages.admin.users.clearFilters')}
                 </Button>
               )}
             </div>
@@ -345,7 +348,7 @@ export function UserManagement() {
           <Card className="p-4 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <span className="text-blue-700 dark:text-blue-300 font-medium">
-                {selectedIds.length} user(s) selected
+                {t('pages.admin.users.usersSelected', { count: String(selectedIds.length) })}
               </span>
               <div className="flex gap-2">
                 <Button
@@ -358,7 +361,7 @@ export function UserManagement() {
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <ArrowUp className="h-4 w-4 mr-2" />
-                  Bulk Upgrade to PRO
+                  {t('pages.admin.users.bulkUpgrade')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -370,7 +373,7 @@ export function UserManagement() {
                   type="button"
                 >
                   <ArrowDown className="h-4 w-4 mr-2" />
-                  Bulk Downgrade to FREE
+                  {t('pages.admin.users.bulkDowngrade')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -382,7 +385,7 @@ export function UserManagement() {
                   type="button"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
+                  {t('pages.admin.users.deleteSelected')}
                 </Button>
               </div>
             </div>
@@ -396,7 +399,7 @@ export function UserManagement() {
           </div>
         ) : users.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No users found matching your filters.</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('pages.admin.users.noUsersFound')}</p>
           </Card>
         ) : (
           <>
@@ -407,12 +410,12 @@ export function UserManagement() {
                 checked={selectedIds.length === users.length && users.length > 0}
                 onChange={handleSelectAll}
                 className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                aria-label="Select all users on this page"
+                aria-label={t('pages.admin.users.selectAll')}
               />
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {selectedIds.length === users.length && users.length > 0
-                  ? 'Deselect all'
-                  : 'Select all on this page'}
+                  ? t('pages.admin.users.deselectAll')
+                  : t('pages.admin.users.selectAll')}
               </span>
             </div>
 
@@ -432,7 +435,7 @@ export function UserManagement() {
                         checked={selectedIds.includes(user.id)}
                         onChange={() => handleSelectUser(user.id)}
                         className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 flex-shrink-0"
-                        aria-label={`Select ${user.name || user.email}`}
+                        aria-label={`${user.name || user.email}`}
                       />
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
                         <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-400" />
@@ -440,12 +443,12 @@ export function UserManagement() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2 mb-1">
                           <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                            {user.name || 'No name'}
+                            {user.name || t('pages.admin.users.noName')}
                           </h3>
                           {user.role === 'ADMIN' && (
                             <Badge variant="secondary" className="flex items-center gap-1 flex-shrink-0">
                               <Crown className="h-3 w-3" />
-                              Admin
+                              {t('pages.admin.users.admin')}
                             </Badge>
                           )}
                         </div>
@@ -456,7 +459,7 @@ export function UserManagement() {
                           </span>
                           <span className="flex items-center">
                             <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
-                            Joined <span title={formatAdminDateFull(user.createdAt)}>{formatAdminDate(user.createdAt)}</span>
+                            {t('pages.admin.users.joined')} <span title={formatAdminDateFull(user.createdAt)}>{formatAdminDate(user.createdAt)}</span>
                           </span>
                         </div>
                       </div>
@@ -465,21 +468,21 @@ export function UserManagement() {
                     <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
                       <div className="text-left sm:text-right">
                         <Badge variant={user.subscription?.plan === PLAN_NAMES.PRO ? 'default' : 'outline'}>
-                          {user.subscription?.plan || 'NO PLAN'}
+                          {user.subscription?.plan || t('pages.admin.users.noPlan')}
                         </Badge>
                         {user.subscription?.endDate && (
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Expires: <span title={formatAdminDateFull(user.subscription.endDate)}>{formatAdminDate(user.subscription.endDate)}</span>
+                            {t('pages.admin.users.expires')} <span title={formatAdminDateFull(user.subscription.endDate)}>{formatAdminDate(user.subscription.endDate)}</span>
                           </span>
                         )}
                         <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                           {user.subscription && (
                             <>
-                              {user.subscription.resumeCount} resumes •{' '}
-                              {user.subscription.aiUsageCount} AI uses •{' '}
-                              {user.subscription.exportCount} exports •{' '}
-                              {user.subscription.importCount} imports •{' '}
-                              ATS: {user.subscription.atsUsageCount ?? 0}
+                              {user.subscription.resumeCount} {t('pages.admin.users.resumes')} •{' '}
+                              {user.subscription.aiUsageCount} {t('pages.admin.users.aiUses')} •{' '}
+                              {user.subscription.exportCount} {t('pages.admin.users.exports')} •{' '}
+                              {user.subscription.importCount} {t('pages.admin.users.imports')} •{' '}
+                              {t('pages.admin.common.ats')} {user.subscription.atsUsageCount ?? 0}
                             </>
                           )}
                         </div>
@@ -495,8 +498,8 @@ export function UserManagement() {
                         type="button"
                       >
                         <CreditCard className="h-4 w-4 mr-2" />
-                        <span className="hidden sm:inline">Manage Plan</span>
-                        <span className="sm:hidden">Manage</span>
+                        <span className="hidden sm:inline">{t('pages.admin.users.managePlan')}</span>
+                        <span className="sm:hidden">{t('pages.admin.users.manage')}</span>
                       </Button>
                     </div>
                   </div>
@@ -517,7 +520,7 @@ export function UserManagement() {
 
             {/* Page info */}
             <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
-              Page {page} of {totalPages} — {total} users total
+              {t('pages.admin.users.pageInfo', { page: String(page), totalPages: String(totalPages), total: String(total) })}
             </p>
           </>
         )}
@@ -528,7 +531,7 @@ export function UserManagement() {
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             role="dialog"
             aria-modal="true"
-            aria-label="Manage user plan"
+            aria-label={t('pages.admin.users.manageSubscription')}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowUpgradeModal(false)
@@ -537,13 +540,13 @@ export function UserManagement() {
             }}
           >
             <Card className="w-full max-w-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Manage User Subscription</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('pages.admin.users.manageSubscription')}</h3>
 
               <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">User: {selectedUser.email}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.users.userLabel')} {selectedUser.email}</p>
                 <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                  <span>Current Plan:</span>
-                  <Badge variant="outline">{selectedUser.subscription?.plan || 'NONE'}</Badge>
+                  <span>{t('pages.admin.users.currentPlan')}</span>
+                  <Badge variant="outline">{selectedUser.subscription?.plan || t('pages.admin.users.noPlan')}</Badge>
                 </div>
               </div>
 
@@ -556,7 +559,7 @@ export function UserManagement() {
                   type="button"
                 >
                   {selectedUser.subscription?.plan === PLAN_NAMES.FREE && <Check className="h-4 w-4 mr-2" />}
-                  Free Plan
+                  {t('pages.admin.users.freePlan')}
                 </Button>
 
                 <Button
@@ -567,7 +570,7 @@ export function UserManagement() {
                   type="button"
                 >
                   {selectedUser.subscription?.plan === PLAN_NAMES.PRO && <Check className="h-4 w-4 mr-2" />}
-                  Pro Plan (5,000 IQD/mo)
+                  {t('pages.admin.users.proPlan')}
                 </Button>
               </div>
 
@@ -581,7 +584,7 @@ export function UserManagement() {
                   disabled={upgrading}
                   type="button"
                 >
-                  Cancel
+                  {t('pages.admin.common.cancel')}
                 </Button>
               </div>
             </Card>
@@ -594,7 +597,7 @@ export function UserManagement() {
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             role="dialog"
             aria-modal="true"
-            aria-label="Confirm bulk action"
+            aria-label={bulkAction === 'upgrade' ? t('pages.admin.users.confirmBulkUpgrade') : bulkAction === 'downgrade' ? t('pages.admin.users.confirmBulkDowngrade') : t('pages.admin.users.confirmBulkDelete')}
             onClick={(e) => {
               if (e.target === e.currentTarget && !bulkProcessing) {
                 setShowBulkConfirm(false)
@@ -604,30 +607,32 @@ export function UserManagement() {
           >
             <Card className="w-full max-w-md p-6">
               <h3 className="text-lg font-semibold mb-4">
-                Confirm Bulk {bulkAction === 'upgrade' ? 'Upgrade' : bulkAction === 'downgrade' ? 'Downgrade' : 'Delete'}
+                {bulkAction === 'upgrade' ? t('pages.admin.users.confirmBulkUpgrade') : bulkAction === 'downgrade' ? t('pages.admin.users.confirmBulkDowngrade') : t('pages.admin.users.confirmBulkDelete')}
               </h3>
 
               {bulkAction === 'delete' ? (
                 <p className="text-sm text-red-600 mb-4 font-medium">
-                  This will permanently delete <strong>{selectedIds.length}</strong> user(s) and all their data (resumes, subscriptions, payments). This action cannot be undone. Admin users in the selection will be skipped.
+                  {t('pages.admin.users.bulkDeleteWarning', { count: String(selectedIds.length) })}
                 </p>
               ) : (
                 <>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Are you sure you want to {bulkAction === 'upgrade' ? 'upgrade' : 'downgrade'}{' '}
-                    <strong>{selectedIds.length}</strong> user(s) to{' '}
-                    <strong>{bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE}</strong>?
+                    {t('pages.admin.users.bulkConfirmQuestion', {
+                      action: bulkAction === 'upgrade' ? t('pages.admin.users.bulkUpgradeAction').toLowerCase() : t('pages.admin.users.bulkDowngradeAction').toLowerCase(),
+                      count: String(selectedIds.length),
+                      plan: bulkAction === 'upgrade' ? PLAN_NAMES.PRO : PLAN_NAMES.FREE
+                    })}
                   </p>
 
                   {bulkAction === 'upgrade' && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                      Each user will receive a 30-day PRO subscription.
+                      {t('pages.admin.users.bulkUpgradeNote')}
                     </p>
                   )}
 
                   {bulkAction === 'downgrade' && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                      Users will be downgraded to the FREE plan. Their usage counts will be preserved.
+                      {t('pages.admin.users.bulkDowngradeNote')}
                     </p>
                   )}
                 </>
@@ -643,7 +648,7 @@ export function UserManagement() {
                   disabled={bulkProcessing}
                   type="button"
                 >
-                  Cancel
+                  {t('pages.admin.common.cancel')}
                 </Button>
                 <Button
                   onClick={handleBulkAction}
@@ -659,11 +664,14 @@ export function UserManagement() {
                   {bulkProcessing ? (
                     <>
                       <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2" />
-                      Processing...
+                      {t('pages.admin.users.processing')}
                     </>
                   ) : (
                     <>
-                      {bulkAction === 'upgrade' ? 'Upgrade' : bulkAction === 'downgrade' ? 'Downgrade' : 'Delete'} {selectedIds.length} User(s)
+                      {t('pages.admin.users.actionUsers', {
+                        action: bulkAction === 'upgrade' ? t('pages.admin.users.bulkUpgradeAction') : bulkAction === 'downgrade' ? t('pages.admin.users.bulkDowngradeAction') : t('pages.admin.users.bulkDeleteAction'),
+                        count: String(selectedIds.length)
+                      })}
                     </>
                   )}
                 </Button>

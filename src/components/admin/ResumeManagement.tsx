@@ -16,6 +16,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { ADMIN_PAGINATION } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // Dynamic import for PreviewModal to match user experience
 const PreviewModal = dynamic(
@@ -47,6 +48,7 @@ interface ResumeWithUser {
 
 export function ResumeManagement() {
   const { csrfFetch } = useCsrfToken()
+  const { t } = useLanguage()
   const [resumes, setResumes] = useState<ResumeWithUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -155,12 +157,12 @@ export function ResumeManagement() {
 
       if (!response.ok) throw new Error('Failed to delete resumes')
 
-      toast.success(`Deleted ${ids.length} resume(s)`)
+      toast.success(t('pages.admin.resumes.deletedSuccess', { count: String(ids.length) }))
       setSelectedIds([])
       fetchResumes()
     } catch (error) {
       devError('[ResumeManagement] Failed to delete resumes:', error)
-      toast.error('Failed to delete resumes')
+      toast.error(t('pages.admin.resumes.deleteFailed'))
     } finally {
       setIsDeleting(false)
       setDeleteConfirm(null)
@@ -239,7 +241,7 @@ export function ResumeManagement() {
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-blue-700 dark:text-blue-300 font-medium">
-              {selectedIds.length} resume(s) selected
+              {t('pages.admin.resumes.selected', { count: String(selectedIds.length) })}
             </span>
             <Button
               onClick={() => handleDeleteResumes(selectedIds)}
@@ -247,7 +249,7 @@ export function ResumeManagement() {
               size="sm"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete Selected
+              {t('pages.admin.resumes.deleteSelectedBtn')}
             </Button>
           </div>
         </Card>
@@ -257,7 +259,7 @@ export function ResumeManagement() {
       <div className="flex justify-end">
         <Button onClick={handleExport} variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
-          Export CSV (This Page)
+          {t('pages.admin.resumes.exportCSV')}
         </Button>
       </div>
 
@@ -269,11 +271,11 @@ export function ResumeManagement() {
           </div>
         ) : resumes.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No resumes found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('pages.admin.resumes.noResumesFound')}</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
               {search || status || template
-                ? 'Try adjusting your search filters'
-                : 'Resumes will appear here once users create them'}
+                ? t('pages.admin.resumes.adjustFilters')
+                : t('pages.admin.resumes.resumesWillAppear')}
             </p>
           </div>
         ) : (
@@ -294,7 +296,7 @@ export function ResumeManagement() {
                 onPageChange={setPage}
               />
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Page {page} of {totalPages} — {totalCount} resume{totalCount !== 1 ? 's' : ''} total
+                {t('pages.admin.resumes.pageInfo', { page: String(page), totalPages: String(totalPages), count: String(totalCount), plural: totalCount !== 1 ? 's' : '' })}
               </p>
             </div>
           </div>
@@ -319,7 +321,7 @@ export function ResumeManagement() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-gray-700 dark:text-gray-300">Loading resume preview...</p>
+            <p className="text-gray-700 dark:text-gray-300">{t('pages.admin.resumes.loadingPreview')}</p>
           </div>
         </div>
       )}
@@ -327,11 +329,13 @@ export function ResumeManagement() {
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={!!deleteConfirm}
-        title={`Delete ${deleteConfirm?.ids.length === 1 ? 'Resume' : `${deleteConfirm?.ids.length} Resumes`}?`}
+        title={deleteConfirm?.ids.length === 1
+          ? t('pages.admin.resumes.deleteTitle')
+          : t('pages.admin.resumes.deleteTitlePlural', { count: String(deleteConfirm?.ids.length) })}
         message={
           deleteConfirm?.ids.length === 1
-            ? 'This resume and all its sections will be permanently deleted.'
-            : `These ${deleteConfirm?.ids.length} resumes and all their sections will be permanently deleted.`
+            ? t('pages.admin.resumes.deleteMessage')
+            : t('pages.admin.resumes.deleteMessagePlural', { count: String(deleteConfirm?.ids.length) })
         }
         detail={
           deleteConfirm?.ids.length === 1

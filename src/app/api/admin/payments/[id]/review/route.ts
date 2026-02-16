@@ -116,23 +116,23 @@ export async function POST(
           plan: true,
           amount: true,
           status: true,
+          priceAtCreation: true,
         },
       })
 
       if (!payment) throw new Error('Payment not found')
 
       // Validate payment amount when approving
-      // NOTE: Price is validated against the CURRENT proPlanPrice. If the price was changed
-      // after the user submitted payment, this check may reject a legitimately paid amount.
-      // Admin should manually verify the amount and use the note field to document discrepancies.
+      // Uses priceAtCreation (snapshotted at payment submission) to avoid false
+      // warnings when the plan price has changed since the user paid.
+      // Legacy payments without priceAtCreation fall back to the current price.
       if (action === 'approve') {
         if (!payment.amount || payment.amount <= 0) {
           throw new Error('Invalid payment amount')
         }
-        const settings = await getSystemSettings()
-        const expectedPrice = settings.proPlanPrice || 5000
+        const expectedPrice = payment.priceAtCreation ?? (await getSystemSettings()).proPlanPrice ?? 5000
         if (payment.amount !== expectedPrice) {
-          console.warn(`[AdminPaymentReview] Payment ${id} amount (${payment.amount}) differs from current plan price (${expectedPrice}). Price may have changed since payment was created.`)
+          console.warn(`[AdminPaymentReview] Payment ${id} amount (${payment.amount}) differs from expected price (${expectedPrice}).${!payment.priceAtCreation ? ' Legacy payment — using current plan price as fallback.' : ''}`)
           // Allow approval — admin has discretion to approve payments at prior price points
         }
       }

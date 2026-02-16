@@ -143,17 +143,18 @@ enum SubscriptionStatus {
 // e.g., @@unique([userId, status], where: { status: "PENDING" }) — Prisma doesn't support
 // partial unique indexes natively; use a raw migration: CREATE UNIQUE INDEX ... WHERE status = 'PENDING'
 model Payment {
-  id             String        @id @default(cuid())
-  userId         String
-  plan           SubscriptionPlan
-  amount         Int
-  screenshotData Bytes
-  screenshotType String
-  status         PaymentStatus @default(PENDING)
-  adminNote      String?
-  createdAt      DateTime      @default(now())
-  reviewedAt     DateTime?
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  userId          String
+  plan            SubscriptionPlan
+  amount          Int
+  screenshotData  Bytes
+  screenshotType  String
+  priceAtCreation Int?
+  status          PaymentStatus @default(PENDING)
+  adminNote       String?
+  createdAt       DateTime      @default(now())
+  reviewedAt      DateTime?
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])

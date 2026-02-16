@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function AdminThemeToggle() {
   const [dark, setDark] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     // Read from localStorage on mount
@@ -22,7 +24,7 @@ export function AdminThemeToggle() {
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={toggle} type="button" aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} className="text-muted-foreground">
+    <Button variant="ghost" size="sm" onClick={toggle} type="button" aria-label={dark ? t('pages.admin.themeToggle.lightMode') : t('pages.admin.themeToggle.darkMode')} className="text-muted-foreground">
       {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   )

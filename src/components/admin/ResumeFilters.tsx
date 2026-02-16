@@ -5,6 +5,7 @@ import { ResumeStatus } from '@prisma/client'
 import { Search } from 'lucide-react'
 import { getAllTemplates, TemplateInfo } from '@/lib/templates'
 import { devError } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ResumeFiltersProps {
   search: string
@@ -27,6 +28,7 @@ export function ResumeFilters({
   onSearchChange,
   onStatusChange,
   onTemplateChange}: ResumeFiltersProps) {
+  const { t } = useLanguage()
   const [templates, setTemplates] = useState<TemplateInfo[]>(getAllTemplates())
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export function ResumeFilters({
         <input
           type="text"
           data-admin-search
-          placeholder="Search by title, user email, or name..."
+          placeholder={t('pages.admin.resumes.searchPlaceholder')}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -72,7 +74,7 @@ export function ResumeFilters({
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Status
+            {t('pages.admin.resumes.statusLabel')}
           </label>
           <select
             value={status}
@@ -81,16 +83,16 @@ export function ResumeFilters({
                      bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Status</option>
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
-            <option value="ARCHIVED">Archived</option>
+            <option value="">{t('pages.admin.resumes.allStatus')}</option>
+            <option value="DRAFT">{t('pages.admin.resumes.draft')}</option>
+            <option value="PUBLISHED">{t('pages.admin.resumes.published')}</option>
+            <option value="ARCHIVED">{t('pages.admin.resumes.archived')}</option>
           </select>
         </div>
 
         <div className="flex-1 min-w-[200px]">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Template
+            {t('pages.admin.resumes.templateLabel')}
           </label>
           <select
             value={template}
@@ -99,7 +101,7 @@ export function ResumeFilters({
                      bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Templates</option>
+            <option value="">{t('pages.admin.resumes.allTemplates')}</option>
             {templates.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}

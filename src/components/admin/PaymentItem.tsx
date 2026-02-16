@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Eye } from 'lucide-react'
 import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ interface PaymentItemProps {
 }
 
 export function PaymentItem({ payment, onReview }: PaymentItemProps) {
+  const { t } = useLanguage()
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 shadow-sm p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -69,7 +71,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {payment.user.name || 'Unknown User'}
+              {payment.user.name || t('pages.admin.payments.unknownUser')}
             </h3>
             <Badge className={statusBadgeClass(payment.status)}>
               {payment.status}
@@ -80,19 +82,19 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Plan:</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400">{t('pages.admin.payments.plan')}</span>{' '}
               <span className="font-medium text-gray-900 dark:text-gray-100">
                 {payment.plan}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Amount:</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400">{t('pages.admin.payments.amount')}</span>{' '}
               <span className="font-medium text-gray-900 dark:text-gray-100">
                 {formatAmount(payment.amount)}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Date:</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400">{t('pages.admin.payments.date')}</span>{' '}
               <span className="text-gray-700 dark:text-gray-300" title={formatAdminDateFull(payment.createdAt)}>
                 {formatAdminDate(payment.createdAt)}
               </span>
@@ -104,12 +106,12 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
             <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
               {payment.reviewedAt && (
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Reviewed: <span title={formatAdminDateFull(payment.reviewedAt)}>{formatAdminDate(payment.reviewedAt)}</span>
+                  {t('pages.admin.payments.reviewed')} <span title={formatAdminDateFull(payment.reviewedAt)}>{formatAdminDate(payment.reviewedAt)}</span>
                 </p>
               )}
               {payment.adminNote && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  <span className="font-medium">Note:</span>{' '}
+                  <span className="font-medium">{t('pages.admin.payments.note')}</span>{' '}
                   {payment.adminNote}
                 </p>
               )}
@@ -126,7 +128,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
               className="flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
-              Review
+              {t('pages.admin.payments.review')}
             </Button>
           ) : (
             <Button
@@ -136,7 +138,7 @@ export function PaymentItem({ payment, onReview }: PaymentItemProps) {
               className="flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
-              View
+              {t('pages.admin.payments.view')}
             </Button>
           )}
         </div>

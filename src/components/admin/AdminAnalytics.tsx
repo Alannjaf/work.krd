@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { devError } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -10,11 +11,8 @@ import {
 } from 'recharts'
 
 // Typed tooltip formatters — replaces `as any` casts
+// Note: These use English labels as Recharts tooltips don't easily support dynamic i18n
 type ChartTooltipFormatter = TooltipProps<number, string>['formatter']
-const signupsFormatter: ChartTooltipFormatter = (v) => [v, 'Signups']
-const revenueFormatter: ChartTooltipFormatter = (v) => [`${Number(v).toLocaleString()} IQD`, 'Revenue']
-const activeUsersFormatter: ChartTooltipFormatter = (v) => [v, 'Active Users']
-const resumesFormatter: ChartTooltipFormatter = (v) => [v, 'Resumes']
 
 interface AnalyticsData {
   signups: { month: string; count: number }[]
@@ -54,9 +52,15 @@ interface AdminAnalyticsProps {
 }
 
 export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
+  const { t } = useLanguage()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const signupsFormatter: ChartTooltipFormatter = (v) => [v, t('pages.admin.analytics.signups')]
+  const revenueFormatter: ChartTooltipFormatter = (v) => [`${Number(v).toLocaleString()} IQD`, t('pages.admin.analytics.revenue')]
+  const activeUsersFormatter: ChartTooltipFormatter = (v) => [v, t('pages.admin.analytics.tooltipActiveUsers')]
+  const resumesFormatter: ChartTooltipFormatter = (v) => [v, t('pages.admin.analytics.tooltipResumes')]
 
   useEffect(() => {
     let cancelled = false
@@ -71,7 +75,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
         }
       } catch (err) {
         devError('[AdminAnalytics] Failed to load:', err)
-        if (!cancelled) setError('Failed to load analytics')
+        if (!cancelled) setError(t('pages.admin.analytics.loadFailed'))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -94,7 +98,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
   if (error || !data) {
     return (
       <Card className="p-6 text-center text-gray-500 dark:text-gray-400">
-        <p>{error || 'No analytics data available'}</p>
+        <p>{error || t('pages.admin.analytics.noData')}</p>
       </Card>
     )
   }
@@ -102,7 +106,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Signups Over Time */}
-      <ChartCard title="User Signups">
+      <ChartCard title={t('pages.admin.analytics.userSignups')}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data.signups}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -115,7 +119,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
       </ChartCard>
 
       {/* Monthly Revenue */}
-      <ChartCard title="Monthly Revenue (IQD)">
+      <ChartCard title={t('pages.admin.analytics.monthlyRevenue')}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data.revenue}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -128,7 +132,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
       </ChartCard>
 
       {/* Active Users */}
-      <ChartCard title="Active Users">
+      <ChartCard title={t('pages.admin.analytics.activeUsers')}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data.activeUsers}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -141,7 +145,7 @@ export function AdminAnalytics({ csrfFetch }: AdminAnalyticsProps) {
       </ChartCard>
 
       {/* Resumes Created */}
-      <ChartCard title="Resumes Created">
+      <ChartCard title={t('pages.admin.analytics.resumesCreated')}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data.resumeCompletions}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />

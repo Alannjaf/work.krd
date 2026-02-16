@@ -7,6 +7,7 @@ import { RefreshCw, X, Download } from 'lucide-react'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { formatAdminDate, formatAdminDateFull, devError } from '@/lib/admin-utils'
 import { ADMIN_PAGINATION } from '@/lib/constants'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 const LIMIT = ADMIN_PAGINATION.AUDIT_LOGS
 
@@ -19,16 +20,28 @@ interface AuditEntry {
   createdAt: string
 }
 
-const ACTION_LABELS: Record<string, { label: string; color: string }> = {
-  UPDATE_SETTINGS: { label: 'Settings Updated', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  APPROVE_PAYMENT: { label: 'Payment Approved', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  REJECT_PAYMENT: { label: 'Payment Rejected', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  CHANGE_USER_PLAN: { label: 'Plan Changed', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
-  PROCESS_EXPIRED_SUBSCRIPTIONS: { label: 'Expired Processed', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  REVERT_SETTINGS: { label: 'Settings Reverted', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' },
-  BULK_UPGRADE: { label: 'Bulk Upgrade', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' },
-  BULK_DOWNGRADE: { label: 'Bulk Downgrade', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200' },
-  REFUND_PAYMENT: { label: 'Payment Refunded', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
+const ACTION_COLORS: Record<string, string> = {
+  UPDATE_SETTINGS: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  APPROVE_PAYMENT: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  REJECT_PAYMENT: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  CHANGE_USER_PLAN: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  PROCESS_EXPIRED_SUBSCRIPTIONS: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+  REVERT_SETTINGS: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  BULK_UPGRADE: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  BULK_DOWNGRADE: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200',
+  REFUND_PAYMENT: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+}
+
+const ACTION_LABEL_KEYS: Record<string, string> = {
+  UPDATE_SETTINGS: 'pages.admin.audit.settingsUpdated',
+  APPROVE_PAYMENT: 'pages.admin.audit.paymentApproved',
+  REJECT_PAYMENT: 'pages.admin.audit.paymentRejected',
+  CHANGE_USER_PLAN: 'pages.admin.audit.planChanged',
+  PROCESS_EXPIRED_SUBSCRIPTIONS: 'pages.admin.audit.expiredProcessed',
+  REVERT_SETTINGS: 'pages.admin.audit.settingsReverted',
+  BULK_UPGRADE: 'pages.admin.audit.bulkUpgrade',
+  BULK_DOWNGRADE: 'pages.admin.audit.bulkDowngrade',
+  REFUND_PAYMENT: 'pages.admin.audit.paymentRefunded',
 }
 
 const ACTION_OPTIONS = [
@@ -42,10 +55,6 @@ const ACTION_OPTIONS = [
   'BULK_DOWNGRADE',
   'REFUND_PAYMENT',
 ] as const
-
-function getActionInfo(action: string) {
-  return ACTION_LABELS[action] ?? { label: action, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' }
-}
 
 function AuditEntrySkeleton() {
   return (
@@ -63,9 +72,17 @@ const dateInputClassName = 'h-10 rounded-md border border-input bg-background px
 
 export function AuditLogPanel() {
   const { csrfFetch } = useCsrfToken()
+  const { t } = useLanguage()
   const [logs, setLogs] = useState<AuditEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const getActionInfo = (action: string) => {
+    const key = ACTION_LABEL_KEYS[action]
+    const label = key ? t(key) : action
+    const color = ACTION_COLORS[action] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+    return { label, color }
+  }
 
   // Filter state
   const [actionFilter, setActionFilter] = useState('')
@@ -98,7 +115,7 @@ export function AuditLogPanel() {
       setTotalPages(data.totalPages)
     } catch (err) {
       devError('[AuditLogPanel] Failed to fetch audit logs:', err)
-      setError('Failed to load audit logs')
+      setError(t('pages.admin.audit.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -144,9 +161,9 @@ export function AuditLogPanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Audit Log</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('pages.admin.audit.title')}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {total > 0 ? `${total} total entries` : 'Recent admin actions'}
+            {total > 0 ? t('pages.admin.audit.totalEntries', { count: String(total) }) : t('pages.admin.audit.recentActions')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -158,7 +175,7 @@ export function AuditLogPanel() {
             type="button"
           >
             <Download className="h-4 w-4 mr-1" />
-            Export CSV
+            {t('pages.admin.audit.exportCSV')}
           </Button>
           <Button
             variant="ghost"
@@ -178,7 +195,7 @@ export function AuditLogPanel() {
           {/* Action type filter */}
           <div className="flex flex-col gap-1">
             <label htmlFor="audit-action-filter" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-              Action Type
+              {t('pages.admin.audit.actionType')}
             </label>
             <select
               id="audit-action-filter"
@@ -186,10 +203,10 @@ export function AuditLogPanel() {
               onChange={(e) => setActionFilter(e.target.value)}
               className={dateInputClassName}
             >
-              <option value="">All Actions</option>
+              <option value="">{t('pages.admin.audit.allActions')}</option>
               {ACTION_OPTIONS.map((action) => (
                 <option key={action} value={action}>
-                  {ACTION_LABELS[action]?.label ?? action}
+                  {getActionInfo(action).label}
                 </option>
               ))}
             </select>
@@ -198,7 +215,7 @@ export function AuditLogPanel() {
           {/* Date from */}
           <div className="flex flex-col gap-1">
             <label htmlFor="audit-date-from" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-              From
+              {t('pages.admin.audit.from')}
             </label>
             <input
               id="audit-date-from"
@@ -212,7 +229,7 @@ export function AuditLogPanel() {
           {/* Date to */}
           <div className="flex flex-col gap-1">
             <label htmlFor="audit-date-to" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-              To
+              {t('pages.admin.audit.to')}
             </label>
             <input
               id="audit-date-to"
@@ -233,7 +250,7 @@ export function AuditLogPanel() {
               className="h-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <X className="h-4 w-4 mr-1" />
-              Clear filters
+              {t('pages.admin.audit.clearFilters')}
             </Button>
           )}
         </div>
@@ -251,7 +268,7 @@ export function AuditLogPanel() {
           <div className="p-6 text-center text-sm text-red-600">{error}</div>
         ) : logs.length === 0 ? (
           <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            {hasActiveFilters ? 'No entries match the current filters' : 'No audit entries yet'}
+            {hasActiveFilters ? t('pages.admin.audit.noMatchingEntries') : t('pages.admin.audit.noEntries')}
           </div>
         ) : (
           logs.map((entry) => {
@@ -290,7 +307,7 @@ export function AuditLogPanel() {
             onPageChange={setPage}
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            Page {page} of {totalPages} ({total} entries)
+            {t('pages.admin.audit.pageInfo', { page: String(page), totalPages: String(totalPages), count: String(total) })}
           </p>
         </div>
       )}

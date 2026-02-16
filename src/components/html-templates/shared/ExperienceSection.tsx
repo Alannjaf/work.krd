@@ -60,7 +60,14 @@ export function ExperienceSection({
 
   const fmtRange = customFormat || (isRTL ? formatKurdishDateRange : defaultFormatDateRange);
 
-  const defaultTitle = isRTL ? 'ئەزموونی کاری' : 'Professional Experience'; // Kurdish covers Arabic script users too
+  // Design decision: RTL default title uses Kurdish ('ئەزموونی کاری') because work.krd
+  // is a Kurdish-focused app. Templates only have an `isRTL` boolean (no locale),
+  // so Kurdish vs Arabic cannot be distinguished. Arabic speakers will see Kurdish
+  // text, which uses Arabic script and is acceptable for this product's target audience.
+  // The `formatKurdishDateRange` above uses the 'ar' locale for date formatting, which
+  // produces correct Arabic-script numerals and month names for both Kurdish and Arabic users.
+  // If per-locale titles are needed in the future, templates would need a `locale` prop.
+  const defaultTitle = isRTL ? 'ئەزموونی کاری' : 'Professional Experience';
 
   return (
     <div style={{ marginBottom: 24 }}>

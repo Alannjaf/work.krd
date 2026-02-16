@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { Check, X, Loader2, ImageIcon, RotateCcw } from 'lucide-react'
 import { type Payment, formatAmount, statusBadgeClass } from './PaymentItem'
 import { devError, formatAdminDate } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ export function PaymentApprovalForm({
   onClose,
   onActionComplete,
 }: PaymentApprovalFormProps) {
+  const { t } = useLanguage()
   const [reviewScreenshot, setReviewScreenshot] = useState<string | null>(null)
   const [loadingScreenshot, setLoadingScreenshot] = useState(true)
   const [rejectNote, setRejectNote] = useState('')
@@ -44,7 +46,7 @@ export function PaymentApprovalForm({
       } catch (error) {
         devError('[PaymentApprovalForm] Failed to load review:', error)
         if (!cancelled) {
-          toast.error('Failed to load screenshot')
+          toast.error(t('pages.admin.payments.screenshotLoadFailed'))
         }
       } finally {
         if (!cancelled) {
@@ -70,9 +72,9 @@ export function PaymentApprovalForm({
 
   const handleAction = async (action: 'approve' | 'reject') => {
     if (action === 'approve') {
-      if (!window.confirm('Are you sure you want to approve this payment? This will activate the user\'s subscription.')) return
+      if (!window.confirm(t('pages.admin.payments.approveConfirm'))) return
     } else {
-      if (!window.confirm('Are you sure you want to reject this payment?')) return
+      if (!window.confirm(t('pages.admin.payments.rejectConfirm'))) return
     }
 
     setSubmitting(true)
@@ -96,15 +98,15 @@ export function PaymentApprovalForm({
 
       toast.success(
         action === 'approve'
-          ? 'Payment approved successfully'
-          : 'Payment rejected'
+          ? t('pages.admin.payments.approveSuccess')
+          : t('pages.admin.payments.rejectSuccess')
       )
       onClose()
       onActionComplete()
     } catch (error) {
       devError('[PaymentApprovalForm] Action failed:', error)
       toast.error(
-        error instanceof Error ? error.message : 'Failed to process payment'
+        error instanceof Error ? error.message : t('pages.admin.payments.actionFailed')
       )
     } finally {
       setSubmitting(false)
@@ -114,7 +116,7 @@ export function PaymentApprovalForm({
   // ─── Refund handler ──────────────────────────────────────────────────
 
   const handleRefund = async () => {
-    if (!window.confirm('Are you sure you want to refund this payment? This will downgrade the user to FREE.')) return
+    if (!window.confirm(t('pages.admin.payments.refundConfirm'))) return
 
     setRefunding(true)
     try {
@@ -134,13 +136,13 @@ export function PaymentApprovalForm({
         throw new Error(errorData.error || 'Refund failed')
       }
 
-      toast.success('Payment refunded successfully')
+      toast.success(t('pages.admin.payments.refundSuccess'))
       onClose()
       onActionComplete()
     } catch (error) {
       devError('[PaymentApprovalForm] Refund failed:', error)
       toast.error(
-        error instanceof Error ? error.message : 'Failed to refund payment'
+        error instanceof Error ? error.message : t('pages.admin.payments.refundFailed')
       )
     } finally {
       setRefunding(false)
@@ -165,7 +167,7 @@ export function PaymentApprovalForm({
         {/* Modal header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-xl">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Payment Review
+            {t('pages.admin.payments.paymentReview')}
           </h2>
           <button
             type="button"
@@ -181,41 +183,41 @@ export function PaymentApprovalForm({
           {/* User details */}
           <div>
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-              User Details
+              {t('pages.admin.payments.userDetails')}
             </h3>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Name</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.name')}</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {payment.user.name || 'Unknown'}
+                  {payment.user.name || t('pages.admin.payments.unknownUser')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.email')}</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {payment.user.email}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Plan</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.planLabel')}</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {payment.plan}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Amount</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.amountLabel')}</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {formatAmount(payment.amount)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Submitted</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.submitted')}</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   {formatAdminDate(payment.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.payments.status')}</span>
                 <Badge className={statusBadgeClass(payment.status)}>
                   {payment.status}
                 </Badge>
@@ -226,27 +228,27 @@ export function PaymentApprovalForm({
           {/* Screenshot */}
           <div>
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-              Payment Screenshot
+              {t('pages.admin.payments.screenshot')}
             </h3>
             <div className="border dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 min-h-[200px] flex items-center justify-center">
               {loadingScreenshot ? (
                 <div className="flex flex-col items-center gap-2 py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
                   <span className="text-sm text-gray-400 dark:text-gray-500">
-                    Loading screenshot...
+                    {t('pages.admin.payments.loadingScreenshot')}
                   </span>
                 </div>
               ) : reviewScreenshot ? (
                 <img
                   src={reviewScreenshot}
-                  alt="Payment screenshot"
+                  alt={t('pages.admin.payments.paymentScreenshot')}
                   className="w-full h-auto max-h-[400px] object-contain"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 py-8">
                   <ImageIcon className="h-10 w-10 text-gray-300 dark:text-gray-600" />
                   <span className="text-sm text-gray-400 dark:text-gray-500">
-                    No screenshot available
+                    {t('pages.admin.payments.noScreenshot')}
                   </span>
                 </div>
               )}
@@ -257,13 +259,13 @@ export function PaymentApprovalForm({
           {payment.status !== 'PENDING' && (
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                Review Info
+                {t('pages.admin.payments.reviewInfo')}
               </h3>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
                 {payment.reviewedAt && (
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Reviewed At
+                      {t('pages.admin.payments.reviewedAt')}
                     </span>
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       {formatAdminDate(payment.reviewedAt)}
@@ -273,7 +275,7 @@ export function PaymentApprovalForm({
                 {payment.adminNote && (
                   <div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Admin Note
+                      {t('pages.admin.payments.adminNote')}
                     </span>
                     <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
                       {payment.adminNote}
@@ -293,13 +295,13 @@ export function PaymentApprovalForm({
                   htmlFor="reject-note"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Note (optional, shown to user on rejection)
+                  {t('pages.admin.payments.rejectNoteLabel')}
                 </label>
                 <textarea
                   id="reject-note"
                   value={rejectNote}
                   onChange={(e) => setRejectNote(e.target.value)}
-                  placeholder="Reason for rejection..."
+                  placeholder={t('pages.admin.payments.rejectNotePlaceholder')}
                   rows={3}
                   className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                 />
@@ -316,7 +318,7 @@ export function PaymentApprovalForm({
                   ) : (
                     <Check className="h-4 w-4 mr-2" />
                   )}
-                  Approve
+                  {t('pages.admin.payments.approve')}
                 </Button>
                 <Button
                   variant="destructive"
@@ -329,7 +331,7 @@ export function PaymentApprovalForm({
                   ) : (
                     <X className="h-4 w-4 mr-2" />
                   )}
-                  Reject
+                  {t('pages.admin.payments.reject')}
                 </Button>
               </div>
             </div>
@@ -344,13 +346,13 @@ export function PaymentApprovalForm({
                     htmlFor="refund-note"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
-                    Refund note (optional)
+                    {t('pages.admin.payments.refundNoteLabel')}
                   </label>
                   <textarea
                     id="refund-note"
                     value={rejectNote}
                     onChange={(e) => setRejectNote(e.target.value)}
-                    placeholder="Reason for refund..."
+                    placeholder={t('pages.admin.payments.refundNotePlaceholder')}
                     rows={2}
                     className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                   />
@@ -368,11 +370,11 @@ export function PaymentApprovalForm({
                     ) : (
                       <RotateCcw className="h-4 w-4 mr-2" />
                     )}
-                    Refund
+                    {t('pages.admin.payments.refund')}
                   </Button>
                 )}
                 <Button variant="outline" onClick={onClose}>
-                  Close
+                  {t('pages.admin.payments.close')}
                 </Button>
               </div>
             </div>

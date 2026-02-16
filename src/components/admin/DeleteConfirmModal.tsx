@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface DeleteConfirmModalProps {
   isOpen: boolean
@@ -25,6 +26,7 @@ export function DeleteConfirmModal({
   onCancel,
   confirming = false,
 }: DeleteConfirmModalProps) {
+  const { t } = useLanguage()
   const cancelRef = useRef<HTMLButtonElement>(null)
 
   const modalRef = useRef<HTMLDivElement>(null)
@@ -73,13 +75,11 @@ export function DeleteConfirmModal({
             )}
             {itemCount && itemCount > 1 && (
               <p className="mt-2 text-sm font-medium text-red-600">
-{/* TODO: i18n — needs pages.admin.* namespace */}
-                {itemCount} items will be deleted
+                {t('pages.admin.deleteModal.itemsWillBeDeleted', { count: String(itemCount) })}
               </p>
             )}
             <p id="delete-modal-warning" className="mt-3 text-xs text-gray-400 dark:text-gray-500">
-{/* TODO: i18n — needs pages.admin.* namespace */}
-              This action cannot be undone.
+              {t('pages.admin.deleteModal.cannotBeUndone')}
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function DeleteConfirmModal({
             disabled={confirming}
             type="button"
           >
-            Cancel
+            {t('pages.admin.common.cancel')}
           </Button>
           <Button
             onClick={onConfirm}
@@ -100,7 +100,7 @@ export function DeleteConfirmModal({
             className="bg-red-600 hover:bg-red-700 text-white"
             type="button"
           >
-            {confirming ? 'Deleting...' : 'Delete'}
+            {confirming ? t('pages.admin.deleteModal.deleting') : t('pages.admin.common.delete')}
           </Button>
         </div>
       </div>

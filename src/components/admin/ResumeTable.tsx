@@ -5,6 +5,7 @@ import { Eye, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Columns3 } from 'lucide-r
 import { ResumeStatus } from '@prisma/client'
 import { formatAdminDate, formatAdminDateFull } from '@/lib/admin-utils'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ResumeWithUser {
   id: string
@@ -27,14 +28,15 @@ type SortField = 'title' | 'user' | 'status' | 'sections' | 'createdAt'
 type SortDirection = 'asc' | 'desc'
 
 type ColumnKey = 'title' | 'user' | 'status' | 'sections' | 'createdAt' | 'actions'
-const ALL_COLUMNS: { key: ColumnKey; label: string }[] = [
-  { key: 'title', label: 'Resume' },
-  { key: 'user', label: 'User' },
-  { key: 'status', label: 'Status' },
-  { key: 'sections', label: 'Sections' },
-  { key: 'createdAt', label: 'Created' },
-  { key: 'actions', label: 'Actions' },
-]
+const COLUMN_KEYS: ColumnKey[] = ['title', 'user', 'status', 'sections', 'createdAt', 'actions']
+const COLUMN_I18N_KEYS: Record<ColumnKey, string> = {
+  title: 'pages.admin.resumes.resume',
+  user: 'pages.admin.resumes.user',
+  status: 'pages.admin.resumes.statusLabel',
+  sections: 'pages.admin.resumes.sections',
+  createdAt: 'pages.admin.resumes.created',
+  actions: 'pages.admin.resumes.actions',
+}
 
 interface ResumeTableProps {
   resumes: ResumeWithUser[]
@@ -62,6 +64,11 @@ export function ResumeTable({
   sortOrder: serverSortOrder,
   onSort: serverOnSort,
 }: ResumeTableProps) {
+  const { t } = useLanguage()
+
+  // Build columns with translated labels
+  const ALL_COLUMNS = COLUMN_KEYS.map(key => ({ key, label: t(COLUMN_I18N_KEYS[key]) }))
+
   // Server-side sort mode: when onSort callback is provided, delegate sorting to the parent/API
   const isServerSort = !!serverOnSort
 
@@ -163,7 +170,7 @@ export function ResumeTable({
         <div className="relative">
           <Button variant="outline" size="sm" onClick={() => setShowColumnToggle(prev => !prev)} type="button">
             <Columns3 className="h-4 w-4 mr-1" />
-            Columns
+            {t('pages.admin.resumes.columns')}
           </Button>
           {showColumnToggle && (
             <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg shadow-lg p-2 z-10 min-w-[160px]">
@@ -198,7 +205,7 @@ export function ResumeTable({
               {visibleColumns.has('title') && (
                 <th className={thSortableClass} onClick={() => handleSort('title')}>
                   <span className="flex items-center">
-                    Resume
+                    {t('pages.admin.resumes.resume')}
                     <SortIcon field="title" />
                   </span>
                 </th>
@@ -206,7 +213,7 @@ export function ResumeTable({
               {visibleColumns.has('user') && (
                 <th className={thSortableClass} onClick={() => handleSort('user')}>
                   <span className="flex items-center">
-                    User
+                    {t('pages.admin.resumes.user')}
                     <SortIcon field="user" />
                   </span>
                 </th>
@@ -214,7 +221,7 @@ export function ResumeTable({
               {visibleColumns.has('status') && (
                 <th className={thSortableClass} onClick={() => handleSort('status')}>
                   <span className="flex items-center">
-                    Status
+                    {t('pages.admin.resumes.statusLabel')}
                     <SortIcon field="status" />
                   </span>
                 </th>
@@ -222,7 +229,7 @@ export function ResumeTable({
               {visibleColumns.has('sections') && (
                 <th className={thSortableClass} onClick={() => handleSort('sections')}>
                   <span className="flex items-center">
-                    Sections
+                    {t('pages.admin.resumes.sections')}
                     <SortIcon field="sections" />
                   </span>
                 </th>
@@ -230,14 +237,14 @@ export function ResumeTable({
               {visibleColumns.has('createdAt') && (
                 <th className={thSortableClass} onClick={() => handleSort('createdAt')}>
                   <span className="flex items-center">
-                    Created
+                    {t('pages.admin.resumes.created')}
                     <SortIcon field="createdAt" />
                   </span>
                 </th>
               )}
               {visibleColumns.has('actions') && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  Actions
+                  {t('pages.admin.resumes.actions')}
                 </th>
               )}
             </tr>
@@ -260,7 +267,7 @@ export function ResumeTable({
                         {resume.title}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {resume.template} template
+                        {resume.template} {t('pages.admin.resumes.template')}
                       </div>
                     </div>
                   </td>
@@ -269,7 +276,7 @@ export function ResumeTable({
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm text-gray-900 dark:text-gray-100">
-                        {resume.user.name || 'N/A'}
+                        {resume.user.name || t('pages.admin.resumes.naUser')}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
                         {resume.user.email}
@@ -299,10 +306,10 @@ export function ResumeTable({
                 {visibleColumns.has('actions') && (
                   <td className="px-6 py-4">
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => onViewResume(resume)} title="View Resume" aria-label="View Resume">
+                      <Button variant="ghost" size="sm" onClick={() => onViewResume(resume)} title={t('pages.admin.resumes.viewResume')} aria-label={t('pages.admin.resumes.viewResume')}>
                         <Eye className="h-4 w-4 text-blue-600" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => onDeleteResume(resume.id)} title="Delete Resume" aria-label="Delete Resume">
+                      <Button variant="ghost" size="sm" onClick={() => onDeleteResume(resume.id)} title={t('pages.admin.resumes.deleteResume')} aria-label={t('pages.admin.resumes.deleteResume')}>
                         <Trash2 className="h-4 w-4 text-red-600" />
                       </Button>
                     </div>

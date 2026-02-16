@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface UnsavedChangesDialogProps {
   open: boolean
@@ -11,6 +12,7 @@ interface UnsavedChangesDialogProps {
 }
 
 export function UnsavedChangesDialog({ open, onCancel, onDiscard }: UnsavedChangesDialogProps) {
+  const { t } = useLanguage()
   const cancelRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -50,18 +52,18 @@ export function UnsavedChangesDialog({ open, onCancel, onDiscard }: UnsavedChang
             <AlertTriangle className="h-5 w-5 text-amber-600" />
           </div>
           <h2 id="unsaved-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Unsaved Changes
+            {t('pages.admin.unsavedChanges.title')}
           </h2>
         </div>
         <p id="unsaved-dialog-desc" className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          You have unsaved changes in System Settings. Are you sure you want to leave? Your changes will be lost.
+          {t('pages.admin.unsavedChanges.message')}
         </p>
         <div className="flex justify-end gap-3">
           <Button ref={cancelRef} variant="outline" onClick={onCancel}>
-            Keep Editing
+            {t('pages.admin.unsavedChanges.keepEditing')}
           </Button>
           <Button variant="destructive" onClick={onDiscard}>
-            Discard Changes
+            {t('pages.admin.unsavedChanges.discardChanges')}
           </Button>
         </div>
       </div>

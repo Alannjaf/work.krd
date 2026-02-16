@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Clock, AlertTriangle, RefreshCw } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface SubscriptionStatus {
   expired: {
@@ -40,13 +41,15 @@ export function AdminSubscriptionStatus({
   checkingSubscriptions,
   onCheckExpired
 }: AdminSubscriptionStatusProps) {
+  const { t } = useLanguage()
+
   if (!subscriptionStatus) {
     return (
       <Card className="p-6 mb-8">
         <div className="text-center text-gray-500 dark:text-gray-400">
-          <p>Unable to load subscription status</p>
+          <p>{t('pages.admin.subscription.unableToLoad')}</p>
           <Button variant="outline" size="sm" className="mt-2" onClick={onCheckExpired}>
-            Retry
+            {t('pages.admin.subscription.retry')}
           </Button>
         </div>
       </Card>
@@ -58,12 +61,12 @@ export function AdminSubscriptionStatus({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Subscription Status
+          {t('pages.admin.subscription.title')}
         </h2>
         <Button
           onClick={() => {
             const count = (subscriptionStatus?.expired?.count || 0)
-            if (count === 0 || window.confirm(`This will downgrade ${count} expired subscription(s) to FREE. Continue?`)) {
+            if (count === 0 || window.confirm(t('pages.admin.subscription.confirmProcess', { count: String(count) }))) {
               onCheckExpired()
             }
           }}
@@ -74,12 +77,12 @@ export function AdminSubscriptionStatus({
           {checkingSubscriptions ? (
             <>
               <div className="animate-spin h-4 w-4 mr-2 border-2 border-gray-400 dark:border-gray-500 border-t-transparent rounded-full" />
-              Checking...
+              {t('pages.admin.subscription.checking')}
             </>
           ) : (
             <>
               <RefreshCw className="h-4 w-4 mr-2" />
-              Check & Process Expired
+              {t('pages.admin.subscription.checkAndProcess')}
             </>
           )}
         </Button>
@@ -90,7 +93,7 @@ export function AdminSubscriptionStatus({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <h3 className="font-medium text-red-700 dark:text-red-400">
-              Expired Subscriptions ({subscriptionStatus.expired.count})
+              {t('pages.admin.subscription.expired')} ({subscriptionStatus.expired.count})
             </h3>
           </div>
           {subscriptionStatus.expired.count > 0 ? (
@@ -100,14 +103,14 @@ export function AdminSubscriptionStatus({
                   <p className="font-medium text-sm">{sub.userName || sub.userEmail}</p>
                   {sub.userName && <p className="text-xs text-gray-500 dark:text-gray-400">{sub.userEmail}</p>}
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {sub.plan} plan - {sub.daysOverdue} days overdue
+                    {t('pages.admin.subscription.daysOverdue', { plan: sub.plan, days: String(sub.daysOverdue) })}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400 bg-green-50 dark:bg-green-950 p-3 rounded border border-green-200 dark:border-green-800">
-              No expired subscriptions found
+              {t('pages.admin.subscription.noExpired')}
             </p>
           )}
         </div>
@@ -116,7 +119,7 @@ export function AdminSubscriptionStatus({
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-orange-500" />
             <h3 className="font-medium text-orange-700 dark:text-orange-400">
-              Expiring Soon ({subscriptionStatus.expiringSoon.count})
+              {t('pages.admin.subscription.expiringSoon')} ({subscriptionStatus.expiringSoon.count})
             </h3>
           </div>
           {subscriptionStatus.expiringSoon.count > 0 ? (
@@ -126,14 +129,14 @@ export function AdminSubscriptionStatus({
                   <p className="font-medium text-sm">{sub.userName || sub.userEmail}</p>
                   {sub.userName && <p className="text-xs text-gray-500 dark:text-gray-400">{sub.userEmail}</p>}
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {sub.plan} plan - expires in {sub.daysUntilExpiry} days
+                    {t('pages.admin.subscription.expiresInDays', { plan: sub.plan, days: String(sub.daysUntilExpiry) })}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
-              No subscriptions expiring soon
+              {t('pages.admin.subscription.noExpiringSoon')}
             </p>
           )}
         </div>

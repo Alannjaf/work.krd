@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
+import { getSystemSettings } from '@/lib/system-settings'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
 const VALID_PLANS = [...PAID_PLANS] as const
@@ -88,7 +89,10 @@ export async function POST(req: Request) {
     const screenshotBuffer = Buffer.from(arrayBuffer)
     const screenshotType = screenshot.type
 
-    const amount = PLAN_PRICES[plan] || 5000
+    // Snapshot the current plan price so admin review validates against
+    // the price that was active when the user submitted payment
+    const settings = await getSystemSettings()
+    const amount = settings.proPlanPrice || PLAN_PRICES[plan] || 5000
 
     // Create payment record
     const payment = await prisma.payment.create({
@@ -96,6 +100,7 @@ export async function POST(req: Request) {
         userId: user.id,
         plan: plan as typeof PLAN_NAMES.PRO,
         amount,
+        priceAtCreation: amount,
         screenshotData: screenshotBuffer,
         screenshotType,
         status: 'PENDING',

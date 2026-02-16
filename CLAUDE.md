@@ -70,7 +70,7 @@ After completing a task that took 8+ tool calls, append ONE optimization hint as
 - **CSV export pattern**: Build CSV string with proper escaping (double quotes), create Blob, trigger download via temporary anchor element. Used in UserManagement and AuditLogPanel
 - **Naming convention**: No semicolons, single quotes for JS strings (double quotes OK in JSX attributes). All admin components follow this convention
 - **TypeScript strict**: No `any` in admin code — use `Prisma.PaymentWhereInput`, `Prisma.InputJsonValue`, `Record<string, unknown> | object | unknown[]` for response data
-- **Gotcha**: Admin pages have NO i18n — all hardcoded English. Needs `pages.admin.*` i18n namespace (~100+ keys) for multilingual support
+- **Admin i18n**: All admin components now use `useLanguage()` + `t()` with `pages.admin.*` namespace (~200 keys in en/ar/ckb). Exceptions: `AdminErrorBoundary` (class component, cannot use hooks) and `admin/layout.tsx` (server component) retain English with comments noting the limitation. Module-level constants with labels (like `ACTION_LABELS`) were split into static color maps + i18n key maps, with a `getActionInfo()` helper inside the component
 - **Gotcha**: Prisma schema changes (like adding enum values) need `npx prisma db push` + `npx prisma generate` from Windows terminal (not WSL) when DATABASE_URL is configured there
 
 ## Creating New Templates

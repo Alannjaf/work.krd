@@ -16,6 +16,7 @@ import { PaymentApprovalForm } from './PaymentApprovalForm'
 import type { Payment, PaymentsResponse, StatusFilter } from './PaymentItem'
 import { ADMIN_PAGINATION } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ interface PaymentListProps {
 }
 
 export function PaymentList({ csrfFetch }: PaymentListProps) {
+  const { t } = useLanguage()
   const initialParams = useMemo(() => {
     if (typeof window === 'undefined') return { search: '', status: 'PENDING' as StatusFilter }
     const params = new URLSearchParams(window.location.search)
@@ -73,7 +75,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
       setTotal(data.total)
     } catch (error) {
       devError('[PaymentList] Failed to fetch:', error)
-      toast.error('Failed to load payments')
+      toast.error(t('pages.admin.payments.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -106,11 +108,11 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
   // ─── Filter tabs ────────────────────────────────────────────────────────
 
   const filters: { label: string; value: StatusFilter }[] = [
-    { label: 'All', value: 'ALL' },
-    { label: 'Pending', value: 'PENDING' },
-    { label: 'Approved', value: 'APPROVED' },
-    { label: 'Rejected', value: 'REJECTED' },
-    { label: 'Refunded', value: 'REFUNDED' },
+    { label: t('pages.admin.payments.filterAll'), value: 'ALL' },
+    { label: t('pages.admin.payments.filterPending'), value: 'PENDING' },
+    { label: t('pages.admin.payments.filterApproved'), value: 'APPROVED' },
+    { label: t('pages.admin.payments.filterRejected'), value: 'REJECTED' },
+    { label: t('pages.admin.payments.filterRefunded'), value: 'REFUNDED' },
   ]
 
   // ─── Render ─────────────────────────────────────────────────────────────
@@ -122,10 +124,10 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
             <CreditCard className="h-7 w-7 text-gray-700 dark:text-gray-300" />
-            Payment Reviews
+            {t('pages.admin.payments.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Review and manage payment submissions
+            {t('pages.admin.payments.subtitle')}
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
             <input
               type="text"
               data-admin-search
-              placeholder="Search by user email or name..."
+              placeholder={t('pages.admin.payments.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
@@ -154,10 +156,10 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
             )}
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <span>{total} total payment{total !== 1 ? 's' : ''}</span>
+            <span>{total !== 1 ? t('pages.admin.payments.totalPaymentsPlural', { count: String(total) }) : t('pages.admin.payments.totalPayments', { count: String(total) })}</span>
             {pendingCount !== null && (
               <span className="text-yellow-700 font-medium">
-                {pendingCount} pending
+                {t('pages.admin.payments.pendingCount', { count: String(pendingCount) })}
               </span>
             )}
           </div>
@@ -185,7 +187,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
         <div className="flex flex-wrap items-end gap-3 mb-6">
           <div className="flex flex-col gap-1">
             <label htmlFor="payment-date-from" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-              From
+              {t('pages.admin.payments.from')}
             </label>
             <input
               id="payment-date-from"
@@ -197,7 +199,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="payment-date-to" className="text-xs font-medium text-gray-500 dark:text-gray-400">
-              To
+              {t('pages.admin.payments.to')}
             </label>
             <input
               id="payment-date-to"
@@ -216,7 +218,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
               className="h-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <X className="h-4 w-4 mr-1" />
-              Clear dates
+              {t('pages.admin.payments.clearDates')}
             </Button>
           )}
         </div>
@@ -230,11 +232,11 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
           /* Empty state */
           <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700">
             <CreditCard className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No payments found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('pages.admin.payments.noPaymentsFound')}</p>
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
               {filter !== 'ALL'
-                ? `No ${filter.toLowerCase()} payments`
-                : 'No payments have been submitted yet'}
+                ? t('pages.admin.payments.noFilteredPayments', { status: filter.toLowerCase() })
+                : t('pages.admin.payments.noPaymentsYet')}
             </p>
           </div>
         ) : (
@@ -261,10 +263,10 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
               className="flex items-center gap-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('pages.admin.payments.previous')}
             </Button>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Page {page} of {totalPages}
+              {t('pages.admin.payments.pageOf', { page: String(page), totalPages: String(totalPages) })}
             </span>
             <Button
               variant="outline"
@@ -273,7 +275,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
               onClick={() => setPage((p) => p + 1)}
               className="flex items-center gap-1"
             >
-              Next
+              {t('pages.admin.payments.next')}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

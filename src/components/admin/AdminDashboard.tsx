@@ -135,8 +135,8 @@ export function AdminDashboard() {
       setErrors(prev => { const { stats: _, ...rest } = prev; return rest })
     } catch (error) {
       devError('[AdminDashboard] Failed to fetch stats:', error)
-      setErrors(prev => ({ ...prev, stats: 'Failed to load stats' }))
-      toast.error('Failed to load stats')
+      setErrors(prev => ({ ...prev, stats: t('pages.admin.common.failedToLoadStats') }))
+      toast.error(t('pages.admin.common.failedToLoadStats'))
     }
   }
 
@@ -175,8 +175,8 @@ export function AdminDashboard() {
       setErrors(prev => { const { settings: _, ...rest } = prev; return rest })
     } catch (error) {
       devError('[AdminDashboard] Failed to fetch settings:', error)
-      setErrors(prev => ({ ...prev, settings: 'Failed to load settings' }))
-      toast.error('Failed to load settings')
+      setErrors(prev => ({ ...prev, settings: t('pages.admin.common.failedToLoadSettings') }))
+      toast.error(t('pages.admin.common.failedToLoadSettings'))
     }
   }
 
@@ -189,8 +189,8 @@ export function AdminDashboard() {
       setErrors(prev => { const { subscriptions: _, ...rest } = prev; return rest })
     } catch (error) {
       devError('[AdminDashboard] Failed to fetch subscription status:', error)
-      setErrors(prev => ({ ...prev, subscriptions: 'Failed to load subscription status' }))
-      toast.error('Failed to load subscription status')
+      setErrors(prev => ({ ...prev, subscriptions: t('pages.admin.common.failedToLoadSubscriptionStatus') }))
+      toast.error(t('pages.admin.common.failedToLoadSubscriptionStatus'))
     }
   }
 
@@ -202,18 +202,18 @@ export function AdminDashboard() {
 
       if (response.ok) {
         if (data.processed === 0) {
-          toast.success('No expired subscriptions found')
+          toast.success(t('pages.admin.subscription.noExpiredFound'))
         } else {
-          toast.success(`Processed ${data.processed} subscriptions. ${data.successful} successful, ${data.failed} failed.`)
+          toast.success(t('pages.admin.subscription.processedResult', { processed: data.processed, successful: data.successful, failed: data.failed }))
         }
         await fetchStats()
         await fetchSubscriptionStatus()
       } else {
-        toast.error('Failed to check subscriptions')
+        toast.error(t('pages.admin.subscription.checkFailed'))
       }
     } catch (error) {
       devError('[AdminDashboard] Failed to check expired subscriptions:', error);
-      toast.error('Failed to check subscriptions')
+      toast.error(t('pages.admin.subscription.checkFailed'))
     } finally {
       setCheckingSubscriptions(false)
     }
@@ -228,13 +228,13 @@ export function AdminDashboard() {
         body: JSON.stringify(settings)
       })
       if (response.ok) {
-        toast.success('Settings saved successfully!')
+        toast.success(t('pages.admin.settings.settingsSaved'))
       } else {
-        toast.error('Failed to save settings')
+        toast.error(t('pages.admin.settings.saveFailed'))
       }
     } catch (error) {
       devError('[AdminDashboard] Failed to save settings:', error);
-      toast.error('Failed to save settings')
+      toast.error(t('pages.admin.settings.saveFailed'))
     } finally {
       setSaving(false)
     }
@@ -245,7 +245,7 @@ export function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AppHeader
-        title="Admin Dashboard"
+        title={t('pages.admin.dashboard.title')}
         showBackButton={true}
         backButtonText={t('pages.resumeBuilder.backToDashboard')}
         onBackClick={handleBackClick}
@@ -253,15 +253,15 @@ export function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your Work.krd platform</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('pages.admin.dashboard.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">{t('pages.admin.dashboard.subtitle')}</p>
         </div>
 
         {hasErrors && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 p-4" aria-live="polite">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-red-800 dark:text-red-200">Some sections failed to load</p>
+                <p className="font-medium text-red-800 dark:text-red-200">{t('pages.admin.dashboard.errorBanner')}</p>
                 <ul className="mt-1 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
                   {errors.stats && <li>{errors.stats}</li>}
                   {errors.settings && <li>{errors.settings}</li>}
@@ -281,7 +281,7 @@ export function AdminDashboard() {
                   await Promise.allSettled(retries)
                 }}
               >
-                Retry Failed
+                {t('pages.admin.dashboard.retryFailed')}
               </Button>
             </div>
           </div>
@@ -295,7 +295,7 @@ export function AdminDashboard() {
 
         <AdminErrorBoundary sectionName="Analytics">
           <section className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Analytics</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('pages.admin.analytics.title')}</h2>
             <AdminAnalytics csrfFetch={csrfFetch} />
           </section>
         </AdminErrorBoundary>
@@ -333,10 +333,10 @@ export function AdminDashboard() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                Recently Viewed
+                {t('pages.admin.dashboard.recentlyViewed')}
               </h2>
               <Button variant="ghost" size="sm" onClick={clearRecentItems} type="button">
-                Clear
+                {t('pages.admin.dashboard.clear')}
               </Button>
             </div>
             <div className="space-y-2">
@@ -366,18 +366,18 @@ export function AdminDashboard() {
 
       {showShortcuts && (
         <div className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg shadow-lg p-4 max-w-xs">
-          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2">Keyboard Shortcuts</h4>
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2">{t('pages.admin.dashboard.keyboardShortcuts')}</h4>
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-500 dark:text-gray-400">Focus search</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('pages.admin.dashboard.focusSearch')}</dt>
               <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">/</kbd></dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-500 dark:text-gray-400">Close modal</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('pages.admin.dashboard.closeModal')}</dt>
               <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Esc</kbd></dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-500 dark:text-gray-400">Toggle shortcuts</dt>
+              <dt className="text-gray-500 dark:text-gray-400">{t('pages.admin.dashboard.toggleShortcuts')}</dt>
               <dd><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">?</kbd></dd>
             </div>
           </dl>

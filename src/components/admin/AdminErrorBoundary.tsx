@@ -1,5 +1,11 @@
 'use client'
 
+// NOTE: i18n cannot be applied here — this is a React class component
+// and cannot use the useLanguage() hook. Error boundary strings remain
+// in English. The i18n keys exist at pages.admin.errorBoundary.* for
+// future use if this is refactored to a functional component with
+// react-error-boundary or similar.
+
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { devError } from '@/lib/admin-utils'
