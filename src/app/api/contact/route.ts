@@ -6,6 +6,16 @@ import { successResponse, errorResponse, validationErrorResponse } from '@/lib/a
 // Lazy initialization to avoid build-time errors when API key is not set
 const getResend = () => new Resend(process.env.RESEND_API_KEY)
 
+/** Escape HTML special characters to prevent HTML injection in email templates */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function POST(request: NextRequest) {
   const { success, resetIn } = rateLimit(request, {
     maxRequests: 5,
@@ -29,6 +39,18 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse('Please enter a valid email address')
     }
 
+    // Length limits to prevent abuse
+    if (firstName.length > 100 || lastName.length > 100 || subject.length > 200 || message.length > 5000 || email.length > 254) {
+      return validationErrorResponse('Field length exceeds maximum allowed')
+    }
+
+    // Sanitize all user inputs before embedding in HTML
+    const safeFirstName = escapeHtml(firstName)
+    const safeLastName = escapeHtml(lastName)
+    const safeEmail = escapeHtml(email)
+    const safeSubject = escapeHtml(subject)
+    const safeMessage = escapeHtml(message)
+
     // Send email using Resend
     const emailContent = `
       <!DOCTYPE html>
@@ -42,31 +64,31 @@ export async function POST(request: NextRequest) {
           <h2 style="color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
             Contact Form Submission from Work.krd
           </h2>
-          
+
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 8px 0; font-weight: bold; width: 100px;">Name:</td>
-                <td style="padding: 8px 0;">${firstName} ${lastName}</td>
+                <td style="padding: 8px 0;">${safeFirstName} ${safeLastName}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Email:</td>
-                <td style="padding: 8px 0;">${email}</td>
+                <td style="padding: 8px 0;">${safeEmail}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Subject:</td>
-                <td style="padding: 8px 0;">${subject}</td>
+                <td style="padding: 8px 0;">${safeSubject}</td>
               </tr>
             </table>
           </div>
-          
+
           <div style="margin: 20px 0;">
             <h3 style="color: #374151; margin-bottom: 10px;">Message:</h3>
             <div style="background: white; padding: 15px; border: 1px solid #e5e7eb; border-radius: 6px;">
-              ${message.replace(/\n/g, '<br>')}
+              ${safeMessage.replace(/\n/g, '<br>')}
             </div>
           </div>
-          
+
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
             This message was sent through the contact form on Work.krd
           </div>
@@ -93,7 +115,7 @@ Sent from Work.krd contact form
     await getResend().emails.send({
       from: 'Work.krd Contact <contact@work.krd>', // Using verified domain
       to: ['info@work.krd'],
-      subject: `Contact Form: ${subject}`,
+      subject: `Contact Form: ${safeSubject}`,
       html: emailContent,
       text: textContent, // Added plain text version
       replyTo: email})

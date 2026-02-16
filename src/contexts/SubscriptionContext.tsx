@@ -99,7 +99,8 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
         setIsLoading(false);
       }
     }
-  }, [user, isLoaded, fetchSubscription]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSubscription is stable via useCallback([user, isLoaded]), including it causes infinite re-render loop
+  }, [user, isLoaded]);
 
   const value: SubscriptionContextType = {
     subscription,

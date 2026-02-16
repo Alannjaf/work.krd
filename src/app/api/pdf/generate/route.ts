@@ -11,6 +11,7 @@ import { getHtmlTemplate } from '@/components/html-templates/registry';
 import { renderResumeToHtml } from '@/lib/pdf/renderHtml';
 import { generatePdfFromHtml } from '@/lib/pdf/generatePdf';
 import { isResumeRTL } from '@/lib/rtl';
+import { sanitizeResumeData } from '@/lib/sanitize';
 
 /**
  * Normalize Arabic-Indic numerals (٠-٩) to Western numerals (0-9)
@@ -103,6 +104,10 @@ export async function POST(request: NextRequest) {
         data: { exportCount: { increment: 1 } }
       });
     }
+
+    // Sanitize all string fields in resume data to strip script tags and event handlers
+    const sanitized = sanitizeResumeData(resumeData) as ResumeData;
+    Object.assign(resumeData, sanitized);
 
     // Validate and sanitize resume data structure
     if (!resumeData.personal) {
@@ -207,6 +212,6 @@ export async function POST(request: NextRequest) {
 
     console.error('Error string representation:', String(error));
 
-    return errorResponse(`Failed to generate PDF: ${errorMessage}`, 500);
+    return errorResponse('Failed to generate PDF', 500);
   }
 }

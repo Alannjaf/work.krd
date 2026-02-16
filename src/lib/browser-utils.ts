@@ -44,6 +44,7 @@ export const downloadBlobSafari = (blob: Blob, filename: string): void => {
  * Uses Safari-specific method for Safari, standard approach for others
  */
 export const downloadBlob = (blob: Blob, filename: string): void => {
+  if (typeof document === 'undefined') return
   const browser = detectBrowser()
   
   if (browser === 'safari') {

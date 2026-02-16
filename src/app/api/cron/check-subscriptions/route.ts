@@ -4,12 +4,15 @@ import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-hel
 // This endpoint can be called by external cron services like Vercel Cron, GitHub Actions, or any other scheduler
 export async function GET() {
   try {
-    // Optional: Add authentication for cron job security
+    // Require CRON_SECRET for cron job security
     const headersList = await headers()
     const cronSecret = headersList.get('authorization')
-    
-    // You can set CRON_SECRET in your environment variables for security
-    if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+
+    if (!process.env.CRON_SECRET) {
+      console.error('[Cron] CRON_SECRET env var is not set — endpoint disabled')
+      return errorResponse('Cron endpoint not configured', 503)
+    }
+    if (cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
       return authErrorResponse()
     }
 
@@ -45,12 +48,21 @@ export async function GET() {
 // POST method for manual triggering (admin only)
 export async function POST() {
   try {
-    // This would require admin authentication in a real scenario
-    // Manual subscription check triggered
-    
+    // Require CRON_SECRET or admin auth for manual trigger
+    const headersList = await headers()
+    const cronSecret = headersList.get('authorization')
+
+    if (!process.env.CRON_SECRET) {
+      console.error('[Cron] CRON_SECRET env var is not set — endpoint disabled')
+      return errorResponse('Cron endpoint not configured', 503)
+    }
+    if (cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+      return authErrorResponse()
+    }
+
     // Call the check-expired endpoint internally
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    
+
     const response = await fetch(`${baseUrl}/api/subscriptions/check-expired`, {
       method: 'POST',
       headers: {
@@ -61,7 +73,7 @@ export async function POST() {
     }
 
     const _result = await response.json()
-    
+
     return successResponse({
       success: true,
       message: 'Manual subscription check completed',
@@ -70,6 +82,9 @@ export async function POST() {
     })
 
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Admin access required')) {
+      return errorResponse('Unauthorized', 403)
+    }
     return errorResponse('Manual subscription check failed', 500)
   }
 }

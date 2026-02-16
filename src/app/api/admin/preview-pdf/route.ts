@@ -8,37 +8,7 @@ import { generatePdfFromHtml } from '@/lib/pdf/generatePdf';
 import { isResumeRTL } from '@/lib/rtl';
 import { validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-
-/**
- * Strip <script> tags and on* event handler attributes from HTML strings
- * to prevent code execution during Puppeteer PDF rendering.
- */
-function sanitizeHtml(value: string): string {
-  return value
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
-}
-
-/**
- * Recursively sanitize all string values in an object to remove
- * script tags and event handlers that could execute in Puppeteer.
- */
-function sanitizeResumeData(obj: unknown): unknown {
-  if (typeof obj === 'string') {
-    return sanitizeHtml(obj);
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(sanitizeResumeData);
-  }
-  if (obj && typeof obj === 'object') {
-    const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = sanitizeResumeData(value);
-    }
-    return result;
-  }
-  return obj;
-}
+import { sanitizeResumeData } from '@/lib/sanitize';
 
 export async function POST(request: NextRequest) {
   try {
@@ -100,8 +70,8 @@ export async function POST(request: NextRequest) {
     // Generate PDF without watermark for admin users
     const entry = getHtmlTemplate(template);
     const Component = entry.component;
-    const element = React.createElement(Component, { data: sanitizedData });
-    const isRTL = isResumeRTL(sanitizedData);
+    const element = React.createElement(Component, { data: sanitizedData as any });
+    const isRTL = isResumeRTL(sanitizedData as any);
     const html = await renderResumeToHtml(element, isRTL);
     const buffer = await generatePdfFromHtml(html);
 

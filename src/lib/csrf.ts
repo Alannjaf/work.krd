@@ -38,6 +38,9 @@ export function generateCsrfToken(userId: string): string {
 export function validateCsrfToken(userId: string, token: string | null): boolean {
   if (!token) return false
 
+  // Prune expired tokens on every validation to prevent unbounded growth
+  pruneExpiredTokens()
+
   const stored = tokenStore.get(userId)
   if (!stored) return false
 
