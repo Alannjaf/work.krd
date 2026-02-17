@@ -124,6 +124,16 @@ export async function POST(req: Request) {
         } else {
           // Subscription already exists
         }
+
+        // Fire-and-forget: schedule welcome email series for new user
+        try {
+          const { scheduleWelcomeSeries } = await import('@/lib/email/schedulers/welcome')
+          scheduleWelcomeSeries(user.id, 'en').catch((err: unknown) =>
+            devError('[Webhook] Failed to schedule welcome series:', err)
+          )
+        } catch (err) {
+          devError('[Webhook] Failed to import welcome scheduler:', err)
+        }
       }
       
       // User sync completed successfully

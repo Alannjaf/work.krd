@@ -9,20 +9,26 @@ datasource db {
 }
 
 model User {
-  id                   String        @id @default(cuid())
-  clerkId              String        @unique
-  email                String        @unique
-  name                 String?
-  onboardingCompleted  Boolean       @default(false)
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  role                 UserRole      @default(USER)
-  resumes              Resume[]
-  subscription         Subscription?
-  payments             Payment[]
+  id                  String        @id @default(cuid())
+  clerkId             String        @unique
+  email               String        @unique
+  name                String?
+  onboardingCompleted Boolean       @default(false)
+  lastLoginAt         DateTime?
+  emailOptOut         Boolean       @default(false)
+  emailPreferences    Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  role                UserRole      @default(USER)
+  resumes             Resume[]
+  subscription        Subscription?
+  payments            Payment[]
+  emailJobs           EmailJob[]
 
   @@index([clerkId])
   @@index([email])
+  @@index([emailOptOut])
+  @@index([lastLoginAt])
 }
 
 model Resume {
@@ -85,23 +91,23 @@ model Subscription {
 }
 
 model SystemSettings {
-  id                 Int      @id @default(autoincrement())
-  maxFreeResumes     Int      @default(10)
-  maxFreeAIUsage     Int      @default(100)
-  maxFreeExports     Int      @default(20)
-  maxFreeImports     Int      @default(1)
-  maxFreeATSChecks   Int      @default(0)
-  maxProResumes      Int      @default(-1)
-  maxProAIUsage      Int      @default(-1)
-  maxProExports      Int      @default(-1)
-  maxProImports      Int      @default(-1)
-  maxProATSChecks    Int      @default(-1)
-  proPlanPrice       Int      @default(5000)
-  maintenanceMode    Boolean  @default(false)
-  updatedAt          DateTime @default(now()) @updatedAt
-  freeTemplates      Json     @default("[\"modern\"]")
-  proTemplates       Json     @default("[\"modern\"]")
-  photoUploadPlans   Json     @default("[\"PRO\"]")
+  id               Int      @id @default(autoincrement())
+  maxFreeResumes   Int      @default(10)
+  maxFreeAIUsage   Int      @default(100)
+  maxFreeExports   Int      @default(20)
+  maxFreeImports   Int      @default(1)
+  maxFreeATSChecks Int      @default(0)
+  maxProResumes    Int      @default(-1)
+  maxProAIUsage    Int      @default(-1)
+  maxProExports    Int      @default(-1)
+  maxProImports    Int      @default(-1)
+  maxProATSChecks  Int      @default(-1)
+  proPlanPrice     Int      @default(5000)
+  maintenanceMode  Boolean  @default(false)
+  updatedAt        DateTime @default(now()) @updatedAt
+  freeTemplates    Json     @default("[\"modern\"]")
+  proTemplates     Json     @default("[\"modern\"]")
+  photoUploadPlans Json     @default("[\"PRO\"]")
 }
 
 enum UserRole {
@@ -143,18 +149,18 @@ enum SubscriptionStatus {
 // e.g., @@unique([userId, status], where: { status: "PENDING" }) — Prisma doesn't support
 // partial unique indexes natively; use a raw migration: CREATE UNIQUE INDEX ... WHERE status = 'PENDING'
 model Payment {
-  id              String        @id @default(cuid())
+  id              String           @id @default(cuid())
   userId          String
   plan            SubscriptionPlan
   amount          Int
   screenshotData  Bytes
   screenshotType  String
   priceAtCreation Int?
-  status          PaymentStatus @default(PENDING)
+  status          PaymentStatus    @default(PENDING)
   adminNote       String?
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime         @default(now())
   reviewedAt      DateTime?
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -187,4 +193,68 @@ model SettingsSnapshot {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model EmailJob {
+  id          String         @id @default(cuid())
+  userId      String
+  campaign    EmailCampaign
+  status      EmailJobStatus @default(PENDING)
+  scheduledAt DateTime
+  sentAt      DateTime?
+  error       String?
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaign, status], name: "unique_pending_campaign")
+  @@index([status, scheduledAt])
+  @@index([userId])
+  @@index([campaign])
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id             String              @id @default(cuid())
+  emailJobId     String?
+  userId         String?
+  campaign       EmailCampaign
+  recipientEmail String
+  subject        String
+  status         EmailDeliveryStatus @default(QUEUED)
+  error          String?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  openedAt       DateTime?
+  createdAt      DateTime            @default(now())
+
+  @@index([emailJobId])
+  @@index([userId])
+  @@index([campaign])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum EmailCampaign {
+  WELCOME
+  ABANDONED_RESUME
+  RE_ENGAGEMENT
+}
+
+enum EmailJobStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum EmailDeliveryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  OPENED
+  FAILED
+  BOUNCED
 }

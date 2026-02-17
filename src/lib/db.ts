@@ -21,6 +21,14 @@ export async function getCurrentUser() {
     include: {
       subscription: true}})
 
+  // Fire-and-forget: update lastLoginAt for email campaign targeting
+  if (user) {
+    prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    }).catch(() => {})
+  }
+
   return user
 }
 

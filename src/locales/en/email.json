@@ -1,0 +1,180 @@
+{
+  "welcome": {
+    "day0": {
+      "subject": "Welcome to Work.krd — Let's Build Your Resume!",
+      "preheader": "Your free account is ready. Create a professional resume in minutes.",
+      "title": "Welcome to Work.krd!",
+      "greeting": "Hi {name},",
+      "body": "Thank you for joining Work.krd — the AI-powered resume builder designed for professionals in Kurdistan and the Middle East.",
+      "body2": "Your free account is ready with everything you need to create a standout resume:",
+      "features": {
+        "f1": "Professional templates with full Kurdish, Arabic & English support",
+        "f2": "AI-powered content suggestions to write compelling descriptions",
+        "f3": "ATS optimization to pass automated screening systems",
+        "f4": "Export as a polished A4 PDF — ready to send to employers"
+      },
+      "cta": "Create My Resume",
+      "ctaSecondary": "Browse Templates",
+      "closing": "We're here to help you land your dream job. Let's get started!"
+    },
+    "day2": {
+      "subject": "Quick Tip: Start With a Template",
+      "preheader": "Choose a professional template and let AI help you fill it in.",
+      "title": "A Great Resume Starts With the Right Template",
+      "greeting": "Hi {name},",
+      "body": "Not sure where to begin? Here's the fastest way to create a professional resume:",
+      "steps": {
+        "s1": "Pick a template that matches your industry and style",
+        "s2": "Fill in your details — our AI helps you write each section",
+        "s3": "Download your ATS-optimized PDF and start applying"
+      },
+      "body2": "Most of our users finish their first resume in under 15 minutes.",
+      "cta": "Choose a Template",
+      "closing": "Need help? Just reply to this email — we're happy to assist."
+    },
+    "day7": {
+      "subject": "Let AI Write Your Professional Summary",
+      "preheader": "Our AI generates tailored content for your resume in seconds.",
+      "title": "Let AI Do the Hard Part",
+      "greeting": "Hi {name},",
+      "body": "Writing about yourself is tough. That's why we built AI-powered content generation right into the resume builder.",
+      "body2": "Here's what our AI can help you with:",
+      "features": {
+        "f1": "Professional summaries tailored to your target role",
+        "f2": "Compelling job descriptions based on your experience",
+        "f3": "Industry-relevant skills suggestions",
+        "f4": "Content in English, Arabic, or Kurdish"
+      },
+      "cta": "Try AI Writing",
+      "closing": "You have {aiCredits} AI suggestions remaining on your free plan. Make them count!"
+    },
+    "day14": {
+      "subject": "Your Resume Could Be Getting More Interviews",
+      "preheader": "Use ATS optimization to make sure your resume gets seen by hiring managers.",
+      "title": "Are You Getting Past the ATS?",
+      "greeting": "Hi {name},",
+      "body": "Did you know that most companies use Applicant Tracking Systems (ATS) to filter resumes before a human ever sees them?",
+      "body2": "Work.krd's ATS Optimization tool analyzes your resume and tells you exactly what to fix:",
+      "features": {
+        "f1": "Get an ATS compatibility score for your resume",
+        "f2": "See which keywords are missing for your target role",
+        "f3": "Follow actionable suggestions to improve your score",
+        "f4": "Match your resume against specific job descriptions"
+      },
+      "cta": "Check My ATS Score",
+      "proTip": "Pro users get unlimited ATS checks and access to all premium templates.",
+      "ctaSecondary": "Upgrade to Pro"
+    }
+  },
+  "abandoned": {
+    "subject": "Your Resume Is Waiting for You",
+    "preheader": "You started something great — come back and finish your resume.",
+    "title": "Don't Leave Your Resume Unfinished",
+    "greeting": "Hi {name},",
+    "body": "We noticed you started working on your resume but haven't finished it yet. Your progress is saved and waiting for you.",
+    "body2": "Here's where you left off:",
+    "resumeInfo": {
+      "title": "Resume: {resumeTitle}",
+      "completion": "Completion: {percent}%",
+      "lastEdited": "Last edited: {date}"
+    },
+    "body3": "Completing your resume only takes a few more minutes. Our AI can help you fill in the remaining sections quickly.",
+    "cta": "Continue My Resume",
+    "tips": {
+      "title": "Quick tips to finish faster:",
+      "t1": "Use AI to generate your professional summary",
+      "t2": "Add skills from our suggested list — no typing needed",
+      "t3": "Preview your PDF to see how it looks before downloading"
+    },
+    "closing": "Your dream job is just a completed resume away."
+  },
+  "reengagement": {
+    "30d": {
+      "subject": "We Miss You! Your Resume Builder Awaits",
+      "preheader": "It's been a while — come back and update your resume.",
+      "title": "Time to Refresh Your Resume?",
+      "greeting": "Hi {name},",
+      "body": "It's been 30 days since your last visit to Work.krd. A lot can change in a month — is your resume up to date?",
+      "body2": "Here are a few reasons to update your resume now:",
+      "reasons": {
+        "r1": "New skills or certifications to add",
+        "r2": "Recent projects or achievements worth highlighting",
+        "r3": "Job market changes that require updated keywords",
+        "r4": "New templates and features we've added since your last visit"
+      },
+      "cta": "Update My Resume",
+      "closing": "Keeping your resume current means you're always ready when opportunity knocks."
+    },
+    "60d": {
+      "subject": "New Templates & Features — Come See What's New",
+      "preheader": "We've been busy making Work.krd even better for you.",
+      "title": "We've Made Some Improvements",
+      "greeting": "Hi {name},",
+      "body": "It's been a couple of months since we last saw you on Work.krd. We've been working hard to improve the platform, and we think you'll love what's new.",
+      "body2": "Here's what's been added:",
+      "updates": {
+        "u1": "New professional resume templates",
+        "u2": "Improved AI content suggestions",
+        "u3": "Better ATS optimization scoring",
+        "u4": "Faster PDF generation"
+      },
+      "cta": "See What's New",
+      "offer": "As a returning user, your previous resumes and data are still saved and ready for you.",
+      "ctaSecondary": "View My Resumes"
+    },
+    "90d": {
+      "subject": "Still Looking? Let's Help You Land That Job",
+      "preheader": "A fresh resume could be the key to your next opportunity.",
+      "title": "A Fresh Start for Your Job Search",
+      "greeting": "Hi {name},",
+      "body": "It's been 3 months since your last visit. Whether you're actively job searching or just keeping your options open, a polished resume is your best tool.",
+      "body2": "Here's what you can do in just 10 minutes:",
+      "actions": {
+        "a1": "Refresh your existing resume with updated info",
+        "a2": "Try a new template for a fresh look",
+        "a3": "Use AI to rewrite your summary for a new target role",
+        "a4": "Run an ATS check against a job description you're interested in"
+      },
+      "cta": "Restart My Job Search",
+      "body3": "Your account and all your data are still safe and waiting for you.",
+      "ctaSecondary": "Go to Dashboard"
+    }
+  },
+  "common": {
+    "header": {
+      "logoAlt": "Work.krd Logo",
+      "tagline": "AI-Powered Resume Builder"
+    },
+    "footer": {
+      "company": "Work.krd",
+      "tagline": "AI-powered resume builder for Kurdistan & the Middle East",
+      "address": "Erbil, Kurdistan Region, Iraq",
+      "supportEmail": "info@work.krd",
+      "links": {
+        "dashboard": "Dashboard",
+        "templates": "Templates",
+        "pricing": "Pricing",
+        "help": "Help & Support"
+      },
+      "social": {
+        "followUs": "Follow us"
+      }
+    },
+    "unsubscribe": {
+      "text": "You're receiving this email because you signed up for Work.krd.",
+      "link": "Unsubscribe",
+      "managePreferences": "Manage email preferences",
+      "separator": " | "
+    },
+    "buttons": {
+      "viewInBrowser": "View in browser",
+      "learnMore": "Learn More",
+      "getStarted": "Get Started"
+    },
+    "legal": {
+      "copyright": "© {year} Work.krd. All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service"
+    }
+  }
+}
