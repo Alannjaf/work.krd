@@ -15,16 +15,6 @@ function getUnsubscribeSecret(): string {
 }
 
 /**
- * Generate an unsubscribe token for a user+campaign.
- * Format: base64(userId:campaign).hmac
- */
-export function generateUnsubscribeToken(userId: string, campaign: string): string {
-  const payload = Buffer.from(`${userId}:${campaign}`).toString('base64')
-  const hmac = createHmac('sha256', getUnsubscribeSecret()).update(payload).digest('hex')
-  return `${payload}.${hmac}`
-}
-
-/**
  * Verify and decode an unsubscribe token.
  * Returns { userId, campaign } if valid, null otherwise.
  */

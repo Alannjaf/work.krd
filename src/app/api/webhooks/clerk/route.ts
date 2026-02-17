@@ -128,7 +128,7 @@ export async function POST(req: Request) {
         // Fire-and-forget: schedule welcome email series for new user
         try {
           const { scheduleWelcomeSeries } = await import('@/lib/email/schedulers/welcome')
-          scheduleWelcomeSeries(user.id, 'en').catch((err: unknown) =>
+          scheduleWelcomeSeries(user.id).catch((err: unknown) =>
             devError('[Webhook] Failed to schedule welcome series:', err)
           )
         } catch (err) {
