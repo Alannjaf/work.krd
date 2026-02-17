@@ -50,6 +50,7 @@ export function Header() {
     { href: '#how-it-works', label: t('nav.howItWorks') },
     { href: '#features', label: t('nav.features') },
     { href: '#pricing', label: t('nav.pricing') },
+    { href: '/blog', label: t('nav.blog') || 'Blog' },
   ]
 
   const currentLang = languages.find(l => l.code === language)

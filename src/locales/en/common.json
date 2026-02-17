@@ -6,10 +6,11 @@
   "nav": {
     "features": "Features",
     "pricing": "Pricing",
-    "about": "About", 
+    "about": "About",
     "contact": "Contact",
     "templates": "Templates",
     "howItWorks": "How It Works",
+    "blog": "Blog",
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "dashboard": "Dashboard",
@@ -1145,6 +1146,7 @@
       },
       "footer": {
         "tagline": "AI-powered resume builder for Kurdistan & the Middle East",
+        "blog": "Blog",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
         "copyright": "© 2026 work.krd"

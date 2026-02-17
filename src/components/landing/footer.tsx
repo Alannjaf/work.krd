@@ -27,6 +27,9 @@ export function Footer() {
 
           {/* Links */}
           <div className="flex flex-wrap gap-6 text-sm">
+            <Link href="/blog" className="hover:text-white transition-colors">
+              {t('pages.home.footer.blog') || 'Blog'}
+            </Link>
             <Link href="/privacy" className="hover:text-white transition-colors">
               {t('pages.home.footer.privacy')}
             </Link>
