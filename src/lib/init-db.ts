@@ -41,23 +41,22 @@ export async function initializeDatabase() {
       `
     }
 
-    // Add any missing columns (for migration purposes)
-    const alterStatements = [
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeExports" INTEGER DEFAULT 20',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeImports" INTEGER DEFAULT 1',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeATSChecks" INTEGER DEFAULT 0',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProResumes" INTEGER DEFAULT -1',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProAIUsage" INTEGER DEFAULT -1',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProExports" INTEGER DEFAULT -1',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProImports" INTEGER DEFAULT -1',
-      'ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProATSChecks" INTEGER DEFAULT -1'
+    const alterQueries = [
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeExports" INTEGER DEFAULT 20`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeImports" INTEGER DEFAULT 1`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxFreeATSChecks" INTEGER DEFAULT 0`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProResumes" INTEGER DEFAULT -1`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProAIUsage" INTEGER DEFAULT -1`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProExports" INTEGER DEFAULT -1`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProImports" INTEGER DEFAULT -1`,
+      prisma.$executeRaw`ALTER TABLE "SystemSettings" ADD COLUMN IF NOT EXISTS "maxProATSChecks" INTEGER DEFAULT -1`,
     ]
 
-    for (const statement of alterStatements) {
+    for (const query of alterQueries) {
       try {
-        await prisma.$executeRawUnsafe(statement)
+        await query
       } catch (error) {
-        console.error('[InitDB] Failed to alter column:', error);
+        console.error('[InitDB] Failed to alter column:', error)
       }
     }
 

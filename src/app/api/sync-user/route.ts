@@ -48,17 +48,15 @@ export async function GET() {
       }
     }
 
-    // Check if user has a subscription, if not create a free one
-    const _subscription = await prisma.subscription.findUnique({
-      where: { userId: user.id }})
-
-    if (!_subscription) {
-      await prisma.subscription.create({
-        data: {
-          userId: user.id,
-          plan: PLAN_NAMES.FREE,
-          status: 'ACTIVE'}})
-    }
+    await prisma.subscription.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        plan: PLAN_NAMES.FREE,
+        status: 'ACTIVE',
+      },
+    })
 
     return successResponse({
       message: 'User synced successfully!',

@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
         },
       }
     )
-  } catch {
+  } catch (error) {
+    console.error('[StatsPublic] Failed to fetch stats:', error)
     return NextResponse.json({ resumeCount: 0, userCount: 0 }, { status: 500 })
   }
 }

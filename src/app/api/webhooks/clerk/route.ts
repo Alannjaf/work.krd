@@ -105,25 +105,16 @@ export async function POST(req: Request) {
 
       // User upserted
 
-      // Create a free subscription for new users
       if (eventType === 'user.created') {
-        // Creating subscription for new user
-        
-        // Check if subscription already exists
-        const existingSubscription = await prisma.subscription.findUnique({
-          where: { userId: user.id }
+        await prisma.subscription.upsert({
+          where: { userId: user.id },
+          update: {},
+          create: {
+            userId: user.id,
+            plan: PLAN_NAMES.FREE,
+            status: 'ACTIVE',
+          },
         })
-
-        if (!existingSubscription) {
-          await prisma.subscription.create({
-            data: {
-              userId: user.id, // Use database user ID, not Clerk ID
-              plan: PLAN_NAMES.FREE,
-              status: 'ACTIVE'}})
-          // Subscription created
-        } else {
-          // Subscription already exists
-        }
 
         // Fire-and-forget: schedule welcome email series for new user
         try {
