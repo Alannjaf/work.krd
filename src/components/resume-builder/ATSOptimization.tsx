@@ -303,7 +303,6 @@ export function ATSOptimization({
                 canUseATS={canUseATS}
                 onAnalyze={analyzeScore}
                 onNavigateToSection={onNavigateToSection}
-                onClose={onClose}
                 t={t}
                 isRTL={isRTL}
               />
@@ -318,7 +317,6 @@ export function ATSOptimization({
                 setJobDescription={setJobDescription}
                 onMatch={matchKeywords}
                 onNavigateToSection={onNavigateToSection}
-                onClose={onClose}
                 t={t}
                 isRTL={isRTL}
               />

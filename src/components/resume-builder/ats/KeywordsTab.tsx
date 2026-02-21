@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { FileSearch, CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
 import { getScoreColor, getScoreBgColor } from './ScoreTab'
@@ -77,7 +77,6 @@ interface KeywordsTabProps {
   setJobDescription: (value: string) => void
   onMatch: () => void
   onNavigateToSection?: (sectionIndex: number) => void
-  onClose: () => void
   t: (key: string, params?: Record<string, string | number>) => string
   isRTL: boolean
 }
@@ -90,21 +89,12 @@ export function KeywordsTab({
   setJobDescription,
   onMatch,
   onNavigateToSection,
-  onClose,
   t,
   isRTL
 }: KeywordsTabProps) {
-  const navTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  useEffect(() => () => clearTimeout(navTimerRef.current), [])
-
   const handleKeywordClick = (section?: SectionType) => {
     if (section && section !== 'general' && onNavigateToSection) {
-      const sectionIndex = SECTION_INDEX_MAP[section]
-      onClose()
-      clearTimeout(navTimerRef.current)
-      navTimerRef.current = setTimeout(() => {
-        onNavigateToSection(sectionIndex)
-      }, 100)
+      onNavigateToSection(SECTION_INDEX_MAP[section])
     }
   }
 
