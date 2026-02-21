@@ -46,9 +46,10 @@ export function BuilderHeader({
       <button
         type="button"
         onClick={() => router.push('/dashboard')}
+        aria-label={t('pages.resumeBuilder.actions.back') || 'Back'}
         className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors shrink-0"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         <span className="hidden sm:inline">{t('pages.resumeBuilder.actions.back')}</span>
       </button>
 
@@ -60,10 +61,11 @@ export function BuilderHeader({
         type="text"
         value={resumeTitle}
         onChange={(e) => onTitleChange(e.target.value)}
+        title={resumeTitle}
         className={`flex-1 min-w-0 text-sm font-medium bg-transparent border-0 outline-none focus:ring-0 px-1 py-0.5 rounded hover:bg-gray-50 focus:bg-gray-50 transition-colors truncate ${
           titleError ? 'text-red-600 placeholder-red-400' : 'text-gray-900'
         }`}
-        placeholder="Untitled Resume"
+        placeholder={t('pages.resumeBuilder.defaults.untitledResume')}
       />
 
       {/* Save indicator */}
@@ -78,6 +80,7 @@ export function BuilderHeader({
           onClick={onShowKeyboardHelp}
           className="h-8 w-8 p-0 hidden sm:flex"
           title="Keyboard Shortcuts (F1)"
+          aria-label={t('pages.resumeBuilder.buttons.shortcuts') || 'Keyboard shortcuts'}
         >
           <Keyboard className="h-4 w-4 text-gray-500" />
         </Button>
@@ -89,6 +92,7 @@ export function BuilderHeader({
           onClick={onShowATS}
           className="h-8 px-2.5 text-xs text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 gap-1"
           title={t('pages.resumeBuilder.actions.atsOptimization')}
+          aria-label={t('pages.resumeBuilder.actions.atsOptimization') || 'ATS optimization'}
         >
           <ScanSearch className="h-4 w-4 shrink-0" />
           <span className="text-[11px] font-medium leading-tight sm:text-xs">{t('pages.resumeBuilder.actions.ats')}</span>
@@ -102,13 +106,14 @@ export function BuilderHeader({
             onClick={onTranslate}
             disabled={isTranslating}
             className="h-8 px-2 text-xs"
+            aria-label={t('pages.resumeBuilder.actions.translate') || 'Translate'}
           >
             {isTranslating ? (
               <div className="animate-spin h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full" />
             ) : (
               <Languages className="h-4 w-4 text-gray-500" />
             )}
-            <span className="hidden md:inline ml-1">Translate</span>
+            <span className="hidden md:inline ms-1">{t('pages.resumeBuilder.actions.translate')}</span>
           </Button>
         )}
 
@@ -120,9 +125,10 @@ export function BuilderHeader({
             onClick={onDownload}
             disabled={isDownloading}
             className="h-8 px-2 text-xs hidden sm:flex"
+            aria-label={t('pages.resumeBuilder.actions.pdf') || 'Download PDF'}
           >
             <Download className="h-4 w-4 text-gray-500" />
-            <span className="hidden md:inline ml-1">PDF</span>
+            <span className="hidden md:inline ms-1">{t('pages.resumeBuilder.actions.pdf')}</span>
           </Button>
         )}
 

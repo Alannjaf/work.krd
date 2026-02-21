@@ -473,6 +473,14 @@
     },
     "personalInfo": {
       "title": "المعلومات الشخصية",
+      "aboutYou": {
+        "title": "عنك",
+        "description": "المعلومات الأساسية التي تظهر في أعلى سيرتك الذاتية"
+      },
+      "contactAndLinks": {
+        "title": "التواصل والروابط",
+        "subtitle": "الموقع، لينكد إن، الموقع الإلكتروني"
+      },
       "fields": {
         "fullName": "الاسم الكامل",
         "professionalTitle": "المسمى المهني",
@@ -494,6 +502,7 @@
       },
       "demographics": {
         "title": "المعلومات الديموغرافية (اختيارية)",
+        "subtitle": "شائعة في سير ذاتية الشرق الأوسط/أوروبا",
         "optional": "(اختياري)",
         "description": "هذه الحقول اختيارية وقد تكون مطلوبة في بعض المناطق أو الصناعات.",
         "dateOfBirth": "تاريخ الميلاد",
@@ -629,7 +638,14 @@
         "title": "كيف تريد أن تبدأ؟",
         "uploadCard": {
           "title": "رفع سيرة ذاتية موجودة",
-          "subtitle": "سنستخرج معلوماتك من ملف PDF أو Word"
+          "subtitle": "سنستخرج معلوماتك من ملف PDF أو Word",
+          "invalidFile": "يرجى رفع ملف PDF أو Word",
+          "fileTooLarge": "يجب أن يكون الملف أقل من 5 ميجابايت",
+          "uploadFailed": "فشل الرفع",
+          "processing": "جارٍ المعالجة...",
+          "browseFiles": "تصفح الملفات",
+          "fileFormats": "PDF، DOCX (حد أقصى 5 ميجابايت)",
+          "uploadExtract": "رفع واستخراج"
         },
         "scratchCard": {
           "title": "البدء من الصفر",
@@ -645,7 +661,8 @@
       },
       "errors": {
         "nameRequired": "يرجى إدخال اسمك",
-        "createFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+        "createFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+        "completeFailed": "فشل في إكمال الإعداد"
       }
     },
     "resumeBuilder": {
@@ -712,7 +729,9 @@
         "next": "التالي",
         "viewResume": "عرض السيرة الذاتية",
         "ats": "ATS",
-        "atsOptimization": "تحسين ATS - التحقق من توافق السيرة الذاتية"
+        "atsOptimization": "تحسين ATS - التحقق من توافق السيرة الذاتية",
+        "translate": "ترجمة",
+        "pdf": "PDF"
       },
       "autoTranslate": {
         "button": "ترجمة تلقائية إلى الإنجليزية",
@@ -744,7 +763,8 @@
       },
       "defaults": {
         "resumeTitle": "سيرتي الذاتية",
-        "importedTitle": "السيرة الذاتية المستوردة"
+        "importedTitle": "السيرة الذاتية المستوردة",
+        "untitledResume": "سيرة ذاتية بدون عنوان"
       },
       "ai": {
         "powered": "✨ مدعوم بالذكاء الاصطناعي",
@@ -808,6 +828,22 @@
           "keywordFailed": "فشل مطابقة الكلمات المفتاحية",
           "rateLimited": "طلبات كثيرة جداً. يرجى المحاولة لاحقاً."
         }
+      },
+      "sidebar": {
+        "aboutYou": "عنك",
+        "summary": "الملخص",
+        "experience": "الخبرة",
+        "education": "التعليم",
+        "skillsAndLanguages": "المهارات واللغات",
+        "additional": "إضافي"
+      },
+      "mobileNav": {
+        "about": "عنك",
+        "summary": "ملخص",
+        "work": "خبرة",
+        "edu": "تعليم",
+        "skills": "مهارات",
+        "more": "المزيد"
       },
       "quickStart": {
         "title": "ابدأ من قالب",
@@ -887,6 +923,7 @@
         "resumeScore": "نتيجة السيرة الذاتية",
         "atsReady": "متوافق مع ATS",
         "addSkill": "+ أضف مهارة",
+        "skillsLabel": "المهارات",
         "aiCoach": "اسأل مدرب الذكاء الاصطناعي أي شيء..."
       },
       "statsBar": {
@@ -1081,6 +1118,7 @@
         "free": {
           "name": "مجاني",
           "price": "٠",
+          "currency": "د.ع",
           "cta": "ابدأ مجاناً",
           "f1": "حتى ١٠ سير ذاتية",
           "f2": "قوالب أساسية",
@@ -1434,6 +1472,36 @@
         "failedToLoadStats": "فشل في تحميل الإحصائيات",
         "failedToLoadSettings": "فشل في تحميل الإعدادات",
         "failedToLoadSubscriptionStatus": "فشل في تحميل حالة الاشتراكات"
+      },
+      "email": {
+        "title": "لوحة البريد الإلكتروني",
+        "backToAdmin": "العودة للإدارة",
+        "failedToLoadStats": "فشل في تحميل إحصائيات البريد",
+        "retry": "إعادة المحاولة",
+        "totalSent": "إجمالي المرسل",
+        "pending": "قيد الانتظار",
+        "failed": "فشل",
+        "campaignBreakdown": "تفاصيل الحملات",
+        "campaignWelcome": "ترحيب",
+        "campaignAbandonedResume": "سيرة ذاتية متروكة",
+        "campaignReEngagement": "إعادة تفاعل",
+        "dailySendVolume": "حجم الإرسال اليومي (14 يوم)",
+        "noEmailData": "لا توجد بيانات بريد بعد",
+        "deliveryStatus": "حالة التسليم",
+        "statusQueued": "في الانتظار",
+        "statusSent": "مرسل",
+        "statusDelivered": "تم التسليم",
+        "statusOpened": "مفتوح",
+        "statusFailed": "فشل",
+        "statusBounced": "مرتد",
+        "recentEmailLogs": "سجلات البريد الأخيرة",
+        "refresh": "تحديث",
+        "recipient": "المستلم",
+        "campaign": "الحملة",
+        "subject": "الموضوع",
+        "status": "الحالة",
+        "sent": "المرسل",
+        "noEmailLogs": "لا توجد سجلات بريد بعد"
       }
     }
   },

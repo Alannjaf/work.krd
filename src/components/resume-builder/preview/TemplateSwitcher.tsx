@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Palette, Check, Lock } from 'lucide-react'
 import { templateRegistry } from '@/components/html-templates/registry'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface TemplateSwitcherProps {
   selectedTemplate: string
@@ -14,6 +15,7 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const { availableTemplates } = useSubscription()
+  const { t } = useLanguage()
 
   const templates = Object.values(templateRegistry)
   const currentTemplate = templateRegistry[selectedTemplate] || templates[0]
@@ -38,11 +40,11 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
   }, [isOpen])
 
   return (
-    <div ref={popoverRef} className="absolute bottom-6 right-6 z-10">
+    <div ref={popoverRef} className="absolute bottom-6 end-6 z-10">
       {/* Expanded popover - grows upward */}
       {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white rounded-xl border border-gray-200 shadow-xl p-3 min-w-[280px]">
-          <div className="text-xs font-medium text-gray-500 mb-2 px-1">Choose Template</div>
+        <div className="absolute bottom-full end-0 mb-2 bg-white rounded-xl border border-gray-200 shadow-xl p-3 min-w-[280px]">
+          <div className="text-xs font-medium text-gray-500 mb-2 px-1">{t('templateGallery.title')}</div>
           <div className="grid grid-cols-3 gap-2">
             {templates.map(template => {
               const isActive = template.id === selectedTemplate
@@ -53,6 +55,8 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
                   type="button"
                   key={template.id}
                   onClick={() => onTemplateChange(template.id)}
+                  aria-label={template.name}
+                  aria-pressed={isActive}
                   className={`relative flex flex-col items-center p-2 rounded-lg border-2 transition-all ${
                     isActive
                       ? 'border-primary bg-primary/5'
@@ -92,6 +96,9 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={t('templateGallery.title') || 'Choose template'}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
         className="flex items-center gap-2 bg-white shadow-lg rounded-full px-4 py-2 border border-gray-200 hover:shadow-xl transition-shadow text-sm font-medium text-gray-700"
       >
         <Palette className="h-4 w-4 text-gray-500" />

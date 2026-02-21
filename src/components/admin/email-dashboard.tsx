@@ -41,10 +41,19 @@ interface EmailStats {
   dailySentCounts: DailySentCount[]
 }
 
-const CAMPAIGN_LABELS: Record<string, string> = {
-  WELCOME: 'Welcome',
-  ABANDONED_RESUME: 'Abandoned Resume',
-  RE_ENGAGEMENT: 'Re-engagement',
+const CAMPAIGN_KEYS: Record<string, string> = {
+  WELCOME: 'pages.admin.email.campaignWelcome',
+  ABANDONED_RESUME: 'pages.admin.email.campaignAbandonedResume',
+  RE_ENGAGEMENT: 'pages.admin.email.campaignReEngagement',
+}
+
+const STATUS_KEYS: Record<string, string> = {
+  QUEUED: 'pages.admin.email.statusQueued',
+  SENT: 'pages.admin.email.statusSent',
+  DELIVERED: 'pages.admin.email.statusDelivered',
+  OPENED: 'pages.admin.email.statusOpened',
+  FAILED: 'pages.admin.email.statusFailed',
+  BOUNCED: 'pages.admin.email.statusBounced',
 }
 
 const CAMPAIGN_COLORS: Record<string, string> = {
@@ -93,7 +102,7 @@ function TableSkeleton() {
 
 export function EmailDashboard() {
   const { csrfFetch } = useCsrfToken()
-  useLanguage()
+  const { t } = useLanguage()
   const [stats, setStats] = useState<EmailStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -108,8 +117,8 @@ export function EmailDashboard() {
       setStats(data)
     } catch (err) {
       devError('[EmailDashboard] Failed to load stats:', err)
-      setError('Failed to load email stats')
-      toast.error('Failed to load email stats')
+      setError(t('pages.admin.email.failedToLoadStats'))
+      toast.error(t('pages.admin.email.failedToLoadStats'))
     } finally {
       setLoading(false)
     }
@@ -125,9 +134,9 @@ export function EmailDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AppHeader
-        title="Email Dashboard"
+        title={t('pages.admin.email.title')}
         showBackButton={true}
-        backButtonText="Back to Admin"
+        backButtonText={t('pages.admin.email.backToAdmin')}
         backButtonHref="/admin"
       />
 
@@ -139,7 +148,7 @@ export function EmailDashboard() {
               <p className="font-medium text-red-800 dark:text-red-200">{error}</p>
               <Button variant="outline" size="sm" onClick={fetchStats}>
                 <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                Retry
+                {t('pages.admin.email.retry')}
               </Button>
             </div>
           </div>
@@ -154,30 +163,30 @@ export function EmailDashboard() {
           </div>
         ) : stats ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="p-6" aria-label={`Total Sent: ${stats.overview.totalSent}`}>
+            <Card className="p-6" aria-label={`${t('pages.admin.email.totalSent')}: ${stats.overview.totalSent}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Sent</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.email.totalSent')}</p>
                   <p className="text-2xl font-bold">{stats.overview.totalSent.toLocaleString()}</p>
                 </div>
                 <Send className="h-8 w-8 text-green-500" />
               </div>
             </Card>
 
-            <Card className="p-6" aria-label={`Pending: ${stats.overview.totalPending}`}>
+            <Card className="p-6" aria-label={`${t('pages.admin.email.pending')}: ${stats.overview.totalPending}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.email.pending')}</p>
                   <p className="text-2xl font-bold">{stats.overview.totalPending.toLocaleString()}</p>
                 </div>
                 <Clock className="h-8 w-8 text-amber-500" />
               </div>
             </Card>
 
-            <Card className="p-6" aria-label={`Failed: ${stats.overview.totalFailed}`}>
+            <Card className="p-6" aria-label={`${t('pages.admin.email.failed')}: ${stats.overview.totalFailed}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Failed</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('pages.admin.email.failed')}</p>
                   <p className="text-2xl font-bold">{stats.overview.totalFailed.toLocaleString()}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-500" />
@@ -190,7 +199,7 @@ export function EmailDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Campaign Breakdown */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Campaign Breakdown</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('pages.admin.email.campaignBreakdown')}</h3>
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -210,7 +219,7 @@ export function EmailDashboard() {
                     <div key={campaign}>
                       <div className="flex justify-between items-center mb-1">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${CAMPAIGN_COLORS[campaign]}`}>
-                          {CAMPAIGN_LABELS[campaign]}
+                          {t(CAMPAIGN_KEYS[campaign])}
                         </span>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{count} ({percentage}%)</span>
                       </div>
@@ -233,7 +242,7 @@ export function EmailDashboard() {
 
           {/* Daily Send Volume (last 14 days) */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Daily Send Volume (14 days)</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('pages.admin.email.dailySendVolume')}</h3>
             {loading ? (
               <div className="flex items-end gap-1 h-32">
                 {[68, 45, 82, 30, 95, 55, 72, 40, 88, 35, 60, 78, 50, 90].map((h, i) => (
@@ -257,7 +266,7 @@ export function EmailDashboard() {
             ) : (
               <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
                 <Mail className="h-5 w-5 mr-2" />
-                No email data yet
+                {t('pages.admin.email.noEmailData')}
               </div>
             )}
             {stats && stats.dailySentCounts.length > 0 && (
@@ -272,12 +281,12 @@ export function EmailDashboard() {
         {/* Delivery Status Breakdown */}
         {stats && (
           <Card className="p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Delivery Status</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('pages.admin.email.deliveryStatus')}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {(['QUEUED', 'SENT', 'DELIVERED', 'OPENED', 'FAILED', 'BOUNCED'] as const).map((status) => (
                 <div key={status} className="text-center">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[status]}`}>
-                    {status}
+                    {t(STATUS_KEYS[status])}
                   </span>
                   <p className="text-lg font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {(stats.deliveryCounts[status] ?? 0).toLocaleString()}
@@ -291,10 +300,10 @@ export function EmailDashboard() {
         {/* Recent Logs Table */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Email Logs</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('pages.admin.email.recentEmailLogs')}</h3>
             <Button variant="outline" size="sm" onClick={fetchStats} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('pages.admin.email.refresh')}
             </Button>
           </div>
           {loading ? (
@@ -304,11 +313,11 @@ export function EmailDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Recipient</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Campaign</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Subject</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Status</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Sent</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">{t('pages.admin.email.recipient')}</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">{t('pages.admin.email.campaign')}</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">{t('pages.admin.email.subject')}</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">{t('pages.admin.email.status')}</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">{t('pages.admin.email.sent')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -319,7 +328,7 @@ export function EmailDashboard() {
                       </td>
                       <td className="py-2 px-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${CAMPAIGN_COLORS[log.campaign] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
-                          {CAMPAIGN_LABELS[log.campaign] ?? log.campaign}
+                          {CAMPAIGN_KEYS[log.campaign] ? t(CAMPAIGN_KEYS[log.campaign]) : log.campaign}
                         </span>
                       </td>
                       <td className="py-2 px-3 text-gray-700 dark:text-gray-300 truncate max-w-[250px]" title={log.subject}>
@@ -327,7 +336,7 @@ export function EmailDashboard() {
                       </td>
                       <td className="py-2 px-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[log.status] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
-                          {log.status}
+                          {STATUS_KEYS[log.status] ? t(STATUS_KEYS[log.status]) : log.status}
                         </span>
                         {log.error && (
                           <span className="block text-xs text-red-600 dark:text-red-400 mt-0.5 truncate max-w-[150px]" title={log.error}>
@@ -346,7 +355,7 @@ export function EmailDashboard() {
           ) : (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No email logs yet</p>
+              <p>{t('pages.admin.email.noEmailLogs')}</p>
             </div>
           )}
         </Card>

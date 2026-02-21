@@ -7,6 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Users, Check, Sparkles, Upload } from 'lucide-react'
 
+const TRUST_PERCENT = '39'
+
 export function Hero() {
   const { t, isRTL } = useLanguage()
   const [stats, setStats] = useState<{ userCount: number } | null>(null)
@@ -76,7 +78,7 @@ export function Hero() {
             <div className="mt-8 flex flex-col gap-2">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Check className="w-4 h-4 flex-shrink-0 text-emerald-500" />
-                <span>{t('pages.home.hero.trustStat', { percent: '39' })}</span>
+                <span>{t('pages.home.hero.trustStat', { percent: TRUST_PERCENT })}</span>
               </div>
               {stats && stats.userCount > 0 && (
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -121,10 +123,10 @@ export function Hero() {
                       strokeDashoffset={circumference * 0.25}
                       strokeLinecap="round"
                     />
-                    <text x="24" y="24" textAnchor="middle" dominantBaseline="central" className="text-xs font-bold fill-gray-900">81%</text>
+                    <text x="24" y="24" textAnchor="middle" dominantBaseline="central" className="text-xs font-bold fill-gray-900">{Math.round(scorePercent * 100)}%</text>
                   </svg>
                   <div>
-                    <div className="text-sm font-semibold text-gray-900">81%</div>
+                    <div className="text-sm font-semibold text-gray-900">{Math.round(scorePercent * 100)}%</div>
                     <div className="text-xs text-gray-500">{t('pages.home.hero.resumeScore')}</div>
                   </div>
                 </div>
@@ -147,7 +149,7 @@ export function Hero() {
                 style={{ transitionDelay: '0.8s' }}
               >
                 <div className="animate-float bg-white rounded-xl shadow-lg border border-gray-100 p-3" style={{ animationDelay: '0.8s' }}>
-                  <div className="text-xs font-medium text-gray-500 mb-2">Skills</div>
+                  <div className="text-xs font-medium text-gray-500 mb-2">{t('pages.home.hero.skillsLabel')}</div>
                   <div className="flex flex-wrap gap-1.5">
                     <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">React</span>
                     <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">Node.js</span>

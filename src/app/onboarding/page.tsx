@@ -14,7 +14,14 @@ import { getQuickStartTemplate } from '@/lib/quick-start-templates'
 // ── Progress Dots ──────────────────────────────────────────────────────
 function ProgressDots({ current, total }: { current: number; total: number }) {
   return (
-    <div className="flex justify-center gap-2 mb-8">
+    <div
+      className="flex justify-center gap-2 mb-8"
+      role="progressbar"
+      aria-valuenow={current}
+      aria-valuemin={1}
+      aria-valuemax={total}
+      aria-label={`Step ${current} of ${total}`}
+    >
       {Array.from({ length: total }, (_, i) => (
         <div
           key={i}
@@ -155,7 +162,7 @@ export default function OnboardingPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error || data?.message || 'Failed to complete onboarding')
+        throw new Error(data?.error || data?.message || t('pages.onboarding.errors.completeFailed'))
       }
       router.push(`/resume-builder?id=${data.resumeId}`)
     } catch (err) {
@@ -181,7 +188,7 @@ export default function OnboardingPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error || data?.message || 'Failed to complete onboarding')
+        throw new Error(data?.error || data?.message || t('pages.onboarding.errors.completeFailed'))
       }
       router.push(`/resume-builder?id=${data.resumeId}`)
     } catch (err) {
@@ -209,15 +216,15 @@ export default function OnboardingPage() {
       'application/msword'
     ]
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Please upload a PDF or Word file')
+      toast.error(t('pages.onboarding.step3.uploadCard.invalidFile'))
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('File must be under 5MB')
+      toast.error(t('pages.onboarding.step3.uploadCard.fileTooLarge'))
       return
     }
     setSelectedFile(file)
-  }, [])
+  }, [t])
 
   const handleUpload = async () => {
     if (!selectedFile) return
@@ -230,12 +237,12 @@ export default function OnboardingPage() {
         body: formData
       })
       const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Upload failed')
+      if (!res.ok) throw new Error(result.error || t('pages.onboarding.step3.uploadCard.uploadFailed'))
 
       setUploadedData(result.data)
       setUploadSuccess(true)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Upload failed')
+      toast.error(error instanceof Error ? error.message : t('pages.onboarding.step3.uploadCard.uploadFailed'))
     } finally {
       setIsUploading(false)
     }
@@ -328,7 +335,7 @@ export default function OnboardingPage() {
                       key={tmpl.id}
                       type="button"
                       onClick={() => setSelectedTemplate(tmpl.id)}
-                      className={`relative rounded-xl overflow-hidden transition-all duration-200 ${
+                      className={`relative rounded-xl overflow-hidden transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
                         selectedTemplate === tmpl.id
                           ? 'ring-2 ring-primary ring-offset-2 shadow-md'
                           : 'border border-gray-200 hover:shadow-md hover:border-gray-300'
@@ -370,7 +377,7 @@ export default function OnboardingPage() {
                     onClick={() => goToStep(1)}
                     className="px-6"
                   >
-                    Back
+                    {t('common.back')}
                   </Button>
                   <Button
                     type="button"
@@ -422,13 +429,23 @@ export default function OnboardingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Upload CV Card */}
                     <div
-                      className={`relative rounded-xl border-2 p-6 transition-all cursor-pointer ${
+                      role="button"
+                      tabIndex={0}
+                      className={`relative rounded-xl border-2 p-6 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none ${
                         selectedFile
                           ? 'border-primary bg-primary/5'
                           : isDragging
                             ? 'border-primary bg-primary/5'
                             : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                       }`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          if (!selectedFile) {
+                            document.getElementById('cv-upload')?.click()
+                          }
+                        }
+                      }}
                       onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
                       onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
                       onDrop={(e) => {
@@ -479,7 +496,7 @@ export default function OnboardingPage() {
                               <div className="mt-3">
                                 <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
                                   <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                                  <span>Processing...</span>
+                                  <span>{t('pages.onboarding.step3.uploadCard.processing')}</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-1.5">
                                   <div className="bg-primary h-1.5 rounded-full animate-pulse" style={{ width: '60%' }} />
@@ -499,9 +516,9 @@ export default function OnboardingPage() {
                               }}
                             />
                             <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                              Browse files
+                              {t('pages.onboarding.step3.uploadCard.browseFiles')}
                             </span>
-                            <p className="text-xs text-gray-400 mt-2">PDF, DOCX (max 5MB)</p>
+                            <p className="text-xs text-gray-400 mt-2">{t('pages.onboarding.step3.uploadCard.fileFormats')}</p>
                           </label>
                         )}
 
@@ -515,7 +532,7 @@ export default function OnboardingPage() {
                             }}
                           >
                             <Upload className="h-4 w-4 mr-2" />
-                            Upload & Extract
+                            {t('pages.onboarding.step3.uploadCard.uploadExtract')}
                           </Button>
                         )}
                       </div>
@@ -591,7 +608,7 @@ export default function OnboardingPage() {
                       onClick={() => goToStep(2)}
                       className="px-6"
                     >
-                      Back
+                      {t('common.back')}
                     </Button>
                   </div>
                 )}

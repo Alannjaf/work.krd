@@ -67,7 +67,7 @@ export function AppHeader({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side */}
-          <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
             {showBackButton && (
               <Button
                 variant="outline"
@@ -75,7 +75,7 @@ export function AppHeader({
                 onClick={handleBackClick}
                 className="flex items-center gap-2"
               >
-                <span>←</span>
+                <span className="inline-block rtl:scale-x-[-1]">←</span>
                 {backButtonText}
               </Button>
             )}
@@ -99,7 +99,7 @@ export function AppHeader({
           </div>
 
           {/* Right side - Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center gap-4">
             {/* Language Selector */}
             <div className="relative">
               <Button
@@ -155,7 +155,9 @@ export function AppHeader({
             size="sm"
             className="md:hidden"
             onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu-panel"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -164,7 +166,12 @@ export function AppHeader({
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t bg-white">
+        <div
+          id="mobile-menu-panel"
+          role="dialog"
+          aria-label="Navigation menu"
+          className="md:hidden border-t bg-white"
+        >
           <div className="px-4 py-4 space-y-4">
             {/* Mobile Language Selector */}
             <div>
@@ -175,7 +182,7 @@ export function AppHeader({
                     key={lang.code}
                     onClick={() => changeLanguage(lang.code as 'en' | 'ar' | 'ckb')}
                     className={cn(
-                      "block w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100",
+                      "block w-full text-start px-3 py-2 text-sm rounded-md hover:bg-gray-100",
                       language === lang.code && "bg-gray-100"
                     )}
                   >

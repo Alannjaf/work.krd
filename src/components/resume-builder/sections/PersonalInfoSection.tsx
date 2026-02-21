@@ -28,16 +28,17 @@ export function PersonalInfoSection({
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="About You"
-        description="Basic information that appears at the top of your resume"
+        title={t('forms.personalInfo.aboutYou.title')}
+        description={t('forms.personalInfo.aboutYou.description')}
       />
 
       {/* Full Name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="personal-fullName" className="block text-sm font-medium text-gray-700 mb-1">
           {t('forms.personalInfo.fields.fullName')} <span className="text-red-500">*</span>
         </label>
         <FormInput
+          id="personal-fullName"
           value={formData.personal.fullName}
           onChange={(e) => updatePersonalField('fullName', e.target.value)}
           placeholder={t('forms.personalInfo.placeholders.fullName')}
@@ -53,13 +54,14 @@ export function PersonalInfoSection({
 
       {/* Professional Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="personal-title" className="block text-sm font-medium text-gray-700 mb-1">
           {t('forms.personalInfo.fields.professionalTitle')} <span className="text-red-500">*</span>
         </label>
         <FormInput
+          id="personal-title"
           value={formData.personal.title || ''}
           onChange={(e) => updatePersonalField('title', e.target.value)}
-          placeholder="e.g., Senior Software Engineer"
+          placeholder={t('forms.personalInfo.placeholders.professionalTitle')}
           className="rounded-lg"
         />
         <TranslateAndEnhanceButton
@@ -112,10 +114,11 @@ export function PersonalInfoSection({
       {/* Email + Phone - always visible */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="personal-email" className="block text-sm font-medium text-gray-700 mb-1">
             {t('forms.personalInfo.fields.email')} <span className="text-red-500">*</span>
           </label>
           <FormInput
+            id="personal-email"
             type="email"
             value={formData.personal.email}
             onChange={(e) => updatePersonalField('email', e.target.value)}
@@ -125,10 +128,11 @@ export function PersonalInfoSection({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="personal-phone" className="block text-sm font-medium text-gray-700 mb-1">
             {t('forms.personalInfo.fields.phone')} <span className="text-red-500">*</span>
           </label>
           <Input
+            id="personal-phone"
             value={formData.personal.phone}
             onChange={(e) => updatePersonalField('phone', e.target.value)}
             placeholder={t('forms.personalInfo.placeholders.phone')}
@@ -138,13 +142,14 @@ export function PersonalInfoSection({
       </div>
 
       {/* Collapsible: Contact & Links */}
-      <CollapsibleGroup title="Contact & Links" subtitle="Location, LinkedIn, website">
+      <CollapsibleGroup title={t('forms.personalInfo.contactAndLinks.title')} subtitle={t('forms.personalInfo.contactAndLinks.subtitle')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-location" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.fields.location')}
             </label>
             <Input
+              id="personal-location"
               value={formData.personal.location}
               onChange={(e) => updatePersonalField('location', e.target.value)}
               placeholder={t('forms.personalInfo.placeholders.location')}
@@ -157,10 +162,11 @@ export function PersonalInfoSection({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-linkedin" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.fields.linkedin')}
             </label>
             <Input
+              id="personal-linkedin"
               value={formData.personal.linkedin || ''}
               onChange={(e) => updatePersonalField('linkedin', e.target.value)}
               placeholder={t('forms.personalInfo.placeholders.linkedin')}
@@ -168,10 +174,11 @@ export function PersonalInfoSection({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-website" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.fields.website')}
             </label>
             <Input
+              id="personal-website"
               value={formData.personal.website || ''}
               onChange={(e) => updatePersonalField('website', e.target.value)}
               placeholder={t('forms.personalInfo.placeholders.website')}
@@ -184,14 +191,15 @@ export function PersonalInfoSection({
       {/* Collapsible: Demographics */}
       <CollapsibleGroup
         title={t('forms.personalInfo.demographics.title')}
-        subtitle="Common in Middle East/Europe resumes"
+        subtitle={t('forms.personalInfo.demographics.subtitle')}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.demographics.dateOfBirth')}
             </label>
             <Input
+              id="personal-dateOfBirth"
               type="date"
               value={formData.personal.dateOfBirth || ''}
               onChange={(e) => updatePersonalField('dateOfBirth', e.target.value)}
@@ -199,10 +207,11 @@ export function PersonalInfoSection({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-gender" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.demographics.gender')}
             </label>
             <select
+              id="personal-gender"
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               value={formData.personal.gender || ''}
               onChange={(e) => updatePersonalField('gender', e.target.value)}
@@ -215,10 +224,11 @@ export function PersonalInfoSection({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-nationality" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.demographics.nationality')}
             </label>
             <Input
+              id="personal-nationality"
               placeholder={t('forms.personalInfo.demographics.nationalityPlaceholder')}
               value={formData.personal.nationality || ''}
               onChange={(e) => updatePersonalField('nationality', e.target.value)}
@@ -231,10 +241,11 @@ export function PersonalInfoSection({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.demographics.maritalStatus')}
             </label>
             <select
+              id="personal-maritalStatus"
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               value={formData.personal.maritalStatus || ''}
               onChange={(e) => updatePersonalField('maritalStatus', e.target.value)}
@@ -247,10 +258,11 @@ export function PersonalInfoSection({
             </select>
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="personal-country" className="block text-sm font-medium text-gray-700 mb-1">
               {t('forms.personalInfo.demographics.country')}
             </label>
             <Input
+              id="personal-country"
               placeholder={t('forms.personalInfo.demographics.countryPlaceholder')}
               value={formData.personal.country || ''}
               onChange={(e) => updatePersonalField('country', e.target.value)}

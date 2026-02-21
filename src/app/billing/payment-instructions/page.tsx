@@ -34,7 +34,14 @@ const TOTAL_STEPS = 4
 // ── Progress Dots ──────────────────────────────────────────────────────
 function ProgressDots({ current, total }: { current: number; total: number }) {
   return (
-    <div className="flex justify-center gap-2 mb-8">
+    <div
+      className="flex justify-center gap-2 mb-8"
+      role="progressbar"
+      aria-valuenow={current}
+      aria-valuemin={1}
+      aria-valuemax={total}
+      aria-label={`Step ${current} of ${total}`}
+    >
       {Array.from({ length: total }, (_, i) => (
         <div
           key={i}
@@ -218,7 +225,7 @@ function PaymentContent() {
                     /{t('billing.proPlan.perMonth')}
                   </div>
 
-                  <div className="text-left space-y-2.5">
+                  <div className="text-start space-y-2.5">
                     {proFeatures.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2.5">
                         <Check className="h-4 w-4 text-primary flex-shrink-0" />
@@ -234,7 +241,7 @@ function PaymentContent() {
                   onClick={() => goToStep(2)}
                 >
                   {t('billing.pay.wizard.next')}
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-4 w-4 ms-2 rtl:rotate-180" />
                 </Button>
               </div>
             )}
@@ -253,7 +260,7 @@ function PaymentContent() {
                 </p>
 
                 {/* Send instruction - big and clear */}
-                <div className="bg-blue-50 rounded-2xl p-5 sm:p-6 mb-5 border border-blue-100 text-left">
+                <div className="bg-blue-50 rounded-2xl p-5 sm:p-6 mb-5 border border-blue-100 text-start">
                   <p className="text-sm font-medium text-blue-700 mb-4">
                     {t('billing.pay.wizard.sendInstruction')}
                   </p>
@@ -274,7 +281,7 @@ function PaymentContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(PAYMENT_PHONE_RAW, 'phone')}
-                        className="flex-shrink-0 ml-3 h-10 w-10 p-0"
+                        className="flex-shrink-0 ms-3 h-10 w-10 p-0"
                       >
                         {copied === 'phone' ? (
                           <Check className="h-4 w-4 text-green-600" />
@@ -299,7 +306,7 @@ function PaymentContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(PAYMENT_NAME, 'name')}
-                        className="flex-shrink-0 ml-3 h-10 w-10 p-0"
+                        className="flex-shrink-0 ms-3 h-10 w-10 p-0"
                       >
                         {copied === 'name' ? (
                           <Check className="h-4 w-4 text-green-600" />
@@ -324,7 +331,7 @@ function PaymentContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(PAYMENT_AMOUNT_RAW, 'amount')}
-                        className="flex-shrink-0 ml-3 h-10 w-10 p-0"
+                        className="flex-shrink-0 ms-3 h-10 w-10 p-0"
                       >
                         {copied === 'amount' ? (
                           <Check className="h-4 w-4 text-green-600" />
@@ -338,7 +345,7 @@ function PaymentContent() {
 
                 {/* Reference note */}
                 {userEmail && (
-                  <div className="bg-amber-50 rounded-xl p-4 mb-6 border border-amber-200 text-left">
+                  <div className="bg-amber-50 rounded-xl p-4 mb-6 border border-amber-200 text-start">
                     <p className="text-xs font-medium text-amber-700 uppercase tracking-wider mb-1">
                       {t('billing.pay.reference')}
                     </p>
@@ -351,7 +358,7 @@ function PaymentContent() {
                         variant="ghost"
                         size="sm"
                         onClick={() => copyToClipboard(`work.krd ${plan.toUpperCase()} - ${userEmail}`, 'reference')}
-                        className="flex-shrink-0 ml-2"
+                        className="flex-shrink-0 ms-2"
                       >
                         {copied === 'reference' ? (
                           <Check className="h-4 w-4 text-green-600" />
@@ -374,7 +381,7 @@ function PaymentContent() {
                     className="flex-1 h-12 text-base"
                     onClick={() => goToStep(1)}
                   >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    <ArrowLeft className="h-4 w-4 me-2 rtl:rotate-180" />
                     {t('billing.pay.wizard.back')}
                   </Button>
                   <Button
@@ -383,7 +390,7 @@ function PaymentContent() {
                     onClick={() => goToStep(3)}
                   >
                     {t('billing.pay.wizard.next')}
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-4 w-4 ms-2 rtl:rotate-180" />
                   </Button>
                 </div>
               </div>
@@ -465,7 +472,7 @@ function PaymentContent() {
                     className="flex-1 h-12 text-base"
                     onClick={() => goToStep(2)}
                   >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    <ArrowLeft className="h-4 w-4 me-2 rtl:rotate-180" />
                     {t('billing.pay.wizard.back')}
                   </Button>
                   <Button
@@ -476,12 +483,12 @@ function PaymentContent() {
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 me-2 animate-spin" />
                         {t('billing.pay.submitting')}
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
+                        <CheckCircle className="h-4 w-4 me-2" />
                         {t('billing.pay.submitPayment')}
                       </>
                     )}

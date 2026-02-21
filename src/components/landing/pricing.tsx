@@ -48,7 +48,7 @@ export function Pricing() {
               <span className="text-4xl font-bold text-gray-900">
                 {t('pages.home.pricing.free.price')}
               </span>
-              <span className="text-gray-500">{t('pages.home.pricing.pro.currency')}</span>
+              <span className="text-gray-500">{t('pages.home.pricing.free.currency')}</span>
             </div>
             <ul className="mt-8 space-y-3">
               {freeFeatures.map((key) => (

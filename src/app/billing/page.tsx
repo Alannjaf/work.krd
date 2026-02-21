@@ -170,7 +170,13 @@ export default function BillingPage() {
                   {t('billing.currentPlan.stats.resumesUsed')}
                 </div>
                 {subscription.resumeLimit !== -1 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="mt-2 w-full bg-gray-200 rounded-full h-1.5"
+                    role="progressbar"
+                    aria-valuenow={subscription.resumeCount}
+                    aria-valuemin={0}
+                    aria-valuemax={subscription.resumeLimit}
+                  >
                     <div
                       className="bg-blue-600 h-1.5 rounded-full transition-all"
                       style={{
@@ -198,7 +204,13 @@ export default function BillingPage() {
                   {t('billing.currentPlan.stats.aiUsage')}
                 </div>
                 {subscription.aiUsageLimit !== -1 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="mt-2 w-full bg-gray-200 rounded-full h-1.5"
+                    role="progressbar"
+                    aria-valuenow={subscription.aiUsageCount}
+                    aria-valuemin={0}
+                    aria-valuemax={subscription.aiUsageLimit}
+                  >
                     <div
                       className="bg-green-600 h-1.5 rounded-full transition-all"
                       style={{
@@ -226,7 +238,13 @@ export default function BillingPage() {
                   {t('billing.currentPlan.stats.pdfExports')}
                 </div>
                 {subscription.exportLimit !== -1 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="mt-2 w-full bg-gray-200 rounded-full h-1.5"
+                    role="progressbar"
+                    aria-valuenow={subscription.exportCount}
+                    aria-valuemin={0}
+                    aria-valuemax={subscription.exportLimit}
+                  >
                     <div
                       className="bg-purple-600 h-1.5 rounded-full transition-all"
                       style={{
@@ -254,7 +272,13 @@ export default function BillingPage() {
                   {t('billing.currentPlan.stats.resumeImports')}
                 </div>
                 {subscription.resumeImportsLimit !== -1 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="mt-2 w-full bg-gray-200 rounded-full h-1.5"
+                    role="progressbar"
+                    aria-valuenow={subscription.resumeImportsCount}
+                    aria-valuemin={0}
+                    aria-valuemax={subscription.resumeImportsLimit}
+                  >
                     <div
                       className="bg-orange-600 h-1.5 rounded-full transition-all"
                       style={{

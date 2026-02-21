@@ -18,15 +18,19 @@ export function CollapsibleEntry({ title, subtitle, defaultOpen = true, onRemove
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
       <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
         className="flex items-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsOpen(!isOpen) } }}
       >
-        <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
+        <GripVertical className="h-4 w-4 text-gray-300 shrink-0" aria-hidden="true" />
 
         {isOpen ? (
           <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 shrink-0 rtl:rotate-180" />
         )}
 
         <div className="flex-1 min-w-0">
@@ -39,6 +43,7 @@ export function CollapsibleEntry({ title, subtitle, defaultOpen = true, onRemove
         <Button
           variant="ghost"
           size="sm"
+          aria-label="Remove entry"
           onClick={(e) => {
             e.stopPropagation()
             onRemove()

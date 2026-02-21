@@ -472,6 +472,14 @@
     },
     "personalInfo": {
       "title": "زانیاری کەسی",
+      "aboutYou": {
+        "title": "دەربارەی تۆ",
+        "description": "زانیاری سەرەکی کە لە سەرەوەی ڕیزیومێکەتدا دەردەکەوێت"
+      },
+      "contactAndLinks": {
+        "title": "پەیوەندی و بەستەرەکان",
+        "subtitle": "شوێن، لینکدین، ماڵپەڕ"
+      },
       "fields": {
         "fullName": "ناوی تەواو",
         "professionalTitle": "ناونیشانی پیشەیی",
@@ -493,6 +501,7 @@
       },
       "demographics": {
         "title": "زانیاری دیمۆگرافی (ئیختیاری)",
+        "subtitle": "باو لە ڕیزیومەکانی ڕۆژهەڵاتی ناوەڕاست/ئەوروپا",
         "optional": "(ئیختیاری)",
         "description": "ئەم خانانە ئیختیارین و لە هەندێک هەرێم یا پیشەسازیدا پێویست دەبن.",
         "dateOfBirth": "ڕێکەوتی لەدایکبوون",
@@ -628,7 +637,14 @@
         "title": "چۆن دەتەوێت دەست پێ بکەیت؟",
         "uploadCard": {
           "title": "پێناسەنامەی ئامادەت باربکە",
-          "subtitle": "زانیارییەکانت لە فایلی PDF یان Word دەردەهێنین"
+          "subtitle": "زانیارییەکانت لە فایلی PDF یان Word دەردەهێنین",
+          "invalidFile": "تکایە فایلی PDF یان Word بارکە",
+          "fileTooLarge": "فایلەکە دەبێت لە ٥ مێگابایت کەمتر بێت",
+          "uploadFailed": "بارکردن سەرکەوتوو نەبوو",
+          "processing": "پرۆسەکردن...",
+          "browseFiles": "گەڕان بە فایلەکان",
+          "fileFormats": "PDF، DOCX (زۆرترین ٥ مێگابایت)",
+          "uploadExtract": "بارکردن و دەرهێنان"
         },
         "scratchCard": {
           "title": "لە سفرەوە دەست پێ بکە",
@@ -644,7 +660,8 @@
       },
       "errors": {
         "nameRequired": "تکایە ناوت بنووسە",
-        "createFailed": "هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵ بدەوە."
+        "createFailed": "هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵ بدەوە.",
+        "completeFailed": "تەواوکردنی ئامادەکردن سەرکەوتوو نەبوو"
       }
     },
     "resumeBuilder": {
@@ -711,7 +728,9 @@
         "next": "دواتر",
         "viewResume": "ڕیزیومێ ببینە",
         "ats": "ATS",
-        "atsOptimization": "باشترکردنی ATS - پشکنینی گونجاوی ڕیزیومە"
+        "atsOptimization": "باشترکردنی ATS - پشکنینی گونجاوی ڕیزیومە",
+        "translate": "وەرگێڕان",
+        "pdf": "PDF"
       },
       "autoTranslate": {
         "button": "وەرگێڕانی خۆکار بۆ ئینگلیزی",
@@ -743,7 +762,8 @@
       },
       "defaults": {
         "resumeTitle": "ڕیزیومێی من",
-        "importedTitle": "ڕیزیومێی هاوردەکراو"
+        "importedTitle": "ڕیزیومێی هاوردەکراو",
+        "untitledResume": "سیڤی بێ ناو"
       },
       "ai": {
         "powered": "✨ پشتگیریکراو بە زیرەکی دەستکرد",
@@ -807,6 +827,22 @@
           "keywordFailed": "لێکدانەوەی وشەی سەرەکی سەرنەکەوت",
           "rateLimited": "داواکاری زۆر. تکایە دواتر هەوڵ بدەوە."
         }
+      },
+      "sidebar": {
+        "aboutYou": "دەربارەی تۆ",
+        "summary": "کورتە",
+        "experience": "ئەزموون",
+        "education": "پەروەردە",
+        "skillsAndLanguages": "لێهاتوویی و زمانەکان",
+        "additional": "زیادە"
+      },
+      "mobileNav": {
+        "about": "دەربارە",
+        "summary": "کورتە",
+        "work": "کار",
+        "edu": "خوێندن",
+        "skills": "تواناکان",
+        "more": "زیاتر"
       },
       "quickStart": {
         "title": "لە داڕێژەیەکەوە دەست پێ بکە",
@@ -887,6 +923,7 @@
         "resumeScore": "نمرەی CV",
         "atsReady": "گونجاو بۆ ATS",
         "addSkill": "+ تواناییەک زیاد بکە",
+        "skillsLabel": "لێهاتووییەکان",
         "aiCoach": "هەر شتێک لە ڕاوێژکاری AI بپرسە..."
       },
       "statsBar": {
@@ -1081,6 +1118,7 @@
         "free": {
           "name": "خۆڕایی",
           "price": "٠",
+          "currency": "د.ع",
           "cta": "بەخۆڕایی دەست پێبکە",
           "f1": "تا ١٠ CV",
           "f2": "قاڵبی سەرەتایی",
@@ -1434,6 +1472,36 @@
         "failedToLoadStats": "سەرکەوتوو نەبوو لە بارکردنی ئامارەکان",
         "failedToLoadSettings": "سەرکەوتوو نەبوو لە بارکردنی ڕێکخستنەکان",
         "failedToLoadSubscriptionStatus": "سەرکەوتوو نەبوو لە بارکردنی بارودۆخی ئەندامێتی"
+      },
+      "email": {
+        "title": "داشبۆردی ئیمەیل",
+        "backToAdmin": "گەڕانەوە بۆ بەڕێوەبەری",
+        "failedToLoadStats": "خەتا لە بارکردنی ئامارەکانی ئیمەیل",
+        "retry": "هەوڵی دووبارە",
+        "totalSent": "کۆی نێردراو",
+        "pending": "چاوەڕوانی",
+        "failed": "شکستی هێنا",
+        "campaignBreakdown": "وردەکاری کەمپەینەکان",
+        "campaignWelcome": "بەخێرهاتن",
+        "campaignAbandonedResume": "سیڤی بەجێهێشتراو",
+        "campaignReEngagement": "دووبارە چالاککردنەوە",
+        "dailySendVolume": "ڕێژەی نێردنی ڕۆژانە (١٤ ڕۆژ)",
+        "noEmailData": "هێشتا داتای ئیمەیل نییە",
+        "deliveryStatus": "دۆخی گەیاندن",
+        "statusQueued": "لەنۆرەدا",
+        "statusSent": "نێردراو",
+        "statusDelivered": "گەیەندرا",
+        "statusOpened": "کرایەوە",
+        "statusFailed": "شکستی هێنا",
+        "statusBounced": "گەڕایەوە",
+        "recentEmailLogs": "تۆمارەکانی ئیمەیلی ئەم دواییە",
+        "refresh": "نوێکردنەوە",
+        "recipient": "وەرگر",
+        "campaign": "کەمپەین",
+        "subject": "بابەت",
+        "status": "دۆخ",
+        "sent": "نێردراو",
+        "noEmailLogs": "هێشتا تۆماری ئیمەیل نییە"
       }
     }
   },

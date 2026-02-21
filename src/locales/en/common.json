@@ -507,6 +507,14 @@
     },
     "personalInfo": {
       "title": "Personal Information",
+      "aboutYou": {
+        "title": "About You",
+        "description": "Basic information that appears at the top of your resume"
+      },
+      "contactAndLinks": {
+        "title": "Contact & Links",
+        "subtitle": "Location, LinkedIn, website"
+      },
       "fields": {
         "fullName": "Full Name",
         "professionalTitle": "Professional Title",
@@ -528,6 +536,7 @@
       },
       "demographics": {
         "title": "Optional Demographics",
+        "subtitle": "Common in Middle East/Europe resumes",
         "optional": "(Optional)",
         "description": "These fields are optional and may be required in some regions or industries.",
         "dateOfBirth": "Date of Birth",
@@ -663,7 +672,14 @@
         "title": "How do you want to start?",
         "uploadCard": {
           "title": "Upload existing CV",
-          "subtitle": "We'll extract your info from a PDF or Word file"
+          "subtitle": "We'll extract your info from a PDF or Word file",
+          "invalidFile": "Please upload a PDF or Word file",
+          "fileTooLarge": "File must be under 5MB",
+          "uploadFailed": "Upload failed",
+          "processing": "Processing...",
+          "browseFiles": "Browse files",
+          "fileFormats": "PDF, DOCX (max 5MB)",
+          "uploadExtract": "Upload & Extract"
         },
         "scratchCard": {
           "title": "Start from scratch",
@@ -679,7 +695,8 @@
       },
       "errors": {
         "nameRequired": "Please enter your name",
-        "createFailed": "Something went wrong. Please try again."
+        "createFailed": "Something went wrong. Please try again.",
+        "completeFailed": "Failed to complete onboarding"
       }
     },
     "resumeBuilder": {
@@ -746,7 +763,9 @@
         "next": "Next",
         "viewResume": "View Resume",
         "ats": "ATS",
-        "atsOptimization": "ATS Optimization - Check resume compatibility"
+        "atsOptimization": "ATS Optimization - Check resume compatibility",
+        "translate": "Translate",
+        "pdf": "PDF"
       },
       "autoTranslate": {
         "button": "Auto-translate to English",
@@ -778,7 +797,8 @@
       },
       "defaults": {
         "resumeTitle": "My Resume",
-        "importedTitle": "Imported Resume"
+        "importedTitle": "Imported Resume",
+        "untitledResume": "Untitled Resume"
       },
       "ai": {
         "powered": "✨ AI-Powered",
@@ -842,6 +862,22 @@
           "keywordFailed": "Failed to match keywords",
           "rateLimited": "Too many requests. Please try again later."
         }
+      },
+      "sidebar": {
+        "aboutYou": "About You",
+        "summary": "Summary",
+        "experience": "Experience",
+        "education": "Education",
+        "skillsAndLanguages": "Skills & Languages",
+        "additional": "Additional"
+      },
+      "mobileNav": {
+        "about": "About",
+        "summary": "Summary",
+        "work": "Work",
+        "edu": "Edu",
+        "skills": "Skills",
+        "more": "More"
       },
       "quickStart": {
         "title": "Start from a Template",
@@ -921,6 +957,7 @@
         "resumeScore": "Resume Score",
         "atsReady": "ATS Perfect",
         "addSkill": "+ Add a skill",
+        "skillsLabel": "Skills",
         "aiCoach": "Ask AI coach anything..."
       },
       "statsBar": {
@@ -1115,6 +1152,7 @@
         "free": {
           "name": "Free",
           "price": "0",
+          "currency": "IQD",
           "cta": "Get Started Free",
           "f1": "Up to 10 resumes",
           "f2": "Basic templates",
@@ -1468,6 +1506,36 @@
         "failedToLoadStats": "Failed to load stats",
         "failedToLoadSettings": "Failed to load settings",
         "failedToLoadSubscriptionStatus": "Failed to load subscription status"
+      },
+      "email": {
+        "title": "Email Dashboard",
+        "backToAdmin": "Back to Admin",
+        "failedToLoadStats": "Failed to load email stats",
+        "retry": "Retry",
+        "totalSent": "Total Sent",
+        "pending": "Pending",
+        "failed": "Failed",
+        "campaignBreakdown": "Campaign Breakdown",
+        "campaignWelcome": "Welcome",
+        "campaignAbandonedResume": "Abandoned Resume",
+        "campaignReEngagement": "Re-engagement",
+        "dailySendVolume": "Daily Send Volume (14 days)",
+        "noEmailData": "No email data yet",
+        "deliveryStatus": "Delivery Status",
+        "statusQueued": "Queued",
+        "statusSent": "Sent",
+        "statusDelivered": "Delivered",
+        "statusOpened": "Opened",
+        "statusFailed": "Failed",
+        "statusBounced": "Bounced",
+        "recentEmailLogs": "Recent Email Logs",
+        "refresh": "Refresh",
+        "recipient": "Recipient",
+        "campaign": "Campaign",
+        "subject": "Subject",
+        "status": "Status",
+        "sent": "Sent",
+        "noEmailLogs": "No email logs yet"
       }
     }
   },

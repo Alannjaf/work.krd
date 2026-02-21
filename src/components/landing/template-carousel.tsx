@@ -6,15 +6,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { SignUpButton, useAuth } from '@clerk/nextjs'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getAllTemplates } from '@/lib/templates'
 
-const templates = [
-  { id: 'modern', name: 'Modern Professional' },
-  { id: 'elegant', name: 'Elegant Dark' },
-  { id: 'bold', name: 'Bold Creative' },
-  { id: 'developer', name: 'Developer' },
-  { id: 'creative', name: 'Creative' },
-  { id: 'basic', name: 'Basic' },
-]
+const templates = getAllTemplates()
+const SCROLL_AMOUNT = 280
 
 export function TemplateCarousel() {
   const { t, isRTL } = useLanguage()
@@ -41,9 +36,8 @@ export function TemplateCarousel() {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const amount = 280
       scrollRef.current.scrollBy({
-        left: direction === 'left' ? -amount : amount,
+        left: direction === 'left' ? -SCROLL_AMOUNT : SCROLL_AMOUNT,
         behavior: 'smooth'
       })
     }
@@ -55,14 +49,9 @@ export function TemplateCarousel() {
       ref={sectionRef}
       className="bg-gray-900 py-20 sm:py-28"
     >
-      <style>{'.scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }'}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className="text-center mb-12 transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)'
-          }}
+          className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             {t('pages.home.templateCarousel.title')}
@@ -73,12 +62,7 @@ export function TemplateCarousel() {
         </div>
 
         <div
-          className="relative transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transitionDelay: '200ms'
-          }}
+          className={`relative transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
         >
           {/* Left arrow */}
           <button
@@ -103,16 +87,12 @@ export function TemplateCarousel() {
           {/* Carousel */}
           <div
             ref={scrollRef}
-            className="scrollbar-hide flex gap-6 overflow-x-auto py-4 px-2"
-            style={{
-              scrollSnapType: 'x mandatory',
-            }}
+            className="scrollbar-hide flex gap-6 overflow-x-auto py-4 px-2 snap-x snap-mandatory"
           >
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="flex-shrink-0"
-                style={{ scrollSnapAlign: 'center' }}
+                className="flex-shrink-0 snap-center"
               >
                 <div className="bg-white rounded-xl p-2 shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
                   <Image
@@ -133,12 +113,7 @@ export function TemplateCarousel() {
 
         {/* CTA */}
         <div
-          className="text-center mt-12 transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transitionDelay: '400ms'
-          }}
+          className={`text-center mt-12 transition-all duration-700 delay-[400ms] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
         >
           {isSignedIn ? (
             <Link
