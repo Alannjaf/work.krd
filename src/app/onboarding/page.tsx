@@ -63,14 +63,18 @@ export default function OnboardingPage() {
 
   // ── Guard: redirect if already completed ──
   useEffect(() => {
+    let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout>
+
     const checkStatus = async () => {
       try {
         const res = await fetch('/api/user/onboarding-status')
         const data = await res.json()
 
+        if (cancelled) return
+
         if (data.userNotFound) {
-          // Webhook hasn't fired yet — wait and retry
-          setTimeout(checkStatus, 2000)
+          retryTimer = setTimeout(checkStatus, 2000)
           return
         }
 
@@ -79,18 +83,21 @@ export default function OnboardingPage() {
           return
         }
 
-        // Pre-fill name from API response
         if (data.userName && !fullName) {
           setFullName(data.userName)
         }
       } catch {
         // If status check fails, continue with onboarding
       } finally {
-        setIsCheckingStatus(false)
+        if (!cancelled) setIsCheckingStatus(false)
       }
     }
 
     checkStatus()
+    return () => {
+      cancelled = true
+      clearTimeout(retryTimer)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pre-fill name from Clerk ──
@@ -108,10 +115,13 @@ export default function OnboardingPage() {
     }
   }, [currentStep, isCheckingStatus])
 
-  // ── Step transition helper ──
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(transitionTimerRef.current), [])
+
   const goToStep = useCallback((step: number) => {
     setIsTransitioning(true)
-    setTimeout(() => {
+    clearTimeout(transitionTimerRef.current)
+    transitionTimerRef.current = setTimeout(() => {
       setCurrentStep(step)
       setIsTransitioning(false)
     }, 150)

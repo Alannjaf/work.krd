@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, Suspense } from 'react'
+import { useState, useRef, useCallback, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { AppHeader } from '@/components/shared/AppHeader'
@@ -68,11 +68,18 @@ function PaymentContent() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  // ── Step transition helper ──
+  useEffect(() => () => {
+    clearTimeout(transitionTimerRef.current)
+    clearTimeout(copyTimerRef.current)
+  }, [])
+
   const goToStep = useCallback((step: number) => {
     setIsTransitioning(true)
-    setTimeout(() => {
+    clearTimeout(transitionTimerRef.current)
+    transitionTimerRef.current = setTimeout(() => {
       setCurrentStep(step)
       setIsTransitioning(false)
     }, 150)
@@ -83,7 +90,8 @@ function PaymentContent() {
     setCopied(field)
     setCopyAnnouncement(t('billing.pay.copied'))
     toast.success(t('billing.pay.copied'))
-    setTimeout(() => { setCopied(null); setCopyAnnouncement('') }, 2000)
+    clearTimeout(copyTimerRef.current)
+    copyTimerRef.current = setTimeout(() => { setCopied(null); setCopyAnnouncement('') }, 2000)
   }, [t])
 
   const handleFileSelect = useCallback((file: File) => {

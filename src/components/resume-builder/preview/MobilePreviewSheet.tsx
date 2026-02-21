@@ -62,6 +62,7 @@ export function MobilePreviewSheet({ data, templateId, onTemplateChange }: Mobil
                   {isDownloading ? '...' : 'PDF'}
                 </Button>
                 <button
+                  type="button"
                   onClick={() => setIsOpen(false)}
                   className="p-1.5 hover:bg-gray-100 rounded-full"
                 >

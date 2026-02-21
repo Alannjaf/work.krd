@@ -7,19 +7,18 @@ export default function ClearCookiesPage() {
   const router = useRouter()
   
   useEffect(() => {
-    // Clear all cookies
     document.cookie.split(";").forEach((c) => {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
     
-    // Clear localStorage and sessionStorage
     localStorage.clear()
     sessionStorage.clear()
     
-    // Redirect to home
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       router.push('/')
     }, 1000)
+
+    return () => clearTimeout(timer)
   }, [router])
   
   return (

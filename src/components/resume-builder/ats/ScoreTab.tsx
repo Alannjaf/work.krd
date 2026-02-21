@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Target, CheckCircle, AlertCircle, AlertTriangle, ArrowRight } from 'lucide-react'
 import { ATS_SCORE_THRESHOLDS } from '@/lib/ats-utils'
@@ -88,12 +88,15 @@ interface ScoreTabProps {
 }
 
 export function ScoreTab({ result, isAnalyzing, canUseATS, onAnalyze, onNavigateToSection, onClose, t, isRTL }: ScoreTabProps) {
+  const navTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(navTimerRef.current), [])
+
   const handleIssueClick = (section?: SectionType) => {
-    // Disable navigation for general issues (Issue #15)
     if (section && section !== 'general' && onNavigateToSection) {
       const sectionIndex = SECTION_INDEX_MAP[section]
       onClose()
-      setTimeout(() => {
+      clearTimeout(navTimerRef.current)
+      navTimerRef.current = setTimeout(() => {
         onNavigateToSection(sectionIndex)
       }, 100)
     }

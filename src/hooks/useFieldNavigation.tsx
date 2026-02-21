@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 export interface FieldNavigationConfig {
   scrollBehavior?: ScrollBehavior
@@ -16,6 +16,9 @@ export function useFieldNavigation(config: FieldNavigationConfig = {}) {
   } = config
 
   const fieldRefs = useRef<Map<string, HTMLElement>>(new Map())
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(focusTimerRef.current), [])
 
   const registerField = useCallback((fieldId: string, element: HTMLElement | null) => {
     if (element) {
@@ -44,14 +47,13 @@ export function useFieldNavigation(config: FieldNavigationConfig = {}) {
         behavior: scrollBehavior
       })
 
-      // Focus the field after scroll
-      setTimeout(() => {
+      clearTimeout(focusTimerRef.current)
+      focusTimerRef.current = setTimeout(() => {
         if (nextElement instanceof HTMLInputElement || 
             nextElement instanceof HTMLTextAreaElement ||
             nextElement instanceof HTMLSelectElement) {
           nextElement.focus()
         } else {
-          // Try to find a focusable element within
           const focusable = nextElement.querySelector('input, textarea, select, [contenteditable="true"]') as HTMLElement
           if (focusable) {
             focusable.focus()
@@ -68,14 +70,13 @@ export function useFieldNavigation(config: FieldNavigationConfig = {}) {
   const focusPrevious = useCallback((currentFieldId: string, fieldOrder: string[]) => {
     const currentIndex = fieldOrder.indexOf(currentFieldId)
     if (currentIndex <= 0) {
-      return false // No previous field or current field not found
+      return false
     }
 
     const prevFieldId = fieldOrder[currentIndex - 1]
     const prevElement = fieldRefs.current.get(prevFieldId)
     
     if (prevElement) {
-      // Scroll to the field first
       const rect = prevElement.getBoundingClientRect()
       const scrollTop = window.pageYOffset + rect.top - scrollOffset
       
@@ -84,14 +85,13 @@ export function useFieldNavigation(config: FieldNavigationConfig = {}) {
         behavior: scrollBehavior
       })
 
-      // Focus the field after scroll
-      setTimeout(() => {
+      clearTimeout(focusTimerRef.current)
+      focusTimerRef.current = setTimeout(() => {
         if (prevElement instanceof HTMLInputElement || 
             prevElement instanceof HTMLTextAreaElement ||
             prevElement instanceof HTMLSelectElement) {
           prevElement.focus()
         } else {
-          // Try to find a focusable element within
           const focusable = prevElement.querySelector('input, textarea, select, [contenteditable="true"]') as HTMLElement
           if (focusable) {
             focusable.focus()

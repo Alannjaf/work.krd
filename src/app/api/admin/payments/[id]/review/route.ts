@@ -5,6 +5,7 @@ import { successResponse, errorResponse, validationErrorResponse } from '@/lib/a
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 import { getSystemSettings } from '@/lib/system-settings'
+import { SUBSCRIPTION_DURATION_MS } from '@/lib/constants'
 
 export async function GET(
   req: NextRequest,
@@ -155,7 +156,7 @@ export async function POST(
 
       if (action === 'approve') {
         // Upsert subscription to upgrade user
-        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        const endDate = new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
 
         const existingSubscription = await tx.subscription.findUnique({
           where: { userId: payment.userId },

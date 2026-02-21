@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,6 +47,11 @@ export function AdminSystemSettings({
   const [snapshots, setSnapshots] = useState<SettingsSnapshot[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [revertingId, setRevertingId] = useState<string | null>(null)
+  const saveSuccessTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    return () => clearTimeout(saveSuccessTimerRef.current)
+  }, [])
 
   useEffect(() => {
     onDirtyChange?.(isDirty)
@@ -61,7 +66,8 @@ export function AdminSystemSettings({
     await onSave()
     setIsDirty(false)
     setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+    clearTimeout(saveSuccessTimerRef.current)
+    saveSuccessTimerRef.current = setTimeout(() => setSaveSuccess(false), 3000)
   }
 
   const loadHistory = async () => {

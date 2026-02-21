@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileSearch, CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
 import { getScoreColor, getScoreBgColor } from './ScoreTab'
@@ -94,12 +94,15 @@ export function KeywordsTab({
   t,
   isRTL
 }: KeywordsTabProps) {
+  const navTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(navTimerRef.current), [])
+
   const handleKeywordClick = (section?: SectionType) => {
-    // Disable navigation for general issues (Issue #15)
     if (section && section !== 'general' && onNavigateToSection) {
       const sectionIndex = SECTION_INDEX_MAP[section]
       onClose()
-      setTimeout(() => {
+      clearTimeout(navTimerRef.current)
+      navTimerRef.current = setTimeout(() => {
         onNavigateToSection(sectionIndex)
       }, 100)
     }
