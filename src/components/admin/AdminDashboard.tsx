@@ -9,15 +9,14 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { useRouter } from 'next/navigation'
 import { AdminStatsCards } from './AdminStatsCards'
-import { AdminSubscriptionStatus } from './AdminSubscriptionStatus'
 import { AdminSystemSettings } from './AdminSystemSettings'
 import { AdminQuickActions } from './AdminQuickActions'
 import { AdminErrorBoundary } from './AdminErrorBoundary'
 import { AdminAnalytics } from './AdminAnalytics'
 import { AuditLogPanel } from './AuditLogPanel'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
-import { Stats, SubscriptionStatus, SystemSettings } from './types'
-import { PLAN_NAMES, DEFAULT_SYSTEM_SETTINGS } from '@/lib/constants'
+import { Stats, SystemSettings } from './types'
+import { DEFAULT_SYSTEM_SETTINGS } from '@/lib/constants'
 import { devError, formatAdminDate } from '@/lib/admin-utils'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 import { Card } from '@/components/ui/card'
@@ -48,8 +47,6 @@ export function AdminDashboard() {
   const router = useRouter()
   const availableTemplates = getTemplateIds()
   const [stats, setStats] = useState<Stats | null>(null)
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
-  const [checkingSubscriptions, setCheckingSubscriptions] = useState(false)
   const [settings, setSettings] = useState<SystemSettings>({
     ...DEFAULT_SETTINGS,
     proTemplates: availableTemplates
@@ -190,38 +187,12 @@ export function AdminDashboard() {
     try {
       const response = await csrfFetch('/api/subscriptions/check-expired')
       if (!response.ok) throw new Error(`API returned ${response.status}`)
-      const data = await response.json()
-      setSubscriptionStatus(data)
+      await response.json()
       setErrors(prev => { const { subscriptions: _, ...rest } = prev; return rest })
     } catch (error) {
       devError('[AdminDashboard] Failed to fetch subscription status:', error)
       setErrors(prev => ({ ...prev, subscriptions: t('pages.admin.common.failedToLoadSubscriptionStatus') }))
       toast.error(t('pages.admin.common.failedToLoadSubscriptionStatus'))
-    }
-  }
-
-  const checkExpiredSubscriptions = async () => {
-    setCheckingSubscriptions(true)
-    try {
-      const response = await csrfFetch('/api/subscriptions/check-expired', { method: 'POST' })
-      const data = await response.json()
-
-      if (response.ok) {
-        if (data.processed === 0) {
-          toast.success(t('pages.admin.subscription.noExpiredFound'))
-        } else {
-          toast.success(t('pages.admin.subscription.processedResult', { processed: data.processed, successful: data.successful, failed: data.failed }))
-        }
-        await fetchStats()
-        await fetchSubscriptionStatus()
-      } else {
-        toast.error(t('pages.admin.subscription.checkFailed'))
-      }
-    } catch (error) {
-      devError('[AdminDashboard] Failed to check expired subscriptions:', error);
-      toast.error(t('pages.admin.subscription.checkFailed'))
-    } finally {
-      setCheckingSubscriptions(false)
     }
   }
 

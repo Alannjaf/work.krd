@@ -9,7 +9,7 @@ import { AIExtractedData } from '@/types/api'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { devError } from '@/lib/admin-utils'
-import { convertDateFormat, isCurrentDate, normalizeLanguage, normalizeSkill, cleanJsonResponse } from '@/lib/resume-upload-utils'
+import { convertDateFormat, isCurrentDate, cleanJsonResponse } from '@/lib/resume-upload-utils'
 
 // Validate critical env var at module load — fail fast instead of silent degradation
 if (!process.env.OPENROUTER_API_KEY) {

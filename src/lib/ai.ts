@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { stripHtml, buildResumeText, ATS_AI_CONFIG, withTimeout, type ValidatedResumeData } from '@/lib/ats-utils'
+import { buildResumeText, ATS_AI_CONFIG, withTimeout, type ValidatedResumeData } from '@/lib/ats-utils'
 
 // Initialize OpenRouter client
 const openai = new OpenAI({

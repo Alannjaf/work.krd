@@ -121,84 +121,37 @@ export async function PUT(
       summary: formData?.summary || existingResume.summary || undefined
     })
 
-    // Update sections if provided
     if (formData) {
       const { prisma } = await import('@/lib/prisma')
-      
-      // Clear existing sections
-      await prisma.resumeSection.deleteMany({
-        where: { resumeId: id }
-      })
 
-      // Create new sections
       const sections: { resumeId: string; type: SectionType; title: string; content: InputJsonValue; order: number }[] = []
       let order = 1
 
       if (formData.experience && formData.experience.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.WORK_EXPERIENCE,
-          title: 'Work Experience',
-          content: formData.experience as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.WORK_EXPERIENCE, title: 'Work Experience', content: formData.experience as InputJsonValue, order: order++ })
       }
-
       if (formData.education && formData.education.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.EDUCATION,
-          title: 'Education',
-          content: formData.education as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.EDUCATION, title: 'Education', content: formData.education as InputJsonValue, order: order++ })
       }
-
       if (formData.skills && formData.skills.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.SKILLS,
-          title: 'Skills',
-          content: formData.skills as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.SKILLS, title: 'Skills', content: formData.skills as InputJsonValue, order: order++ })
       }
-
       if (formData.languages && formData.languages.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.LANGUAGES,
-          title: 'Languages',
-          content: formData.languages as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.LANGUAGES, title: 'Languages', content: formData.languages as InputJsonValue, order: order++ })
       }
-
       if (formData.projects && formData.projects.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.PROJECTS,
-          title: 'Projects',
-          content: formData.projects as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.PROJECTS, title: 'Projects', content: formData.projects as InputJsonValue, order: order++ })
       }
-
       if (formData.certifications && formData.certifications.length > 0) {
-        sections.push({
-          resumeId: id,
-          type: SectionType.CERTIFICATIONS,
-          title: 'Certifications',
-          content: formData.certifications as InputJsonValue,
-          order: order++
-        })
+        sections.push({ resumeId: id, type: SectionType.CERTIFICATIONS, title: 'Certifications', content: formData.certifications as InputJsonValue, order: order++ })
       }
 
-      if (sections.length > 0) {
-        await prisma.resumeSection.createMany({
-          data: sections
-        })
-      }
+      await prisma.$transaction(async (tx) => {
+        await tx.resumeSection.deleteMany({ where: { resumeId: id } })
+        if (sections.length > 0) {
+          await tx.resumeSection.createMany({ data: sections })
+        }
+      })
     }
 
     return successResponse({

@@ -42,19 +42,18 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('Job title is required')
     }
 
+    const { prisma } = await import('@/lib/prisma')
+    await prisma.subscription.update({
+      where: { id: limits.subscription.id },
+      data: { aiUsageCount: { increment: 1 } }
+    })
+
     const summary = await AIService.generateProfessionalSummary({
       jobTitle,
       industry,
       experience,
       skills,
       language: language || 'auto'
-    })
-
-    // Update AI usage count using subscription ID
-    const { prisma } = await import('@/lib/prisma')
-    await prisma.subscription.update({
-      where: { id: limits.subscription.id },
-      data: { aiUsageCount: { increment: 1 } }
     })
 
     return successResponse({ summary })

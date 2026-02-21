@@ -27,6 +27,7 @@ model User {
 
   @@index([clerkId])
   @@index([email])
+  @@index([name])
   @@index([emailOptOut])
   @@index([lastLoginAt])
 }

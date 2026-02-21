@@ -29,46 +29,42 @@ export async function POST(
       return validationErrorResponse('Invalid plan')
     }
 
-    // Check if user has a subscription
-    const existingSubscription = await prisma.subscription.findUnique({
-      where: { userId }
-    })
-
-    // Verify user exists
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
       return validationErrorResponse('User not found')
     }
 
-    if (existingSubscription) {
-      // Update existing subscription — preserve usage counts
-      await prisma.subscription.update({
-        where: { userId },
-        data: {
-          plan,
-          status: 'ACTIVE',
-          startDate: new Date(),
-          endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
-        }
+    const previousPlan = await prisma.$transaction(async (tx) => {
+      const existingSubscription = await tx.subscription.findUnique({
+        where: { userId }
       })
-    } else {
-      // Create new subscription
-      await prisma.subscription.create({
-        data: {
-          userId,
-          plan,
-          status: 'ACTIVE',
-          startDate: new Date(),
-          endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
-        }
-      })
-    }
+
+      const subscriptionData = {
+        plan,
+        status: 'ACTIVE' as const,
+        startDate: new Date(),
+        endDate: plan === PLAN_NAMES.FREE ? null : new Date(Date.now() + SUBSCRIPTION_DURATION_MS)
+      }
+
+      if (existingSubscription) {
+        await tx.subscription.update({
+          where: { userId },
+          data: subscriptionData
+        })
+      } else {
+        await tx.subscription.create({
+          data: { userId, ...subscriptionData }
+        })
+      }
+
+      return existingSubscription?.plan ?? null
+    })
 
     await logAdminAction(adminId, 'CHANGE_USER_PLAN', `user:${userId}`, {
       userId,
       userEmail: user.email,
       newPlan: plan,
-      previousPlan: existingSubscription?.plan ?? null,
+      previousPlan,
     })
 
     return successResponse({

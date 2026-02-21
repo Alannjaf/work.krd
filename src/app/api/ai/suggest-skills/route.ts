@@ -47,18 +47,17 @@ export async function POST(req: NextRequest) {
     const detectedLang = detectLanguage(jobTitle)
     const resolvedLanguage = (detectedLang === 'ar' || detectedLang === 'ku') ? detectedLang : (language || 'en')
 
-    const skills = await AIService.generateSkillSuggestions(
-      jobTitle,
-      industry || '',
-      { language: resolvedLanguage }
-    )
-
-    // Update AI usage count using subscription ID
     const { prisma } = await import('@/lib/prisma')
     await prisma.subscription.update({
       where: { id: limits.subscription.id },
       data: { aiUsageCount: { increment: 1 } }
     })
+
+    const skills = await AIService.generateSkillSuggestions(
+      jobTitle,
+      industry || '',
+      { language: resolvedLanguage }
+    )
 
     return successResponse({ skills })
   } catch (error) {

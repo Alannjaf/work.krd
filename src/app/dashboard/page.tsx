@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AppHeader } from '@/components/shared/AppHeader'
 import { DeleteConfirmModal } from '@/components/admin/DeleteConfirmModal'
-import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText, Copy } from 'lucide-react'
+import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText, Copy, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -26,42 +26,47 @@ export default function Dashboard() {
   const { t } = useLanguage()
   const [resumes, setResumes] = useState<Resume[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{id: string, title: string} | null>(null)
 
-  // Fetch user's resumes + check onboarding status
-  useEffect(() => {
-    const fetchResumes = async () => {
-      try {
-        const response = await fetch('/api/resumes')
-        if (response.ok) {
-          const data = await response.json()
-          const userResumes = data.resumes || []
-          setResumes(userResumes)
+  const fetchResumes = async () => {
+    setIsLoading(true)
+    setFetchError(false)
+    try {
+      const response = await fetch('/api/resumes')
+      if (response.ok) {
+        const data = await response.json()
+        const userResumes = data.resumes || []
+        setResumes(userResumes)
 
-          // Redirect to onboarding if user has no resumes and hasn't completed it
-          if (userResumes.length === 0) {
-            try {
-              const statusRes = await fetch('/api/user/onboarding-status')
-              const statusData = await statusRes.json()
-              if (!statusData.onboardingCompleted) {
-                router.replace('/onboarding')
-                return
-              }
-            } catch {
-              // If onboarding check fails, stay on dashboard
+        if (userResumes.length === 0) {
+          try {
+            const statusRes = await fetch('/api/user/onboarding-status')
+            const statusData = await statusRes.json()
+            if (!statusData.onboardingCompleted) {
+              router.replace('/onboarding')
+              return
             }
+          } catch {
+            // If onboarding check fails, stay on dashboard
           }
         }
-      } catch (error) {
-        console.error('[Dashboard] Failed to fetch resumes:', error);
-      } finally {
-        setIsLoading(false)
+      } else {
+        setFetchError(true)
       }
+    } catch (error) {
+      console.error('[Dashboard] Failed to fetch resumes:', error)
+      setFetchError(true)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchResumes()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   const handleDuplicateResume = async (resumeId: string) => {
@@ -155,6 +160,18 @@ export default function Dashboard() {
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
               <span className="ml-3 text-gray-600">{t('pages.dashboard.resumes.loading')}</span>
+            </div>
+          ) : fetchError ? (
+            <div className="text-center py-12">
+              <AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">{t('pages.dashboard.resumes.error.title') || 'Failed to load resumes'}</h3>
+              <p className="mt-1 text-sm text-gray-500">{t('pages.dashboard.resumes.error.description') || 'Something went wrong. Please try again.'}</p>
+              <div className="mt-6">
+                <Button variant="outline" onClick={fetchResumes}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {t('pages.dashboard.resumes.error.retry') || 'Retry'}
+                </Button>
+              </div>
             </div>
           ) : resumes.length === 0 ? (
             <div className="text-center py-12">

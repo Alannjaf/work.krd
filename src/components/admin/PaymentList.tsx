@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import {
@@ -26,8 +26,8 @@ interface PaymentListProps {
 
 export function PaymentList({ csrfFetch }: PaymentListProps) {
   const { t } = useLanguage()
-  const initialParams = useMemo(() => {
-    if (typeof window === 'undefined') return { search: '', status: 'PENDING' as StatusFilter }
+  const [initialParams] = useState<{ search: string; status: StatusFilter }>(() => {
+    if (typeof window === 'undefined') return { search: '', status: 'PENDING' }
     const params = new URLSearchParams(window.location.search)
     const status = params.get('status')
     const validStatuses: StatusFilter[] = ['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'REFUNDED']
@@ -35,7 +35,7 @@ export function PaymentList({ csrfFetch }: PaymentListProps) {
       search: params.get('search') || '',
       status: (status && validStatuses.includes(status as StatusFilter) ? status : 'PENDING') as StatusFilter,
     }
-  }, [])
+  })
 
   const [payments, setPayments] = useState<Payment[]>([])
   const [total, setTotal] = useState(0)

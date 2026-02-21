@@ -52,18 +52,17 @@ export async function POST(req: NextRequest) {
       : (jobTitleLang === 'ar' || jobTitleLang === 'ku') ? jobTitleLang
       : (language || 'en')
 
-    const enhancedDescription = await AIService.enhanceJobDescription(
-      description,
-      jobTitle,
-      { language: resolvedLanguage }
-    )
-
-    // Update AI usage count using subscription ID
     const { prisma } = await import('@/lib/prisma')
     await prisma.subscription.update({
       where: { id: limits.subscription.id },
       data: { aiUsageCount: { increment: 1 } }
     })
+
+    const enhancedDescription = await AIService.enhanceJobDescription(
+      description,
+      jobTitle,
+      { language: resolvedLanguage }
+    )
 
     return successResponse({ enhancedDescription })
   } catch (error) {

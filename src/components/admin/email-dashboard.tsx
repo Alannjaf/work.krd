@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Mail, Clock, AlertTriangle, Send, RefreshCw, Loader2 } from 'lucide-react'
+import { Mail, Clock, AlertTriangle, Send, RefreshCw } from 'lucide-react'
 import { useCsrfToken } from '@/hooks/useCsrfToken'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { AppHeader } from '@/components/shared/AppHeader'
@@ -93,7 +93,7 @@ function TableSkeleton() {
 
 export function EmailDashboard() {
   const { csrfFetch } = useCsrfToken()
-  const { t } = useLanguage()
+  useLanguage()
   const [stats, setStats] = useState<EmailStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -4,10 +4,9 @@ import Image from 'next/image'
 interface LogoProps {
   className?: string
   size?: 'sm' | 'md' | 'lg'
-  showText?: boolean
 }
 
-export function Logo({ className = '', size = 'md', showText = true }: LogoProps) {
+export function Logo({ className = '', size = 'md' }: LogoProps) {
   // The new logo has a viewBox of 0 0 2663.56 802.01 (aspect ratio ~3.3:1)
   // Calculate width and height maintaining the aspect ratio
   const logoWidths = {

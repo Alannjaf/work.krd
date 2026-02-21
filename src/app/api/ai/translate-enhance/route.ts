@@ -65,19 +65,18 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse('Invalid content type. Must be one of: ' + validContentTypes.join(', '))
     }
 
+    const { prisma } = await import('@/lib/prisma')
+    await prisma.subscription.update({
+      where: { id: limits.subscription.id },
+      data: { aiUsageCount: { increment: 1 } }
+    })
+
     const enhancedContent = await AIService.translateAndEnhance(
       content,
       contentType,
       detectedLanguage,
       contextInfo
     )
-
-    // Update AI usage count using subscription ID
-    const { prisma } = await import('@/lib/prisma')
-    await prisma.subscription.update({
-      where: { id: limits.subscription.id },
-      data: { aiUsageCount: { increment: 1 } }
-    })
 
     return successResponse({
       enhancedContent,

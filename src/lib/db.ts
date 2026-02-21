@@ -84,52 +84,45 @@ export async function getResumeById(resumeId: string, userId: string) {
 }
 
 export async function createResume(userId: string, title: string, template?: string) {
-  const resume = await prisma.resume.create({
-    data: {
-      userId,
-      title,
-      template: template || 'modern',
-      sections: {
-        create: [
-          {
-            type: 'WORK_EXPERIENCE',
-            title: 'Work Experience',
-            content: {},
-            order: 1},
-          {
-            type: 'EDUCATION',
-            title: 'Education',
-            content: {},
-            order: 2},
-          {
-            type: 'SKILLS',
-            title: 'Skills',
-            content: {},
-            order: 3},
-        ]}},
-    include: {
-      sections: true}})
+  return prisma.$transaction(async (tx) => {
+    const resume = await tx.resume.create({
+      data: {
+        userId,
+        title,
+        template: template || 'modern',
+        sections: {
+          create: [
+            { type: 'WORK_EXPERIENCE', title: 'Work Experience', content: {}, order: 1 },
+            { type: 'EDUCATION', title: 'Education', content: {}, order: 2 },
+            { type: 'SKILLS', title: 'Skills', content: {}, order: 3 },
+          ],
+        },
+      },
+      include: { sections: true },
+    })
 
-  // Update user's resume count
-  await prisma.subscription.update({
-    where: { userId },
-    data: { resumeCount: { increment: 1 } }})
+    await tx.subscription.update({
+      where: { userId },
+      data: { resumeCount: { increment: 1 } },
+    })
 
-  return resume
+    return resume
+  })
 }
 
 export async function deleteResume(resumeId: string, userId: string) {
-  const resume = await prisma.resume.deleteMany({
-    where: {
-      id: resumeId,
-      userId}})
+  return prisma.$transaction(async (tx) => {
+    const resume = await tx.resume.deleteMany({
+      where: { id: resumeId, userId },
+    })
 
-  // Update user's resume count (only decrement if > 0 to prevent negative counts)
-  await prisma.subscription.updateMany({
-    where: { userId, resumeCount: { gt: 0 } },
-    data: { resumeCount: { decrement: 1 } }})
+    await tx.subscription.updateMany({
+      where: { userId, resumeCount: { gt: 0 } },
+      data: { resumeCount: { decrement: 1 } },
+    })
 
-  return resume
+    return resume
+  })
 }
 
 interface ResumeUpdateData {

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { Target, CheckCircle, AlertCircle, AlertTriangle, Loader2, ArrowRight } from 'lucide-react'
+import { Target, CheckCircle, AlertCircle, AlertTriangle, ArrowRight } from 'lucide-react'
 import { ATS_SCORE_THRESHOLDS } from '@/lib/ats-utils'
 
 type SectionType = 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'languages' | 'projects' | 'certifications' | 'general'

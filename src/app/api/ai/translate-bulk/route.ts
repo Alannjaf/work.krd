@@ -78,7 +78,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Process items in parallel batches
+    const { prisma } = await import('@/lib/prisma')
+    await prisma.subscription.update({
+      where: { id: limits.subscription.id },
+      data: { aiUsageCount: { increment: 1 } }
+    })
+
     const translations: Array<{ enhancedContent: string; detectedLanguage: string }> = new Array(items.length)
 
     for (let i = 0; i < items.length; i += BATCH_SIZE) {
@@ -87,7 +92,6 @@ export async function POST(req: NextRequest) {
       await Promise.all(batch.map(async (item, batchIndex) => {
         const globalIndex = i + batchIndex
         try {
-          // Detect source language
           const detected = detectLanguage(item.content)
           const detectedLanguage = detected === 'en' ? 'auto' : detected
 
@@ -111,13 +115,6 @@ export async function POST(req: NextRequest) {
         }
       }))
     }
-
-    // Increment AI usage count once for the bulk operation
-    const { prisma } = await import('@/lib/prisma')
-    await prisma.subscription.update({
-      where: { id: limits.subscription.id },
-      data: { aiUsageCount: { increment: 1 } }
-    })
 
     return successResponse({ translations })
   } catch (error) {
