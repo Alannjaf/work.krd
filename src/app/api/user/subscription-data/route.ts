@@ -1,61 +1,21 @@
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, checkUserLimits } from '@/lib/db'
-import { prisma } from '@/lib/prisma'
-import { SystemSettings } from '@/types/api'
-import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import { getSystemSettings } from '@/lib/system-settings'
+import { successResponse, errorResponse, authErrorResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-async function getSystemSettings() {
-  try {
-    const settingsRecord = await prisma.$queryRawUnsafe(`
-      SELECT
-        "maxFreeResumes",
-        "maxFreeAIUsage",
-        "maxFreeExports",
-        "maxFreeImports",
-        "maxFreeATSChecks",
-        "maxProResumes",
-        "maxProAIUsage",
-        "maxProExports",
-        "maxProImports",
-        "maxProATSChecks",
-        "proPlanPrice"
-      FROM "SystemSettings"
-      ORDER BY id LIMIT 1
-    `) as SystemSettings[]
-
-    if (settingsRecord && settingsRecord.length > 0) {
-      return settingsRecord[0]
-    }
-  } catch {
-    // Silent error handling
-  }
-
-  const defaults: SystemSettings = {
-    // Free Plan Limits
-    maxFreeResumes: 10,
-    maxFreeAIUsage: 100,
-    maxFreeExports: 20,
-    maxFreeImports: 1,
-    maxFreeATSChecks: 0,
-
-    // Pro Plan Limits
-    maxProResumes: -1,
-    maxProAIUsage: -1,
-    maxProExports: -1,
-    maxProImports: -1,
-    maxProATSChecks: -1
-  }
-  return defaults
-}
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()
     if (!userId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 20, windowSeconds: 60, identifier: 'subscription-data', userId })
+    if (!success) return rateLimitResponse(resetIn)
 
     const user = await getCurrentUser()
     if (!user || !user.subscription) {

@@ -1,18 +1,23 @@
-import { successResponse } from '@/lib/api-helpers'
+import { successResponse, errorResponse } from '@/lib/api-helpers'
 
 export async function GET() {
-  // Test API endpoint hit
+  if (process.env.NODE_ENV === 'production') {
+    return errorResponse('Not found', 404)
+  }
+
   return successResponse({
     message: 'API is working!',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
   })
 }
 
 export async function POST() {
-  // Test POST endpoint hit
+  if (process.env.NODE_ENV === 'production') {
+    return errorResponse('Not found', 404)
+  }
+
   return successResponse({
     message: 'POST API is working!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }

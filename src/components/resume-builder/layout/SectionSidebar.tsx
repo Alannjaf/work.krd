@@ -27,6 +27,7 @@ export function SectionSidebar({ currentSection, onSectionChange, completionStat
 
         return (
           <button
+            type="button"
             key={section.id}
             onClick={() => onSectionChange(index)}
             className={`relative w-12 h-12 rounded-lg flex items-center justify-center transition-all group ${

@@ -1,12 +1,27 @@
+import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { SectionType } from '@prisma/client'
-import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import type { InputJsonValue } from '@prisma/client/runtime/library'
+import { successResponse, errorResponse, authErrorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+
+const quickSaveSchema = z.object({
+  changes: z.object({
+    title: z.string().max(200).optional(),
+    template: z.string().max(50).optional(),
+    personal: z.record(z.string(), z.unknown()).optional(),
+    summary: z.string().optional(),
+    sectionData: z.unknown().optional(),
+  }),
+  currentSection: z.string().max(50).optional(),
+})
 
 // PUT - Quick save for partial updates
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -17,13 +32,20 @@ export async function PUT(
       return authErrorResponse()
     }
 
+    const { success, resetIn } = rateLimit(req, { maxRequests: 60, windowSeconds: 60, identifier: 'resume-quicksave', userId })
+    if (!success) return rateLimitResponse(resetIn)
+
     const user = await getCurrentUser()
     if (!user) {
       return notFoundResponse('User not found')
     }
 
     const body = await req.json()
-    const { changes, currentSection } = body
+    const parsed = quickSaveSchema.safeParse(body)
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error.issues[0]?.message || 'Invalid input')
+    }
+    const { changes, currentSection } = parsed.data
 
     // Verify resume ownership
     const resume = await prisma.resume.findFirst({
@@ -43,7 +65,7 @@ export async function PUT(
           data: {
             ...(changes.title && { title: changes.title }),
             ...(changes.template && { template: changes.template }),
-            ...(changes.personal && { personalInfo: changes.personal }),
+            ...(changes.personal && { personalInfo: changes.personal as InputJsonValue }),
             ...(changes.summary !== undefined && { summary: changes.summary })}
         })
       }
@@ -69,9 +91,9 @@ export async function PUT(
             // Update existing section
             await tx.resumeSection.update({
               where: { id: existingSection.id },
-              data: { content: changes.sectionData }
+              data: { content: changes.sectionData as InputJsonValue }
             })
-          } else if (changes.sectionData.length > 0) {
+          } else if (Array.isArray(changes.sectionData) && changes.sectionData.length > 0) {
             // Create new section only if there's data
             const order = await tx.resumeSection.count({
               where: { resumeId: id }
@@ -82,7 +104,7 @@ export async function PUT(
                 resumeId: id,
                 type: sectionType,
                 title: currentSection.charAt(0).toUpperCase() + currentSection.slice(1),
-                content: changes.sectionData,
+                content: changes.sectionData as InputJsonValue,
                 order: order + 1
               }
             })

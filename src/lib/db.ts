@@ -26,7 +26,9 @@ export async function getCurrentUser() {
     prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
-    }).catch(() => {})
+    }).catch((err) => {
+      console.error('[DB] Failed to update lastLoginAt:', err)
+    })
   }
 
   return user

@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { checkUserLimits } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(request, { maxRequests: 20, windowSeconds: 60, identifier: 'analytics-download', userId })
+    if (!success) return rateLimitResponse(resetIn)
 
     // Check export limits before allowing download
     const limits = await checkUserLimits(userId)

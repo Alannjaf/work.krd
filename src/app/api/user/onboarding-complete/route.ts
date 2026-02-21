@@ -1,11 +1,27 @@
+import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
-import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
+import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES } from '@/lib/constants'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
 import { devError } from '@/lib/admin-utils'
+
+const onboardingSchema = z.object({
+  fullName: z.string().min(1).max(200),
+  template: z.string().max(50).optional(),
+  formData: z.object({
+    personal: z.record(z.string(), z.unknown()).optional(),
+    summary: z.string().optional(),
+    experience: z.array(z.record(z.string(), z.unknown())).optional(),
+    education: z.array(z.record(z.string(), z.unknown())).optional(),
+    skills: z.array(z.record(z.string(), z.unknown())).optional(),
+    languages: z.array(z.record(z.string(), z.unknown())).optional(),
+    projects: z.array(z.record(z.string(), z.unknown())).optional(),
+    certifications: z.array(z.record(z.string(), z.unknown())).optional(),
+  }).optional(),
+})
 
 export async function POST(req: Request) {
   try {
@@ -15,11 +31,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { fullName, template, formData } = body
-
-    if (!fullName || typeof fullName !== 'string' || fullName.trim().length === 0) {
-      return errorResponse('Full name is required', 400)
+    const parsed = onboardingSchema.safeParse(body)
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error.issues[0]?.message || 'Invalid input')
     }
+    const { fullName, template, formData } = parsed.data
 
     // Find or create user (webhook may not have fired yet on local dev)
     let user = await prisma.user.findUnique({

@@ -1,6 +1,8 @@
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAllTemplates } from '@/lib/templates'
 import { successResponse, errorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 interface TemplateWithTier {
   id: string
@@ -16,7 +18,10 @@ interface TemplatesByTier {
   pro: TemplateWithTier[]
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'templates' })
+  if (!success) return rateLimitResponse(resetIn)
+
   try {
     const systemSettings = await prisma.systemSettings.findFirst()
 

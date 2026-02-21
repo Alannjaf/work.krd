@@ -22,6 +22,7 @@ export function useFormNavigation({
   disabled = false
 }: FormNavigationOptions) {
   const formRef = useRef<HTMLDivElement>(null)
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // Memoize selector string to avoid re-creating on every call
   const focusableSelector = useMemo(() => [
@@ -194,12 +195,17 @@ export function useFormNavigation({
   const focusFirstElement = useCallback(() => {
     const focusableElements = getFocusableElements()
     if (focusableElements.length > 0) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
+      clearTimeout(focusTimerRef.current)
+      focusTimerRef.current = setTimeout(() => {
         focusableElements[0].focus()
       }, 100)
     }
   }, [getFocusableElements])
+
+  // Clean up pending focus timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(focusTimerRef.current)
+  }, [])
 
   return {
     formRef,

@@ -5,6 +5,7 @@ interface ProfilePhotoProps {
   size?: number;
   borderColor?: string;
   borderWidth?: number;
+  alt?: string;
 }
 
 export function ProfilePhoto({
@@ -12,6 +13,7 @@ export function ProfilePhoto({
   size = 90,
   borderColor = '#ffffff',
   borderWidth = 4,
+  alt = 'Profile photo',
 }: ProfilePhotoProps) {
   if (!src) return null;
 
@@ -28,7 +30,7 @@ export function ProfilePhoto({
     >
       <img
         src={src}
-        alt="Profile"
+        alt={alt}
         style={{
           width: '100%',
           height: '100%',

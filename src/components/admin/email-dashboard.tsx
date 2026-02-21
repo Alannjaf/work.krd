@@ -236,8 +236,8 @@ export function EmailDashboard() {
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Daily Send Volume (14 days)</h3>
             {loading ? (
               <div className="flex items-end gap-1 h-32">
-                {Array.from({ length: 14 }).map((_, i) => (
-                  <div key={i} className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-t animate-pulse" style={{ height: `${Math.random() * 80 + 20}%` }} />
+                {[68, 45, 82, 30, 95, 55, 72, 40, 88, 35, 60, 78, 50, 90].map((h, i) => (
+                  <div key={i} className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-t animate-pulse" style={{ height: `${h}%` }} />
                 ))}
               </div>
             ) : stats && stats.dailySentCounts.length > 0 ? (

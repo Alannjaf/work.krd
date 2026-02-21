@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'stats-public' })
+  if (!success) return rateLimitResponse(resetIn)
+
   try {
     const [resumeCount, userCount] = await Promise.all([
       prisma.resume.count(),

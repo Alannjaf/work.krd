@@ -150,6 +150,7 @@ export function ResumeUploader({ onUploadComplete, onCancel }: ResumeUploaderPro
               </div>
             </div>
             <button
+              type="button"
               onClick={removeFile}
               className="text-gray-400 hover:text-gray-600 transition-colors"
               disabled={isUploading}

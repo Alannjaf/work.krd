@@ -28,6 +28,7 @@ export function MobileBottomNav({ currentSection, onSectionChange, completionSta
 
           return (
             <button
+              type="button"
               key={section.id}
               onClick={() => onSectionChange(index)}
               className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${

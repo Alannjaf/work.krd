@@ -1,10 +1,12 @@
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, duplicateResume } from '@/lib/db'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse, forbiddenResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 // POST - Duplicate a resume
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -14,6 +16,9 @@ export async function POST(
     if (!userId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 5, windowSeconds: 60, identifier: 'resume-duplicate', userId })
+    if (!success) return rateLimitResponse(resetIn)
 
     const user = await getCurrentUser()
     if (!user) {

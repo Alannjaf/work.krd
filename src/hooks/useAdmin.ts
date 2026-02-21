@@ -6,19 +6,23 @@ export function useAdmin() {
   const retried = useRef(false)
 
   useEffect(() => {
+    let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout>
+
     const checkAdminStatus = async () => {
       try {
         const response = await fetch('/api/user/admin-status')
+        if (cancelled) return
         if (response.ok) {
           const data = await response.json()
           setIsAdmin(data.isAdmin)
         }
         setLoading(false)
       } catch {
-        // Retry once after 2s on network failure
+        if (cancelled) return
         if (!retried.current) {
           retried.current = true
-          setTimeout(() => checkAdminStatus(), 2000)
+          retryTimer = setTimeout(() => checkAdminStatus(), 2000)
         } else {
           setIsAdmin(false)
           setLoading(false)
@@ -27,6 +31,11 @@ export function useAdmin() {
     }
 
     checkAdminStatus()
+
+    return () => {
+      cancelled = true
+      clearTimeout(retryTimer)
+    }
   }, [])
 
   return { isAdmin, loading }

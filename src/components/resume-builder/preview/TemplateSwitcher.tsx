@@ -50,6 +50,7 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
 
               return (
                 <button
+                  type="button"
                   key={template.id}
                   onClick={() => onTemplateChange(template.id)}
                   className={`relative flex flex-col items-center p-2 rounded-lg border-2 transition-all ${
@@ -89,6 +90,7 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
 
       {/* Collapsed pill button */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-white shadow-lg rounded-full px-4 py-2 border border-gray-200 hover:shadow-xl transition-shadow text-sm font-medium text-gray-700"
       >

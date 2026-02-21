@@ -1,7 +1,12 @@
+import { NextRequest } from 'next/server'
 import { getSystemSettings } from '@/lib/system-settings'
 import { successResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'pricing' })
+  if (!success) return rateLimitResponse(resetIn)
+
   try {
     const settings = await getSystemSettings()
     

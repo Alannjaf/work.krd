@@ -1,55 +1,12 @@
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/db'
-import { prisma } from '@/lib/prisma'
-import { SystemSettings } from '@/types/api'
+import { getSystemSettings } from '@/lib/system-settings'
 import { successResponse, errorResponse, authErrorResponse, notFoundResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES } from '@/lib/constants'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-async function getSystemSettings() {
-  try {
-    const settingsRecord = await prisma.$queryRawUnsafe(`
-      SELECT
-        "maxFreeResumes",
-        "maxFreeAIUsage",
-        "maxFreeExports",
-        "maxFreeImports",
-        "maxFreeATSChecks",
-        "maxProResumes",
-        "maxProAIUsage",
-        "maxProExports",
-        "maxProImports",
-        "maxProATSChecks",
-        "proPlanPrice"
-      FROM "SystemSettings"
-      ORDER BY id LIMIT 1
-    `) as SystemSettings[]
-
-    if (settingsRecord && settingsRecord.length > 0) {
-      return settingsRecord[0]
-    }
-  } catch (error) {
-    console.error('[Subscription] Failed to fetch system settings:', error);
-  }
-  
-  const defaults: SystemSettings = {
-    // Free Plan Limits
-    maxFreeResumes: 10,
-    maxFreeAIUsage: 100,
-    maxFreeExports: 20,
-    maxFreeImports: 1,
-    maxFreeATSChecks: 0,
-
-    // Pro Plan Limits
-    maxProResumes: -1,
-    maxProAIUsage: -1,
-    maxProExports: -1,
-    maxProImports: -1,
-    maxProATSChecks: -1
-  }
-  return defaults
-}
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()
     
@@ -57,17 +14,16 @@ export async function GET() {
       return authErrorResponse()
     }
 
+    const { success, resetIn } = rateLimit(req, { maxRequests: 20, windowSeconds: 60, identifier: 'subscription', userId })
+    if (!success) return rateLimitResponse(resetIn)
+
     const user = await getCurrentUser()
     if (!user || !user.subscription) {
       return notFoundResponse('User not found')
     }
 
     const settings = await getSystemSettings()
-    // System Settings from DB
     const plan = user.subscription.plan
-    // User Plan loaded
-    
-    // Get limits based on plan and admin settings
     let resumesLimit, aiUsageLimit, exportLimit, importLimit, atsUsageLimit
     
     if (plan === PLAN_NAMES.FREE) {
@@ -83,9 +39,7 @@ export async function GET() {
       importLimit = settings.maxProImports !== null && settings.maxProImports !== undefined ? settings.maxProImports : -1
       atsUsageLimit = settings.maxProATSChecks !== null && settings.maxProATSChecks !== undefined ? settings.maxProATSChecks : -1
     }
-    
-    // Final limits calculated
-    
+
     return successResponse({
       currentPlan: plan,
       resumesUsed: user.subscription.resumeCount,

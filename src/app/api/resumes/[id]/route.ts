@@ -1,11 +1,30 @@
+import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, getResumeById, updateResume, deleteResume, checkUserLimits } from '@/lib/db'
 import { SectionType } from '@prisma/client'
-import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse } from '@/lib/api-helpers'
+import type { InputJsonValue } from '@prisma/client/runtime/library'
+import { successResponse, errorResponse, authErrorResponse, forbiddenResponse, notFoundResponse, validationErrorResponse } from '@/lib/api-helpers'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+
+const updateResumeSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  template: z.string().max(50).optional(),
+  formData: z.object({
+    personal: z.record(z.string(), z.unknown()).optional(),
+    summary: z.string().optional(),
+    experience: z.array(z.record(z.string(), z.unknown())).optional(),
+    education: z.array(z.record(z.string(), z.unknown())).optional(),
+    skills: z.array(z.record(z.string(), z.unknown())).optional(),
+    languages: z.array(z.record(z.string(), z.unknown())).optional(),
+    projects: z.array(z.record(z.string(), z.unknown())).optional(),
+    certifications: z.array(z.record(z.string(), z.unknown())).optional(),
+  }).optional(),
+})
 
 // GET - Get a specific resume
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,6 +34,9 @@ export async function GET(
     if (!userId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'resume-get', userId })
+    if (!success) return rateLimitResponse(resetIn)
 
     const user = await getCurrentUser()
     if (!user) {
@@ -50,7 +72,7 @@ export async function GET(
 
 // PUT - Update a specific resume
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -61,13 +83,20 @@ export async function PUT(
       return authErrorResponse()
     }
 
+    const { success, resetIn } = rateLimit(req, { maxRequests: 30, windowSeconds: 60, identifier: 'resume-update', userId })
+    if (!success) return rateLimitResponse(resetIn)
+
     const user = await getCurrentUser()
     if (!user) {
       return notFoundResponse('User not found')
     }
 
     const body = await req.json()
-    const { title, formData, template } = body
+    const parsed = updateResumeSchema.safeParse(body)
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error.issues[0]?.message || 'Invalid input')
+    }
+    const { title, formData, template } = parsed.data
 
     // Check if resume exists and belongs to user
     const existingResume = await getResumeById(id, user.id)
@@ -88,8 +117,8 @@ export async function PUT(
     const updatedResume = await updateResume(id, user.id, {
       title: title || existingResume.title,
       template: template || existingResume.template,
-      personalInfo: formData?.personal || existingResume.personalInfo,
-      summary: formData?.summary || existingResume.summary
+      personalInfo: (formData?.personal || existingResume.personalInfo) as InputJsonValue | undefined,
+      summary: formData?.summary || existingResume.summary || undefined
     })
 
     // Update sections if provided
@@ -102,65 +131,65 @@ export async function PUT(
       })
 
       // Create new sections
-      const sections = []
+      const sections: { resumeId: string; type: SectionType; title: string; content: InputJsonValue; order: number }[] = []
       let order = 1
 
-      if (formData.experience?.length > 0) {
+      if (formData.experience && formData.experience.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.WORK_EXPERIENCE,
           title: 'Work Experience',
-          content: formData.experience,
+          content: formData.experience as InputJsonValue,
           order: order++
         })
       }
 
-      if (formData.education?.length > 0) {
+      if (formData.education && formData.education.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.EDUCATION,
           title: 'Education',
-          content: formData.education,
+          content: formData.education as InputJsonValue,
           order: order++
         })
       }
 
-      if (formData.skills?.length > 0) {
+      if (formData.skills && formData.skills.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.SKILLS,
           title: 'Skills',
-          content: formData.skills,
+          content: formData.skills as InputJsonValue,
           order: order++
         })
       }
 
-      if (formData.languages?.length > 0) {
+      if (formData.languages && formData.languages.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.LANGUAGES,
           title: 'Languages',
-          content: formData.languages,
+          content: formData.languages as InputJsonValue,
           order: order++
         })
       }
 
-      if (formData.projects?.length > 0) {
+      if (formData.projects && formData.projects.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.PROJECTS,
           title: 'Projects',
-          content: formData.projects,
+          content: formData.projects as InputJsonValue,
           order: order++
         })
       }
 
-      if (formData.certifications?.length > 0) {
+      if (formData.certifications && formData.certifications.length > 0) {
         sections.push({
           resumeId: id,
           type: SectionType.CERTIFICATIONS,
           title: 'Certifications',
-          content: formData.certifications,
+          content: formData.certifications as InputJsonValue,
           order: order++
         })
       }
@@ -184,7 +213,7 @@ export async function PUT(
 
 // DELETE - Delete a specific resume
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -194,6 +223,9 @@ export async function DELETE(
     if (!userId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 10, windowSeconds: 60, identifier: 'resume-delete', userId })
+    if (!success) return rateLimitResponse(resetIn)
 
     const user = await getCurrentUser()
     if (!user) {

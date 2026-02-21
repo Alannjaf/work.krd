@@ -1,9 +1,11 @@
+import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, authErrorResponse, validationErrorResponse } from '@/lib/api-helpers'
 import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
 import { getSystemSettings } from '@/lib/system-settings'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
 const VALID_PLANS = [...PAID_PLANS] as const
@@ -11,12 +13,15 @@ const PLAN_PRICES: Record<string, number> = {
   [PLAN_NAMES.PRO]: 5000,
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { userId: clerkId } = await auth()
     if (!clerkId) {
       return authErrorResponse()
     }
+
+    const { success, resetIn } = rateLimit(req, { maxRequests: 3, windowSeconds: 300, identifier: 'payment-submit', userId: clerkId })
+    if (!success) return rateLimitResponse(resetIn)
 
     const user = await prisma.user.findUnique({
       where: { clerkId },
