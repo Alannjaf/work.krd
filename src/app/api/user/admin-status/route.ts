@@ -18,9 +18,11 @@ export async function GET() {
         LIMIT 1
       ` as DatabaseQueryResult[]
 
-      return successResponse({
+      const response = successResponse({
         isAdmin: user?.[0]?.role === 'ADMIN'
       })
+      response.headers.set('Cache-Control', 'private, max-age=30')
+      return response
     } catch (error) {
       console.error('[AdminStatus] Failed to query user role:', error);
       // Role column might not exist yet

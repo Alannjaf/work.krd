@@ -1,4 +1,3 @@
-import mammoth from 'mammoth'
 import { ResumeData } from '@/types/resume'
 
 export class ResumeParser {
@@ -16,6 +15,7 @@ export class ResumeParser {
    */
   static async parseDOCX(buffer: Buffer): Promise<string> {
     try {
+      const mammoth = (await import('mammoth')).default
       const result = await mammoth.extractRawText({ buffer })
       return result.value
     } catch (error) {

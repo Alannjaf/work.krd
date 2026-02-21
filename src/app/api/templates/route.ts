@@ -67,7 +67,9 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    return successResponse(templatesByTier)
+    const response = successResponse(templatesByTier)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600')
+    return response
   } catch (error) {
     console.error('[Templates] Failed to fetch templates:', error);
     return errorResponse('Failed to fetch templates', 500)

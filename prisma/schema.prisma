@@ -68,6 +68,7 @@ model ResumeSection {
 
   @@unique([resumeId, order])
   @@index([resumeId])
+  @@index([resumeId, type])
 }
 
 model Subscription {
@@ -166,6 +167,7 @@ model Payment {
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, status])
   @@index([status])
   @@index([createdAt])
 }
@@ -186,6 +188,7 @@ model AdminAuditLog {
   createdAt DateTime @default(now())
 
   @@index([adminId])
+  @@index([adminId, createdAt])
   @@index([createdAt])
 }
 

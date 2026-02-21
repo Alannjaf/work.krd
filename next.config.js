@@ -15,15 +15,19 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
   serverExternalPackages: ['@sparticuz/chromium-min', 'puppeteer-core'],
   reactStrictMode: true,
+  poweredByHeader: false,
   // Configurable via env var — falls back to empty array in production
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS
     ? process.env.ALLOWED_DEV_ORIGINS.split(',')
     : [],
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts'],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 31536000,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
@@ -43,14 +47,6 @@ const nextConfig = {
         ],
       },
     ]
-  },
-  webpack: (config, { isServer }) => {
-    // Handle underscore dependency for mammoth
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      underscore: require.resolve('underscore'),
-    }
-    return config
   },
 }
 

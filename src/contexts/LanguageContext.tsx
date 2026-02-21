@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 
 type Language = 'en' | 'ar' | 'ckb'
 
@@ -77,13 +77,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [language, isRTL])
 
 
-  const value = {
+  const stableT = useCallback((key: string, variables?: TranslationVariables): string => {
+    return t(key, variables)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages])
+
+  const value = useMemo(() => ({
     language,
     setLanguage,
-    t,
+    t: stableT,
     isRTL,
     isLoading
-  }
+  }), [language, stableT, isRTL, isLoading, setLanguage])
 
   return (
     <LanguageContext.Provider value={value}>

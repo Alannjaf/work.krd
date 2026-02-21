@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { Palette, Check, Lock } from 'lucide-react'
 import { templateRegistry } from '@/components/html-templates/registry'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -11,7 +12,7 @@ interface TemplateSwitcherProps {
   onTemplateChange: (templateId: string) => void
 }
 
-export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: TemplateSwitcherProps) {
+export const TemplateSwitcher = React.memo(function TemplateSwitcher({ selectedTemplate, onTemplateChange }: TemplateSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const { availableTemplates } = useSubscription()
@@ -64,8 +65,9 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
                   }`}
                 >
                   {/* Mini thumbnail */}
-                  <div className="w-[72px] h-[96px] rounded border border-gray-200 mb-1.5 overflow-hidden">
-                    <img src={`/thumbnails/${template.id}.svg`} alt={template.name}
+                  <div className="w-[72px] h-[96px] rounded border border-gray-200 mb-1.5 overflow-hidden relative">
+                    <Image src={`/thumbnails/${template.id}.svg`} alt={template.name}
+                         width={72} height={96}
                          className="w-full h-full object-cover object-top" />
                   </div>
                   <span className="text-[10px] font-medium text-gray-700 truncate w-full text-center">
@@ -106,4 +108,4 @@ export function TemplateSwitcher({ selectedTemplate, onTemplateChange }: Templat
       </button>
     </div>
   )
-}
+})

@@ -260,6 +260,33 @@ const debouncedSave = () => {
 ```
 **Why**: Code adds the slash — locale value shouldn't include it.
 
+## Performance Patterns
+
+### Context Provider Values Must Be Memoized
+**Why**: Without `useMemo`, every render of the provider creates a new value object, triggering re-renders in *all* consumers even when nothing changed.
+```tsx
+// ✅ GOOD
+const value = useMemo(() => ({ language, t, isRTL }), [language, t, isRTL])
+```
+
+### Dynamic Import Heavy Libraries Only Used in Subpages
+**Why**: `recharts` (~200KB), `mammoth` (~80KB) ship to all users even if only admins or uploaders need them.
+```tsx
+// ✅ AdminDashboard dynamically imports AdminAnalytics (which pulls in recharts)
+const AdminAnalytics = dynamic(() => import('./AdminAnalytics').then(m => ({ default: m.AdminAnalytics })), { ssr: false })
+// ✅ mammoth loaded at call-site only when DOCX is actually parsed
+const mammoth = (await import('mammoth')).default
+```
+
+### PDF Browser Pooling
+**Why**: Launching a new Chromium instance per PDF request adds 2-3s overhead. Reuse browser with page-level isolation. Close after 30s idle.
+
+### API Cache-Control for Static-ish Data
+**Why**: `/api/templates` and `/api/pricing` rarely change but hit the DB every request. Adding `Cache-Control: public, s-maxage=300` lets CDN/edge serve cached responses.
+
+### `optimizePackageImports` in next.config.js
+**Why**: Barrel-exported libraries like `lucide-react` import all exports. This config tree-shakes unused exports at build time, saving 50-100KB+.
+
 ## Testing Rules
 
 ### Test Mobile AND Desktop After CSS Changes

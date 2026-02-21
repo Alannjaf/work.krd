@@ -1,8 +1,10 @@
-import puppeteer from 'puppeteer-core';
+import puppeteer, { type Browser } from 'puppeteer-core';
 
 const CHROMIUM_PACK_URL = process.env.CHROMIUM_PACK_URL || '';
 const LOCAL_CHROME_PATH = process.env.CHROME_PATH || '';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const MAX_CONCURRENT = 3;
+const BROWSER_IDLE_TIMEOUT = 30_000; // close idle browser after 30s
 
 // Common local Chrome paths by OS
 const CHROME_PATHS = [
@@ -55,13 +57,90 @@ async function getBrowserArgs(): Promise<string[]> {
   return ['--no-sandbox', '--disable-setuid-sandbox'];
 }
 
-export async function generatePdfFromHtml(html: string): Promise<Buffer> {
-  const browser = await puppeteer.launch({
-    args: await getBrowserArgs(),
-    executablePath: await getExecutablePath(),
-    headless: true,
-    protocol: 'cdp',
+// ── Browser Pool ────────────────────────────────────────────────────────
+let _browser: Browser | null = null;
+let _browserPromise: Promise<Browser> | null = null;
+let _idleTimer: ReturnType<typeof setTimeout> | null = null;
+let _activePages = 0;
+const _waitQueue: Array<() => void> = [];
+
+function clearIdleTimer() {
+  if (_idleTimer) { clearTimeout(_idleTimer); _idleTimer = null; }
+}
+
+function scheduleIdleClose() {
+  clearIdleTimer();
+  _idleTimer = setTimeout(async () => {
+    if (_activePages === 0 && _browser) {
+      try { await _browser.close(); } catch { /* already closed */ }
+      _browser = null;
+      _browserPromise = null;
+    }
+  }, BROWSER_IDLE_TIMEOUT);
+}
+
+async function acquireBrowser(): Promise<Browser> {
+  clearIdleTimer();
+
+  if (_browser) {
+    try {
+      // Verify the browser is still alive
+      if (_browser.connected) return _browser;
+    } catch { /* fall through to create new */ }
+    _browser = null;
+    _browserPromise = null;
+  }
+
+  if (!_browserPromise) {
+    _browserPromise = (async () => {
+      const browser = await puppeteer.launch({
+        args: await getBrowserArgs(),
+        executablePath: await getExecutablePath(),
+        headless: true,
+        protocol: 'cdp',
+      });
+      _browser = browser;
+      browser.on('disconnected', () => {
+        if (_browser === browser) { _browser = null; _browserPromise = null; }
+      });
+      return browser;
+    })();
+  }
+
+  return _browserPromise;
+}
+
+function releaseSlot() {
+  _activePages--;
+  if (_waitQueue.length > 0) {
+    const next = _waitQueue.shift()!;
+    next();
+  }
+  if (_activePages === 0) scheduleIdleClose();
+}
+
+function waitForSlot(): Promise<void> {
+  if (_activePages < MAX_CONCURRENT) {
+    _activePages++;
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => {
+    _waitQueue.push(() => { _activePages++; resolve(); });
   });
+}
+
+// ── Public API ──────────────────────────────────────────────────────────
+
+export async function generatePdfFromHtml(html: string): Promise<Buffer> {
+  await waitForSlot();
+
+  let browser: Browser;
+  try {
+    browser = await acquireBrowser();
+  } catch (err) {
+    releaseSlot();
+    throw err;
+  }
 
   let page: Awaited<ReturnType<typeof browser.newPage>> | null = null;
   try {
@@ -90,8 +169,7 @@ export async function generatePdfFromHtml(html: string): Promise<Buffer> {
 
     return buffer;
   } finally {
-    // Close page before browser to prevent memory leaks
     if (page) { try { await page.close(); } catch { /* page may already be closed */ } }
-    await browser.close();
+    releaseSlot();
   }
 }

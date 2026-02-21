@@ -67,14 +67,14 @@ export async function POST(req: Request) {
       })
     }
 
-    // Update user name
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { name: fullName.trim() }
-    })
-
-    // Check if user can create a resume
-    const limits = await checkUserLimits(userId)
+    // Parallelize: update user name + check limits (independent operations)
+    const [, limits] = await Promise.all([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { name: fullName.trim() }
+      }),
+      checkUserLimits(userId)
+    ])
     if (!limits.canCreateResume) {
       return errorResponse('Resume limit reached', 403)
     }
@@ -132,17 +132,12 @@ export async function POST(req: Request) {
           })
         }
 
-        for (const section of sectionUpdates) {
-          const existing = await tx.resumeSection.findFirst({
-            where: { resumeId: resume.id, type: section.type }
+        await Promise.all(sectionUpdates.map(async (section) => {
+          await tx.resumeSection.updateMany({
+            where: { resumeId: resume.id, type: section.type },
+            data: { content: section.content }
           })
-          if (existing) {
-            await tx.resumeSection.update({
-              where: { id: existing.id },
-              data: { content: section.content }
-            })
-          }
-        }
+        }))
 
         // Create additional sections if data exists
         let nextOrder = 4 // createResume creates 3 sections (order 1-3)

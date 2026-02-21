@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ScanSearch, Languages, Download, Keyboard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,7 +23,7 @@ interface BuilderHeaderProps {
   onShowKeyboardHelp: () => void
 }
 
-export function BuilderHeader({
+export const BuilderHeader = React.memo(function BuilderHeader({
   resumeTitle,
   onTitleChange,
   titleError,
@@ -144,4 +145,4 @@ export function BuilderHeader({
       </div>
     </header>
   )
-}
+})

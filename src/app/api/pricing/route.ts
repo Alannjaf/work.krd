@@ -48,7 +48,9 @@ export async function GET(req: NextRequest) {
       }
     ]
 
-    return successResponse({ plans })
+    const response = successResponse({ plans })
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
+    return response
   } catch (error) {
     console.error('[Pricing] Failed to fetch pricing plans:', error);
     // Return default pricing on error

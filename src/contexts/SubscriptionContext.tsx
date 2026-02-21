@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import type { 
   SubscriptionContextType, 
@@ -102,14 +102,15 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSubscription is stable via useCallback([user, isLoaded]), including it causes infinite re-render loop
   }, [user, isLoaded]);
 
-  const value: SubscriptionContextType = {
+  const value = useMemo<SubscriptionContextType>(() => ({
     subscription,
     permissions,
     availableTemplates,
     isLoading,
     error,
     refreshSubscription,
-    checkPermission};
+    checkPermission
+  }), [subscription, permissions, availableTemplates, isLoading, error, refreshSubscription, checkPermission]);
 
   return (
     <SubscriptionContext.Provider value={value}>

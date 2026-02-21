@@ -17,7 +17,7 @@ interface LivePreviewPanelProps {
   onTemplateChange: (templateId: string) => void
 }
 
-export function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePreviewPanelProps) {
+export const LivePreviewPanel = React.memo(function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePreviewPanelProps) {
   const { availableTemplates } = useSubscription()
   const { downloadPDF, isDownloading } = useDownloadPDF()
   const { t } = useLanguage()
@@ -59,4 +59,4 @@ export function LivePreviewPanel({ data, templateId, onTemplateChange }: LivePre
       />
     </div>
   )
-}
+})

@@ -48,18 +48,19 @@ export async function GET(
       return notFoundResponse('Resume not found')
     }
 
-    // Transform sections data for frontend
+    // Transform sections data for frontend — O(n) Map instead of O(n*6) repeated .find()
+    const sectionMap = new Map(resume.sections.map(s => [s.type, s.content]))
     const transformedResume = {
       ...resume,
       formData: {
         personal: resume.personalInfo,
         summary: resume.summary,
-        experience: resume.sections.find(s => s.type === 'WORK_EXPERIENCE')?.content || [],
-        education: resume.sections.find(s => s.type === 'EDUCATION')?.content || [],
-        skills: resume.sections.find(s => s.type === 'SKILLS')?.content || [],
-        languages: resume.sections.find(s => s.type === 'LANGUAGES')?.content || [],
-        projects: resume.sections.find(s => s.type === 'PROJECTS')?.content || [],
-        certifications: resume.sections.find(s => s.type === 'CERTIFICATIONS')?.content || []
+        experience: sectionMap.get('WORK_EXPERIENCE') || [],
+        education: sectionMap.get('EDUCATION') || [],
+        skills: sectionMap.get('SKILLS') || [],
+        languages: sectionMap.get('LANGUAGES') || [],
+        projects: sectionMap.get('PROJECTS') || [],
+        certifications: sectionMap.get('CERTIFICATIONS') || []
       }
     }
 
