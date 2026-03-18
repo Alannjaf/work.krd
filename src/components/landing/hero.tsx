@@ -13,10 +13,9 @@ export function Hero() {
   const { t, isRTL } = useLanguage()
   const [stats, setStats] = useState<{ userCount: number } | null>(null)
   const [statsError, setStatsError] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    setIsVisible(true)
     fetch('/api/stats/public')
       .then(res => { if (!res.ok) throw new Error('fetch failed'); return res.json() })
       .then(data => { setStats(data); setStatsError(false) })
