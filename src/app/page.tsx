@@ -26,7 +26,9 @@ export default function Home() {
         },
         description: 'Professional resume builder with AI assistance, supporting Kurdish, Arabic, and English languages.',
         sameAs: [
-          // Add social media profiles when available
+          'https://x.com/workkrd',
+          'https://www.facebook.com/profile.php?id=843311732209489',
+          'https://www.instagram.com/work.krd',
         ],
       },
       {
@@ -47,6 +49,90 @@ export default function Home() {
           },
           'query-input': 'required name=search_term_string',
         },
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://work.krd/#faq',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Is work.krd free to use?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes! You can create up to 10 resumes, use basic templates, and get 100 AI suggestions completely free. Upgrade to Pro for unlimited access to all features.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What languages are supported?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Work.krd fully supports Kurdish (Sorani), Arabic, and English. All templates work perfectly with right-to-left (RTL) text, and you can switch languages anytime.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What is ATS and why does it matter?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'ATS (Applicant Tracking System) is software companies use to scan resumes before a human sees them. Our templates are optimized to pass these systems, ensuring your resume reaches hiring managers.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Can I download my resume as PDF?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Absolutely! Export your resume as a professional A4 PDF with perfect formatting. Free users get 20 exports, Pro users get unlimited.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How does AI assistance work?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Our AI analyzes your input and generates professional content suggestions for each section of your resume. It understands context in English, Arabic, and Kurdish.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Is my data secure?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Your data is encrypted and stored securely. We never share your personal information with third parties. You can delete your account and data at any time.',
+            },
+          },
+        ],
+      },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://work.krd/#app',
+        name: 'Work.krd',
+        description: 'AI-powered resume builder supporting Kurdish, Arabic, and English with ATS-optimized templates.',
+        url: 'https://work.krd',
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        offers: [
+          {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+            name: 'Free',
+            description: 'Up to 10 resumes, basic templates, 100 AI suggestions, 20 PDF exports',
+          },
+          {
+            '@type': 'Offer',
+            price: '5000',
+            priceCurrency: 'IQD',
+            name: 'Pro',
+            description: 'Unlimited resumes, all premium templates, unlimited AI suggestions, unlimited PDF exports, ATS optimization',
+            priceValidUntil: '2027-12-31',
+          },
+        ],
+        publisher: {
+          '@id': 'https://work.krd/#organization',
+        },
+        inLanguage: ['en', 'ar', 'ckb'],
       },
     ],
   }

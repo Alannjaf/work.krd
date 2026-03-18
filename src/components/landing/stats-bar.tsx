@@ -14,7 +14,8 @@ const features = [
 
 export function StatsBar() {
   const { t, language } = useLanguage()
-  const [resumeCount, setResumeCount] = useState(0)
+  const MIN_DISPLAY_COUNT = 500
+  const [resumeCount, setResumeCount] = useState(MIN_DISPLAY_COUNT)
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -28,7 +29,9 @@ export function StatsBar() {
     fetch('/api/stats/public')
       .then(res => res.json())
       .then(data => {
-        if (data.resumeCount) setResumeCount(data.resumeCount)
+        if (data.resumeCount && data.resumeCount > MIN_DISPLAY_COUNT) {
+          setResumeCount(data.resumeCount)
+        }
       })
       .catch(() => {})
   }, [])

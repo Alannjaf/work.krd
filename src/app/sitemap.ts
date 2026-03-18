@@ -1,29 +1,63 @@
 import { MetadataRoute } from 'next';
+import { getAllPostSlugs } from '@/lib/blog';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://work.krd';
   const locales = ['en', 'ar', 'ckb'];
 
-  // Public pages that should be in sitemap
+  const sitemap: MetadataRoute.Sitemap = [];
+
+  // Add root homepage
+  sitemap.push({
+    url: baseUrl,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 1.0,
+    alternates: {
+      languages: {
+        en: `${baseUrl}/en`,
+        ar: `${baseUrl}/ar`,
+        ckb: `${baseUrl}/ckb`,
+        'x-default': `${baseUrl}/en`,
+      } as Record<string, string>,
+    },
+  });
+
+  // Public pages (excluding billing — it's behind auth)
   const publicPages = [
-    '', // home
-    '/billing',
+    '', // locale home
     '/privacy',
     '/terms',
   ];
 
-  const sitemap: MetadataRoute.Sitemap = [];
-
-  // Add pages for each locale
   for (const locale of locales) {
     for (const page of publicPages) {
       sitemap.push({
         url: `${baseUrl}/${locale}${page}`,
         lastModified: new Date(),
         changeFrequency: page === '' ? 'weekly' : 'monthly',
-        priority: page === '' ? 1.0 : 0.8,
+        priority: page === '' ? 0.9 : 0.5,
       });
     }
+  }
+
+  // Blog index
+  sitemap.push({
+    url: `${baseUrl}/blog`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  });
+
+  // Blog posts
+  const slugs = getAllPostSlugs();
+  for (const slug of slugs) {
+    sitemap.push({
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    });
   }
 
   return sitemap;

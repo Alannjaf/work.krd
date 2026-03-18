@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://work.krd'),
   title: {
-    default: 'Work.krd - Create Professional Resumes with AI',
+    default: 'Work.krd — Kurdish & Arabic AI Resume Builder | دروستکردنی سیڤی',
     template: '%s | Work.krd',
   },
   description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English. Choose from professional templates, optimize for ATS, and download your resume instantly.',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     alternateLocale: ['ar_AR', 'ku_IQ'],
     url: 'https://work.krd',
-    title: 'Work.krd - Create Professional Resumes with AI',
+    title: 'Work.krd — Kurdish & Arabic AI Resume Builder | دروستکردنی سیڤی',
     description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English. Choose from professional templates, optimize for ATS, and download your resume instantly.',
     siteName: 'Work.krd',
     images: [
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Work.krd - Create Professional Resumes with AI',
+    title: 'Work.krd — Kurdish & Arabic AI Resume Builder | دروستکردنی سیڤی',
     description: 'Build stunning resumes with AI assistance in multiple languages including Kurdish, Arabic, and English.',
     images: ['/og-image.png'],
     creator: '@workkrd',
@@ -62,6 +62,15 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
+  },
+  alternates: {
+    canonical: 'https://work.krd',
+    languages: {
+      en: 'https://work.krd/en',
+      ar: 'https://work.krd/ar',
+      ckb: 'https://work.krd/ckb',
+      'x-default': 'https://work.krd/en',
+    } as Record<string, string>,
   },
   verification: {
     // Add verification tokens when available
@@ -80,7 +89,7 @@ export default function RootLayout({
     >
       <html lang="en">
         <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="preconnect" href="https://clerk.com" />
