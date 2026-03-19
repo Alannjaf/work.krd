@@ -47,23 +47,25 @@ export default function CardPaymentPage() {
       .catch(() => {})
   }, [])
 
-  // Wait for SDK to actually be available (onLoad fires before GammalTech object is ready)
+  // Poll for GammalTech global — don't rely solely on next/script onLoad (unreliable on mobile)
   useEffect(() => {
-    if (!sdkLoaded) return
-    // Poll briefly for the GammalTech global to appear
     let attempts = 0
     const check = setInterval(() => {
       attempts++
       if (window.GammalTech) {
         clearInterval(check)
+        setSdkLoaded(true)
         setSdkReady(true)
-      } else if (attempts > 50) {
+      } else if (attempts > 100) {
+        // 10 seconds — SDK truly failed
         clearInterval(check)
-        console.error('[CardPayment] GammalTech SDK never initialized')
+        console.error('[CardPayment] GammalTech SDK never initialized after 10s')
+        setErrorMessage('Payment system failed to load. Please refresh the page.')
+        setStep('error')
       }
     }, 100)
     return () => clearInterval(check)
-  }, [sdkLoaded])
+  }, [])
 
   const confirmPayment = useCallback(
     async (txnId: string) => {
