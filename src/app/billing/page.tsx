@@ -1,20 +1,6 @@
 'use client'
 
-declare global {
-  interface Window {
-    GammalTech?: {
-      login: () => Promise<void>
-      isLoggedIn: () => boolean
-      payCard: (
-        amount: number,
-        currency: string,
-        description: string,
-        onDelivery: (txnId: string) => void
-      ) => void
-      settlePending: () => void
-    }
-  }
-}
+// GammalTech types in src/types/gammal-tech.d.ts
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -113,13 +99,18 @@ export default function BillingPage() {
 
   // Settle pending Gammal Tech payments on page load
   useEffect(() => {
-    if (gammalSdkReady && window.GammalTech) {
-      try {
-        window.GammalTech.settlePending()
-      } catch (err) {
-        console.error('[Billing] settlePending error:', err)
+    if (!gammalSdkReady) return
+    // Wait for SDK object to be available
+    const check = setInterval(() => {
+      if (window.GammalTech?.payment) {
+        clearInterval(check)
+        window.GammalTech.payment.settlePending().catch((err: unknown) => {
+          console.error('[Billing] settlePending error:', err)
+        })
       }
-    }
+    }, 100)
+    const timeout = setTimeout(() => clearInterval(check), 5000)
+    return () => { clearInterval(check); clearTimeout(timeout) }
   }, [gammalSdkReady])
 
   return (

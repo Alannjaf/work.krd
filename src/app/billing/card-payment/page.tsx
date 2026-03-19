@@ -18,21 +18,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext'
 import toast from 'react-hot-toast'
 
-declare global {
-  interface Window {
-    GammalTech?: {
-      login: () => Promise<void>
-      isLoggedIn: () => boolean
-      payCard: (
-        amount: number,
-        currency: string,
-        description: string,
-        onDelivery: (txnId: string) => void
-      ) => void
-      settlePending: () => void
-    }
-  }
-}
+// GammalTech types in src/types/gammal-tech.d.ts
 
 type PaymentStep = 'ready' | 'logging-in' | 'paying' | 'confirming' | 'success' | 'error'
 
@@ -40,7 +26,9 @@ export default function CardPaymentPage() {
   const router = useRouter()
   const { t } = useLanguage()
   const [sdkLoaded, setSdkLoaded] = useState(false)
+  const [sdkReady, setSdkReady] = useState(false)
   const [step, setStep] = useState<PaymentStep>('ready')
+  const [needsLogin, setNeedsLogin] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [hasReferralDiscount, setHasReferralDiscount] = useState(false)
   const [amount, setAmount] = useState(5000)
@@ -59,16 +47,22 @@ export default function CardPaymentPage() {
       .catch(() => {})
   }, [])
 
-  // Settle pending payments on load (critical for recovering interrupted payments)
+  // Wait for SDK to actually be available (onLoad fires before GammalTech object is ready)
   useEffect(() => {
-    if (sdkLoaded && window.GammalTech && !settleCalled.current) {
-      settleCalled.current = true
-      try {
-        window.GammalTech.settlePending()
-      } catch (err) {
-        console.error('[CardPayment] settlePending error:', err)
+    if (!sdkLoaded) return
+    // Poll briefly for the GammalTech global to appear
+    let attempts = 0
+    const check = setInterval(() => {
+      attempts++
+      if (window.GammalTech) {
+        clearInterval(check)
+        setSdkReady(true)
+      } else if (attempts > 50) {
+        clearInterval(check)
+        console.error('[CardPayment] GammalTech SDK never initialized')
       }
-    }
+    }, 100)
+    return () => clearInterval(check)
   }, [sdkLoaded])
 
   const confirmPayment = useCallback(
@@ -99,45 +93,97 @@ export default function CardPaymentPage() {
     []
   )
 
+  const settlePending = useCallback(async () => {
+    if (!window.GammalTech) return
+    try {
+      const result = await window.GammalTech.payment.settlePending()
+      if (result.has_pending && result.payment_token) {
+        const verified = await window.GammalTech.payment.verifyPayment(null, result.payment_token)
+        if (verified.valid) {
+          await confirmPayment(verified.txn)
+          await window.GammalTech.payment.confirmDelivery()
+          // Check for more pending
+          await settlePending()
+        }
+      }
+    } catch (err) {
+      console.error('[CardPayment] settlePending error:', err)
+    }
+  }, [confirmPayment])
+
+  // Settle pending payments on load (critical for recovering interrupted payments)
+  useEffect(() => {
+    if (sdkReady && window.GammalTech && !settleCalled.current) {
+      settleCalled.current = true
+      settlePending()
+    }
+  }, [sdkReady, settlePending])
+
+  // Check login state when SDK is ready
+  useEffect(() => {
+    if (sdkReady && window.GammalTech) {
+      setNeedsLogin(!window.GammalTech.isLoggedIn())
+    }
+  }, [sdkReady])
+
+  const handleLogin = useCallback(async () => {
+    if (!window.GammalTech) return
+    try {
+      setStep('logging-in')
+      await window.GammalTech.login()
+      if (window.GammalTech.isLoggedIn()) {
+        setNeedsLogin(false)
+        setStep('ready')
+        toast.success('Logged in! Now click Pay to continue.')
+      } else {
+        setStep('ready')
+        toast.error('Login was cancelled.')
+      }
+    } catch (error) {
+      console.error('[CardPayment] Login error:', error)
+      setStep('ready')
+      toast.error('Login failed. Please try again.')
+    }
+  }, [])
+
   const handlePayWithCard = useCallback(async () => {
     if (!window.GammalTech) {
       toast.error('Payment system is loading. Please try again.')
       return
     }
 
+    // If not logged in, do login first (separate user gesture)
+    if (!window.GammalTech.isLoggedIn()) {
+      handleLogin()
+      return
+    }
+
     try {
-      // Step 1: Login if needed
-      if (!window.GammalTech.isLoggedIn()) {
-        setStep('logging-in')
-        await window.GammalTech.login()
-
-        // Verify login succeeded
-        if (!window.GammalTech.isLoggedIn()) {
-          setStep('ready')
-          toast.error('Login was cancelled. Please try again.')
-          return
-        }
-      }
-
-      // Step 2: Initiate card payment
+      // Initiate card payment — this must be called directly from user click to avoid popup block
       setStep('paying')
-      window.GammalTech.payCard(
+      await window.GammalTech.payCard(
         amount,
         'IQD',
         'work.krd Pro Plan - Monthly Subscription',
-        (txnId: string) => {
-          // This callback fires when payment is delivered
-          confirmPayment(txnId)
+        (delivery: { txn: string; amount: number; description: string }) => {
+          confirmPayment(delivery.txn)
         }
       )
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('[CardPayment] Payment error:', error)
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Payment failed. Please try again.'
-      )
-      setStep('error')
+      const msg = error instanceof Error ? error.message : String(error)
+      if (msg === 'Payment cancelled' || msg.includes('cancelled')) {
+        setStep('ready')
+        toast('Payment was cancelled.', { icon: 'ℹ️' })
+      } else if (msg.includes('popup') || msg.includes('blocked')) {
+        setErrorMessage('Popup blocked. Please allow popups for work.krd and try again.')
+        setStep('error')
+      } else {
+        setErrorMessage(msg || 'Payment failed. Please try again.')
+        setStep('error')
+      }
     }
-  }, [amount, confirmPayment])
+  }, [amount, confirmPayment, handleLogin])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -274,10 +320,10 @@ export default function CardPaymentPage() {
             {/* Payment Button */}
             <Button
               className="w-full h-14 text-base mb-4"
-              onClick={handlePayWithCard}
-              disabled={!sdkLoaded || step === 'logging-in' || step === 'paying' || step === 'confirming'}
+              onClick={needsLogin ? handleLogin : handlePayWithCard}
+              disabled={!sdkReady || step === 'logging-in' || step === 'paying' || step === 'confirming'}
             >
-              {!sdkLoaded ? (
+              {!sdkReady ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Loading payment system...
@@ -296,6 +342,11 @@ export default function CardPaymentPage() {
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Activating Pro plan...
+                </>
+              ) : needsLogin ? (
+                <>
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  Sign in to Pay
                 </>
               ) : (
                 <>
