@@ -6,10 +6,11 @@ import { useUser } from '@clerk/nextjs'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { getAllTemplates } from '@/lib/templates'
-import { Upload, FileText, PenLine, X, Check, LayoutTemplate } from 'lucide-react'
+import { Upload, FileText, PenLine, X, Check, LayoutTemplate, Gift } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { QuickStartPicker } from '@/components/resume-builder/QuickStartPicker'
 import { getQuickStartTemplate } from '@/lib/quick-start-templates'
+import { getStoredReferralCode, clearStoredReferralCode } from '@/components/shared/ReferralCapture'
 
 // ── Progress Dots ──────────────────────────────────────────────────────
 function ProgressDots({ current, total }: { current: number; total: number }) {
@@ -64,6 +65,11 @@ export default function OnboardingPage() {
   // Quick-start template state
   const [showQuickStart, setShowQuickStart] = useState(false)
 
+  // Referral code state
+  const [referralCode, setReferralCode] = useState('')
+  const [referralApplied, setReferralApplied] = useState(false)
+  const [applyingReferral, setApplyingReferral] = useState(false)
+
   const nameInputRef = useRef<HTMLInputElement>(null)
 
   const templates = getAllTemplates()
@@ -106,6 +112,29 @@ export default function OnboardingPage() {
       clearTimeout(retryTimer)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-apply stored referral code ──
+  useEffect(() => {
+    if (isCheckingStatus) return
+    const storedCode = getStoredReferralCode()
+    if (storedCode && !referralApplied) {
+      setReferralCode(storedCode)
+      // Auto-apply the stored referral code
+      fetch('/api/user/referral/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: storedCode }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setReferralApplied(true)
+            clearStoredReferralCode()
+          }
+        })
+        .catch(() => {})
+    }
+  }, [isCheckingStatus]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pre-fill name from Clerk ──
   useEffect(() => {
@@ -300,6 +329,70 @@ export default function OnboardingPage() {
                     <p className="mt-2 text-sm text-red-600">{nameError}</p>
                   )}
                 </div>
+
+                {/* Referral Code Input */}
+                {!referralApplied && (
+                  <div className="text-left mb-6">
+                    <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-2">
+                      <Gift className="inline h-4 w-4 me-1" />
+                      {t('referral.haveCode')}
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="referralCode"
+                        type="text"
+                        value={referralCode}
+                        onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                        placeholder={t('referral.enterCode')}
+                        className="flex-1 px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors uppercase"
+                        maxLength={8}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-auto px-4"
+                        disabled={!referralCode.trim() || applyingReferral}
+                        onClick={async () => {
+                          if (!referralCode.trim()) return
+                          setApplyingReferral(true)
+                          try {
+                            const res = await fetch('/api/user/referral/apply', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ code: referralCode.trim() }),
+                            })
+                            const data = await res.json()
+                            if (data.success) {
+                              setReferralApplied(true)
+                              clearStoredReferralCode()
+                              toast.success(t('referral.applied'))
+                            } else {
+                              toast.error(data.error || t('referral.invalidCode'))
+                            }
+                          } catch {
+                            toast.error(t('referral.invalidCode'))
+                          } finally {
+                            setApplyingReferral(false)
+                          }
+                        }}
+                      >
+                        {applyingReferral ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                        ) : (
+                          t('referral.apply')
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {referralApplied && (
+                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium mb-6 justify-center">
+                    <Check className="h-4 w-4" />
+                    {t('referral.applied')}
+                  </div>
+                )}
 
                 <Button
                   type="button"

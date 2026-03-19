@@ -6,6 +6,7 @@ import { PLAN_NAMES, PAID_PLANS } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
 import { getSystemSettings } from '@/lib/system-settings'
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
+import { REFERRAL_DISCOUNT_IQD } from '@/lib/referral'
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB
 const VALID_PLANS = [...PAID_PLANS] as const
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { clerkId },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, referredBy: true },
     })
 
     if (!user) {
@@ -97,7 +98,9 @@ export async function POST(req: NextRequest) {
     // Snapshot the current plan price so admin review validates against
     // the price that was active when the user submitted payment
     const settings = await getSystemSettings()
-    const amount = settings.proPlanPrice || PLAN_PRICES[plan] || 5000
+    const basePrice = settings.proPlanPrice || PLAN_PRICES[plan] || 5000
+    // Apply referral discount if user was referred
+    const amount = user.referredBy ? basePrice - REFERRAL_DISCOUNT_IQD : basePrice
 
     // Create payment record
     const payment = await prisma.payment.create({

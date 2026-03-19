@@ -2061,5 +2061,23 @@
         "address": "Erbil, Kurdistan Region, Iraq"
       }
     }
+  },
+  "referral": {
+    "title": "Refer & Earn",
+    "description": "Share your referral link with friends. When they upgrade to PRO, you get 30 days of PRO for free!",
+    "linkCopied": "Referral link copied!",
+    "copyLink": "Copy",
+    "shareMessage": "Build your professional resume for free on work.krd! Use my referral link:",
+    "stats": {
+      "referred": "Referred",
+      "upgraded": "Upgraded",
+      "rewards": "Rewards"
+    },
+    "haveCode": "Have a referral code? (optional)",
+    "enterCode": "Enter code",
+    "apply": "Apply",
+    "applied": "Referral code applied!",
+    "invalidCode": "Invalid referral code",
+    "discountApplied": "Referral discount applied (-1,000 IQD)"
   }
 }

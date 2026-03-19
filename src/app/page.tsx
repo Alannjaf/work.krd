@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+import { ReferralCapture } from '@/components/shared/ReferralCapture'
 import { Header } from '@/components/landing/header'
 import { Hero } from '@/components/landing/hero'
 import { StatsBar } from '@/components/landing/stats-bar'
@@ -143,6 +145,9 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <Suspense fallback={null}>
+        <ReferralCapture />
+      </Suspense>
       <main>
         <Header />
         <Hero />

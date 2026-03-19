@@ -17,6 +17,8 @@ model User {
   lastLoginAt         DateTime?
   emailOptOut         Boolean       @default(false)
   emailPreferences    Json?
+  referralCode        String?       @unique
+  referredBy          String?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   role                UserRole      @default(USER)
@@ -24,12 +26,15 @@ model User {
   subscription        Subscription?
   payments            Payment[]
   emailJobs           EmailJob[]
+  referralsMade       Referral[]    @relation("Referrer")
+  referralsReceived   Referral[]    @relation("Referred")
 
   @@index([clerkId])
   @@index([email])
   @@index([name])
   @@index([emailOptOut])
   @@index([lastLoginAt])
+  @@index([referralCode])
 }
 
 model Resume {
@@ -263,4 +268,29 @@ enum EmailDeliveryStatus {
   OPENED
   FAILED
   BOUNCED
+}
+
+model Referral {
+  id           String         @id @default(cuid())
+  referrerId   String
+  referredId   String
+  referralCode String
+  status       ReferralStatus @default(PENDING)
+  rewardType   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  referrer     User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred     User           @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, referredId])
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([referralCode])
+  @@index([status])
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  REWARDED
 }

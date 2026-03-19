@@ -4,6 +4,7 @@ import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { PLAN_NAMES } from '@/lib/constants'
 import { devError } from '@/lib/admin-utils'
+import { generateReferralCode } from '@/lib/referral'
 
 // Simple in-memory rate limiter for webhook endpoint
 const webhookRateLimit = new Map<string, { count: number; resetTime: number }>()
@@ -106,6 +107,13 @@ export async function POST(req: Request) {
       // User upserted
 
       if (eventType === 'user.created') {
+        // Generate unique referral code for new user
+        const referralCode = await generateReferralCode()
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { referralCode },
+        })
+
         await prisma.subscription.upsert({
           where: { userId: user.id },
           update: {},

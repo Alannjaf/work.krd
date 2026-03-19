@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AppHeader } from '@/components/shared/AppHeader'
 import { DeleteConfirmModal } from '@/components/admin/DeleteConfirmModal'
+import { ReferralCard } from '@/components/shared/ReferralCard'
 import { Plus, Settings, Edit, Trash2, Calendar, Upload, FileText, Copy, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -278,7 +279,7 @@ export default function Dashboard() {
           <div className="order-2 lg:order-1 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('pages.dashboard.quickActions')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
-              <Button 
+              <Button
                 className="h-20 sm:h-32 flex flex-col items-center justify-center space-y-1 sm:space-y-2 text-sm sm:text-base"
                 onClick={() => router.push('/resume-builder')}
               >
@@ -286,7 +287,7 @@ export default function Dashboard() {
                 <span className="font-medium">{t('pages.dashboard.cards.newResume')}</span>
               </Button>
 
-              <Button 
+              <Button
                 variant="outline"
                 className="h-20 sm:h-32 flex flex-col items-center justify-center space-y-1 sm:space-y-2 text-sm sm:text-base"
                 onClick={() => router.push('/resume-builder/import')}
@@ -294,9 +295,9 @@ export default function Dashboard() {
                 <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
                 <span className="font-medium">{t('pages.dashboard.cards.importResume')}</span>
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="h-20 sm:h-32 flex flex-col items-center justify-center space-y-1 sm:space-y-2 text-sm sm:text-base col-span-2 sm:col-span-1"
                 onClick={() => router.push('/billing')}
               >
@@ -304,6 +305,11 @@ export default function Dashboard() {
                 <span className="font-medium">{t('pages.dashboard.cards.billing')}</span>
               </Button>
             </div>
+          </div>
+
+          {/* Referral Card */}
+          <div className="order-3 mb-6">
+            <ReferralCard />
           </div>
         </div>
       </main>

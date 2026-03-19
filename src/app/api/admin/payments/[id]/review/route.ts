@@ -6,6 +6,7 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { attachCsrfToken, validateCsrfToken, getCsrfTokenFromRequest } from '@/lib/csrf'
 import { getSystemSettings } from '@/lib/system-settings'
 import { SUBSCRIPTION_DURATION_MS } from '@/lib/constants'
+import { devError } from '@/lib/admin-utils'
 
 export async function GET(
   req: NextRequest,
@@ -27,6 +28,7 @@ export async function GET(
             id: true,
             name: true,
             email: true,
+            referredBy: true,
           },
         },
       },
@@ -50,6 +52,7 @@ export async function GET(
       reviewedAt: payment.reviewedAt,
       screenshot: screenshotDataUrl,
       user: payment.user,
+      hasReferralDiscount: !!payment.user.referredBy,
     })
 
     return attachCsrfToken(response, adminId)
@@ -186,6 +189,67 @@ export async function POST(
               endDate,
             },
           })
+        }
+
+        // Referral reward: if this user was referred, reward the referrer
+        try {
+          const paidUser = await tx.user.findUnique({
+            where: { id: payment.userId },
+            select: { referredBy: true },
+          })
+
+          if (paidUser?.referredBy) {
+            // Mark the referral as REWARDED
+            const referral = await tx.referral.findFirst({
+              where: {
+                referredId: payment.userId,
+                referralCode: paidUser.referredBy,
+                status: { in: ['PENDING', 'COMPLETED'] },
+              },
+            })
+
+            if (referral) {
+              await tx.referral.update({
+                where: { id: referral.id },
+                data: { status: 'REWARDED', rewardType: '30_DAYS_PRO' },
+              })
+
+              // Extend referrer's subscription by 30 days
+              const referrerSub = await tx.subscription.findUnique({
+                where: { userId: referral.referrerId },
+              })
+
+              if (referrerSub) {
+                const currentEnd = referrerSub.endDate && referrerSub.endDate > now
+                  ? referrerSub.endDate
+                  : now
+                const newEnd = new Date(currentEnd.getTime() + SUBSCRIPTION_DURATION_MS)
+
+                await tx.subscription.update({
+                  where: { userId: referral.referrerId },
+                  data: {
+                    plan: 'PRO',
+                    status: 'ACTIVE',
+                    endDate: newEnd,
+                  },
+                })
+              } else {
+                // Create PRO subscription for referrer
+                await tx.subscription.create({
+                  data: {
+                    userId: referral.referrerId,
+                    plan: 'PRO',
+                    status: 'ACTIVE',
+                    startDate: now,
+                    endDate: new Date(now.getTime() + SUBSCRIPTION_DURATION_MS),
+                  },
+                })
+              }
+            }
+          }
+        } catch (referralError) {
+          // Log but don't fail the payment approval
+          devError('[AdminPaymentReview] Referral reward failed:', referralError)
         }
 
         return {

@@ -14,6 +14,7 @@ import {
   Clock,
   XCircle,
   Infinity,
+  Tag,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -33,6 +34,7 @@ export default function BillingPage() {
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(true)
+  const [hasReferralDiscount, setHasReferralDiscount] = useState(false)
 
   useEffect(() => {
     const fetchPaymentStatus = async () => {
@@ -59,6 +61,14 @@ export default function BillingPage() {
     }
 
     fetchPaymentStatus()
+
+    // Check referral discount
+    fetch('/api/user/referral')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.isReferred) setHasReferralDiscount(true)
+      })
+      .catch(() => {})
   }, [])
 
   const isPro = subscription?.plan === PLAN_NAMES.PRO
@@ -350,14 +360,31 @@ export default function BillingPage() {
                 <h3 className="text-xl font-bold text-gray-900 mb-1">
                   {t('billing.proPlan.title')}
                 </h3>
-                <div className="flex items-baseline gap-1 mb-3">
-                  <span className="text-3xl font-bold text-primary">
-                    {t('billing.proPlan.price')}
-                  </span>
+                <div className="flex items-baseline gap-1 mb-1">
+                  {hasReferralDiscount ? (
+                    <>
+                      <span className="text-lg line-through text-gray-400">
+                        {t('billing.proPlan.price')}
+                      </span>
+                      <span className="text-3xl font-bold text-primary">
+                        4,000 IQD
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-bold text-primary">
+                      {t('billing.proPlan.price')}
+                    </span>
+                  )}
                   <span className="text-gray-600 text-sm">
                     /{t('billing.proPlan.perMonth')}
                   </span>
                 </div>
+                {hasReferralDiscount && (
+                  <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium mb-2">
+                    <Tag className="h-3.5 w-3.5" />
+                    {t('referral.discountApplied')}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3 mb-6 flex-1">

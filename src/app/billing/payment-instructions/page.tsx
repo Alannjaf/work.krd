@@ -28,6 +28,8 @@ const PAYMENT_PHONE_RAW = '07504910348'
 const PAYMENT_NAME = 'Alan Ahmed'
 const PAYMENT_AMOUNT = '5,000'
 const PAYMENT_AMOUNT_RAW = '5000'
+const PAYMENT_AMOUNT_DISCOUNTED = '4,000'
+const PAYMENT_AMOUNT_DISCOUNTED_RAW = '4000'
 
 const TOTAL_STEPS = 4
 
@@ -68,6 +70,7 @@ function PaymentContent() {
   const userEmail = user?.emailAddresses[0]?.emailAddress || ''
 
   const [currentStep, setCurrentStep] = useState(1)
+  const [hasReferralDiscount, setHasReferralDiscount] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   const [copyAnnouncement, setCopyAnnouncement] = useState('')
@@ -77,6 +80,15 @@ function PaymentContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    fetch('/api/user/referral')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.isReferred) setHasReferralDiscount(true)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => () => {
     clearTimeout(transitionTimerRef.current)
@@ -218,9 +230,23 @@ function PaymentContent() {
 
                 {/* Price card */}
                 <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 mb-6 border border-primary/10">
-                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-1">
-                    {t('billing.proPlan.price')} <span className="text-lg font-medium text-primary/70">{t('billing.proPlan.currency')}</span>
-                  </div>
+                  {hasReferralDiscount ? (
+                    <>
+                      <div className="text-lg line-through text-gray-400 mb-0.5">
+                        {t('billing.proPlan.price')} {t('billing.proPlan.currency')}
+                      </div>
+                      <div className="text-4xl sm:text-5xl font-bold text-primary mb-1">
+                        4,000 <span className="text-lg font-medium text-primary/70">{t('billing.proPlan.currency')}</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-1.5 text-green-600 text-sm font-medium mb-2">
+                        {t('referral.discountApplied')}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-4xl sm:text-5xl font-bold text-primary mb-1">
+                      {t('billing.proPlan.price')} <span className="text-lg font-medium text-primary/70">{t('billing.proPlan.currency')}</span>
+                    </div>
+                  )}
                   <div className="text-gray-500 mb-4">
                     /{t('billing.proPlan.perMonth')}
                   </div>
@@ -324,13 +350,18 @@ function PaymentContent() {
                         <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
                           {t('billing.pay.amount')}
                         </p>
-                        <p className="text-xl font-bold text-primary">{PAYMENT_AMOUNT} IQD</p>
+                        <p className="text-xl font-bold text-primary">
+                          {hasReferralDiscount ? PAYMENT_AMOUNT_DISCOUNTED : PAYMENT_AMOUNT} IQD
+                        </p>
+                        {hasReferralDiscount && (
+                          <p className="text-xs text-green-600 font-medium mt-0.5">{t('referral.discountApplied')}</p>
+                        )}
                       </div>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(PAYMENT_AMOUNT_RAW, 'amount')}
+                        onClick={() => copyToClipboard(hasReferralDiscount ? PAYMENT_AMOUNT_DISCOUNTED_RAW : PAYMENT_AMOUNT_RAW, 'amount')}
                         className="flex-shrink-0 ms-3 h-10 w-10 p-0"
                       >
                         {copied === 'amount' ? (
