@@ -162,8 +162,10 @@ model Payment {
   userId          String
   plan            SubscriptionPlan
   amount          Int
-  screenshotData  Bytes
-  screenshotType  String
+  screenshotData  Bytes?
+  screenshotType  String?
+  paymentMethod   String           @default("FIB")
+  transactionId   String?
   priceAtCreation Int?
   status          PaymentStatus    @default(PENDING)
   adminNote       String?

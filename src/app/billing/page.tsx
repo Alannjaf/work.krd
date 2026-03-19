@@ -1,5 +1,21 @@
 'use client'
 
+declare global {
+  interface Window {
+    GammalTech?: {
+      login: () => Promise<void>
+      isLoggedIn: () => boolean
+      payCard: (
+        amount: number,
+        currency: string,
+        description: string,
+        onDelivery: (txnId: string) => void
+      ) => void
+      settlePending: () => void
+    }
+  }
+}
+
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -15,8 +31,12 @@ import {
   XCircle,
   Infinity,
   Tag,
+  CreditCard,
+  Building2,
+  X,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { PLAN_NAMES } from '@/lib/constants'
@@ -35,6 +55,8 @@ export default function BillingPage() {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(true)
   const [hasReferralDiscount, setHasReferralDiscount] = useState(false)
+  const [showPaymentChoice, setShowPaymentChoice] = useState(false)
+  const [gammalSdkReady, setGammalSdkReady] = useState(false)
 
   useEffect(() => {
     const fetchPaymentStatus = async () => {
@@ -89,8 +111,26 @@ export default function BillingPage() {
     t('billing.proPlan.feature8'),
   ]
 
+  // Settle pending Gammal Tech payments on page load
+  useEffect(() => {
+    if (gammalSdkReady && window.GammalTech) {
+      try {
+        window.GammalTech.settlePending()
+      } catch (err) {
+        console.error('[Billing] settlePending error:', err)
+      }
+    }
+  }, [gammalSdkReady])
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Gammal Tech SDK for settlePending on interrupted payments */}
+      <Script
+        src="https://api.gammal.tech/sdk-web.js"
+        strategy="afterInteractive"
+        onLoad={() => setGammalSdkReady(true)}
+      />
+
       <AppHeader
         title={t('billing.title')}
         showBackButton={true}
@@ -403,13 +443,74 @@ export default function BillingPage() {
               ) : (
                 <Button
                   className="w-full"
-                  onClick={() => router.push('/billing/payment-instructions?plan=pro')}
+                  onClick={() => setShowPaymentChoice(true)}
                 >
                   <Crown className="h-4 w-4 mr-2" />
                   {t('billing.upgradeNow')}
                 </Button>
               )}
             </Card>
+          </div>
+        )}
+
+        {/* Payment Method Choice Modal */}
+        {showPaymentChoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-200">
+              <button
+                onClick={() => setShowPaymentChoice(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                Choose Payment Method
+              </h2>
+              <p className="text-sm text-gray-500 mb-5">
+                Select how you&apos;d like to pay for your Pro plan
+              </p>
+
+              <div className="space-y-3">
+                {/* Card Payment Option */}
+                <button
+                  onClick={() => {
+                    setShowPaymentChoice(false)
+                    router.push('/billing/card-payment')
+                  }}
+                  className="w-full flex items-start gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left group"
+                >
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Pay with Card</p>
+                    <p className="text-sm text-gray-500">
+                      Visa, Mastercard — instant activation
+                    </p>
+                  </div>
+                </button>
+
+                {/* FIB Transfer Option */}
+                <button
+                  onClick={() => {
+                    setShowPaymentChoice(false)
+                    router.push('/billing/payment-instructions?plan=pro')
+                  }}
+                  className="w-full flex items-start gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left group"
+                >
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                    <Building2 className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Pay via FIB Transfer</p>
+                    <p className="text-sm text-gray-500">
+                      Bank transfer — reviewed within 24 hours
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

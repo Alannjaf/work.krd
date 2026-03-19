@@ -38,9 +38,10 @@ export async function GET(
       return errorResponse('Payment not found', 404)
     }
 
-    // Convert screenshotData Buffer to base64 data URL
-    const base64 = Buffer.from(payment.screenshotData).toString('base64')
-    const screenshotDataUrl = `data:${payment.screenshotType};base64,${base64}`
+    // Convert screenshotData Buffer to base64 data URL (null for card payments)
+    const screenshotDataUrl = payment.screenshotData
+      ? `data:${payment.screenshotType};base64,${Buffer.from(payment.screenshotData).toString('base64')}`
+      : null
 
     const response = NextResponse.json({
       id: payment.id,
