@@ -28,7 +28,6 @@ export default function CardPaymentPage() {
   const [sdkLoaded, setSdkLoaded] = useState(false)
   const [sdkReady, setSdkReady] = useState(false)
   const [step, setStep] = useState<PaymentStep>('ready')
-  const [needsLogin, setNeedsLogin] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [hasReferralDiscount, setHasReferralDiscount] = useState(false)
   const [amount, setAmount] = useState(5000)
@@ -121,47 +120,25 @@ export default function CardPaymentPage() {
     }
   }, [sdkReady, settlePending])
 
-  // Check login state when SDK is ready
-  useEffect(() => {
-    if (sdkReady && window.GammalTech) {
-      setNeedsLogin(!window.GammalTech.isLoggedIn())
-    }
-  }, [sdkReady])
-
-  const handleLogin = useCallback(async () => {
-    if (!window.GammalTech) return
-    try {
-      setStep('logging-in')
-      await window.GammalTech.login()
-      if (window.GammalTech.isLoggedIn()) {
-        setNeedsLogin(false)
-        setStep('ready')
-        toast.success('Logged in! Now click Pay to continue.')
-      } else {
-        setStep('ready')
-        toast.error('Login was cancelled.')
-      }
-    } catch (error) {
-      console.error('[CardPayment] Login error:', error)
-      setStep('ready')
-      toast.error('Login failed. Please try again.')
-    }
-  }, [])
-
   const handlePayWithCard = useCallback(async () => {
     if (!window.GammalTech) {
       toast.error('Payment system is loading. Please try again.')
       return
     }
 
-    // If not logged in, do login first (separate user gesture)
-    if (!window.GammalTech.isLoggedIn()) {
-      handleLogin()
-      return
-    }
-
     try {
-      // Initiate card payment — this must be called directly from user click to avoid popup block
+      // If not logged into Gammal Tech, transparently log in first
+      if (!window.GammalTech.isLoggedIn()) {
+        setStep('logging-in')
+        await window.GammalTech.login()
+        if (!window.GammalTech.isLoggedIn()) {
+          setStep('ready')
+          toast.error('Login was cancelled.')
+          return
+        }
+      }
+
+      // Proceed to payment immediately after login (or directly if already logged in)
       setStep('paying')
       await window.GammalTech.payCard(
         amount,
@@ -185,7 +162,7 @@ export default function CardPaymentPage() {
         setStep('error')
       }
     }
-  }, [amount, confirmPayment, handleLogin])
+  }, [amount, confirmPayment])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -322,7 +299,7 @@ export default function CardPaymentPage() {
             {/* Payment Button */}
             <Button
               className="w-full h-14 text-base mb-4"
-              onClick={needsLogin ? handleLogin : handlePayWithCard}
+              onClick={handlePayWithCard}
               disabled={!sdkReady || step === 'logging-in' || step === 'paying' || step === 'confirming'}
             >
               {!sdkReady ? (
@@ -344,11 +321,6 @@ export default function CardPaymentPage() {
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Activating Pro plan...
-                </>
-              ) : needsLogin ? (
-                <>
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  Sign in to Pay
                 </>
               ) : (
                 <>
