@@ -136,7 +136,7 @@ export default function CardPaymentPage() {
       if (window.GammalTech.isLoggedIn()) {
         setNeedsLogin(false)
         setStep('ready')
-        toast.success('Logged in! Now click Pay to continue.')
+        toast.success('Ready! Click the button again to complete payment.')
       } else {
         setStep('ready')
         toast.error('Login was cancelled.')
@@ -344,11 +344,6 @@ export default function CardPaymentPage() {
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Activating Pro plan...
-                </>
-              ) : needsLogin ? (
-                <>
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  Sign in to Pay
                 </>
               ) : (
                 <>
