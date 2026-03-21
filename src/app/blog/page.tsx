@@ -2,6 +2,8 @@ import { getAllPosts } from '@/lib/blog'
 import type { Metadata } from 'next'
 import { BlogPageClient } from './blog-page-client'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Blog',
   description:

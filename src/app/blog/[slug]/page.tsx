@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { getPostBySlug, getAllPostSlugs } from '@/lib/blog'
 import { MDXContent } from './mdx-content'
 
+export const dynamic = 'force-dynamic'
+
 // Generate static paths for all blog posts
 export async function generateStaticParams() {
   const slugs = await getAllPostSlugs()
