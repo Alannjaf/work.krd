@@ -296,3 +296,21 @@ enum ReferralStatus {
   COMPLETED
   REWARDED
 }
+
+model BlogPost {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String   @default("")
+  content         String   // markdown content
+  author          String   @default("Work.krd Team")
+  lang            String   @default("en") // en, ar, ckb
+  tags            String[] @default([])
+  published       Boolean  @default(false)
+  publishedAt     DateTime?
+  metaDescription String?
+  metaKeywords    String[] @default([])
+  featuredImage   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

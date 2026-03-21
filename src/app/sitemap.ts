@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getAllPostSlugs } from '@/lib/blog';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://work.krd';
   const locales = ['en', 'ar', 'ckb'];
 
@@ -50,7 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   });
 
   // Blog posts
-  const slugs = getAllPostSlugs();
+  const slugs = await getAllPostSlugs();
   for (const slug of slugs) {
     sitemap.push({
       url: `${baseUrl}/blog/${slug}`,

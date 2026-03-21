@@ -5,8 +5,8 @@ import { getPostBySlug, getAllPostSlugs } from '@/lib/blog'
 import { MDXContent } from './mdx-content'
 
 // Generate static paths for all blog posts
-export function generateStaticParams() {
-  const slugs = getAllPostSlugs()
+export async function generateStaticParams() {
+  const slugs = await getAllPostSlugs()
   return slugs.map((slug) => ({ slug }))
 }
 
@@ -17,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const post = getPostBySlug(slug)
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     return { title: 'Post Not Found' }
@@ -68,7 +68,7 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const post = getPostBySlug(slug)
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     notFound()

@@ -1,20 +1,18 @@
-import { compile, run } from '@mdx-js/mdx'
-import * as runtime from 'react/jsx-runtime'
+import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 
 interface MDXContentProps {
   source: string
 }
 
-export async function MDXContent({ source }: MDXContentProps) {
-  const code = String(
-    await compile(source, {
-      outputFormat: 'function-body',
-      remarkPlugins: [remarkGfm],
-    })
+export function MDXContent({ source }: MDXContentProps) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
+    >
+      {source}
+    </ReactMarkdown>
   )
-
-  const { default: Content } = await run(code, runtime as any)
-
-  return <Content />
 }

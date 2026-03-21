@@ -1,6 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
+import { prisma } from '@/lib/prisma'
 import readingTime from 'reading-time'
 
 export interface BlogPost {
@@ -26,96 +24,88 @@ export interface BlogPostMetadata {
   readingTime: string
 }
 
-const postsDirectory = path.join(process.cwd(), 'content', 'blog')
-
-// Ensure directory exists
-if (!fs.existsSync(postsDirectory)) {
-  fs.mkdirSync(postsDirectory, { recursive: true })
+/**
+ * Get all blog post slugs (published only)
+ */
+export async function getAllPostSlugs(): Promise<string[]> {
+  const posts = await prisma.blogPost.findMany({
+    where: { published: true },
+    select: { slug: true },
+  })
+  return posts.map((p) => p.slug)
 }
 
 /**
- * Get all blog post slugs
+ * Get a single blog post by slug (published only for public)
  */
-export function getAllPostSlugs(): string[] {
-  if (!fs.existsSync(postsDirectory)) {
-    return []
-  }
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  const post = await prisma.blogPost.findUnique({
+    where: { slug },
+  })
 
-  const files = fs.readdirSync(postsDirectory)
-  return files
-    .filter((file) => file.endsWith('.mdx'))
-    .map((file) => file.replace(/\.mdx$/, ''))
-}
-
-/**
- * Get a single blog post by slug
- */
-export function getPostBySlug(slug: string): BlogPost | null {
-  try {
-    const fullPath = path.join(postsDirectory, `${slug}.mdx`)
-
-    if (!fs.existsSync(fullPath)) {
-      return null
-    }
-
-    const fileContents = fs.readFileSync(fullPath, 'utf8')
-    const { data, content } = matter(fileContents)
-    const readTime = readingTime(content)
-
-    return {
-      slug,
-      title: data.title || 'Untitled',
-      date: data.date || new Date().toISOString(),
-      excerpt: data.excerpt || '',
-      author: data.author || 'Work.krd Team',
-      lang: data.lang || 'en',
-      tags: data.tags || [],
-      content,
-      readingTime: readTime.text,
-    }
-  } catch (error) {
-    console.error(`Error reading post ${slug}:`, error)
+  if (!post || !post.published) {
     return null
   }
+
+  const readTime = readingTime(post.content)
+
+  return {
+    slug: post.slug,
+    title: post.title,
+    date: (post.publishedAt || post.createdAt).toISOString(),
+    excerpt: post.excerpt,
+    author: post.author,
+    lang: post.lang as 'en' | 'ar' | 'ckb',
+    tags: post.tags,
+    content: post.content,
+    readingTime: readTime.text,
+  }
 }
 
 /**
- * Get all blog posts metadata (without content)
+ * Get all blog posts metadata (without content, published only)
  */
-export function getAllPosts(): BlogPostMetadata[] {
-  const slugs = getAllPostSlugs()
+export async function getAllPosts(): Promise<BlogPostMetadata[]> {
+  const posts = await prisma.blogPost.findMany({
+    where: { published: true },
+    orderBy: { publishedAt: 'desc' },
+    select: {
+      slug: true,
+      title: true,
+      excerpt: true,
+      author: true,
+      lang: true,
+      tags: true,
+      content: true,
+      publishedAt: true,
+      createdAt: true,
+    },
+  })
 
-  const posts = slugs
-    .map((slug) => {
-      const post = getPostBySlug(slug)
-      if (!post) return null
-
-      // Return metadata only (no content)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { content: _content, ...metadata } = post
-      return metadata
-    })
-    .filter((post): post is BlogPostMetadata => post !== null)
-    .sort((a, b) => {
-      // Sort by date descending (newest first)
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
-    })
-
-  return posts
+  return posts.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    date: (post.publishedAt || post.createdAt).toISOString(),
+    excerpt: post.excerpt,
+    author: post.author,
+    lang: post.lang as 'en' | 'ar' | 'ckb',
+    tags: post.tags,
+    readingTime: readingTime(post.content).text,
+  }))
 }
 
 /**
- * Get posts by language
+ * Get posts by language (published only)
  */
-export function getPostsByLanguage(lang: 'en' | 'ar' | 'ckb'): BlogPostMetadata[] {
-  const allPosts = getAllPosts()
+export async function getPostsByLanguage(lang: 'en' | 'ar' | 'ckb'): Promise<BlogPostMetadata[]> {
+  const allPosts = await getAllPosts()
   return allPosts.filter((post) => post.lang === lang)
 }
 
 /**
- * Get posts by tag
+ * Get posts by tag (published only)
  */
-export function getPostsByTag(tag: string): BlogPostMetadata[] {
-  const allPosts = getAllPosts()
+export async function getPostsByTag(tag: string): Promise<BlogPostMetadata[]> {
+  const allPosts = await getAllPosts()
   return allPosts.filter((post) => post.tags?.includes(tag))
 }
