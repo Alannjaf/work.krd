@@ -52,12 +52,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   });
 
-  // Blog posts
-  const slugs = await getAllPostSlugs();
-  for (const slug of slugs) {
+  // Blog posts (with real publishedAt dates)
+  const { prisma } = await import('@/lib/prisma');
+  const posts = await prisma.blogPost.findMany({
+    where: { published: true },
+    select: { slug: true, publishedAt: true, updatedAt: true },
+  });
+  for (const post of posts) {
     sitemap.push({
-      url: `${baseUrl}/blog/${slug}`,
-      lastModified: new Date(),
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt || post.publishedAt || new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     });
