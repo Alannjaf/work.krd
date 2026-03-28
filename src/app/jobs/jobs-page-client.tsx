@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Filter,
   X,
-  ExternalLink,
 } from 'lucide-react'
 
 interface SerializedJob {
@@ -420,7 +419,7 @@ export function JobsPageClient({
                             <Briefcase className="w-3.5 h-3.5" />
                             {job.jobType}
                           </span>
-                          {job.salary && (
+                          {job.salary && job.salary !== 'Not specified' && job.salary !== '0 - 0 IQD' && (
                             <span className="text-xs text-emerald-600 font-medium">
                               {job.salary}
                             </span>
@@ -433,17 +432,6 @@ export function JobsPageClient({
                           )}
                         </div>
 
-                        {/* Source badge */}
-                        <div className="mt-2.5">
-                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
-                            job.source === 'fjik.krd'
-                              ? 'bg-green-50 text-green-700'
-                              : 'bg-blue-50 text-blue-700'
-                          }`}>
-                            <ExternalLink className="w-3 h-3" />
-                            {job.source}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </Link>

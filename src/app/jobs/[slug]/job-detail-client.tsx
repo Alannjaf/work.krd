@@ -169,7 +169,7 @@ export function JobDetailClient({
                       <Briefcase className="w-4 h-4 text-gray-400" />
                       {job.jobType}
                     </span>
-                    {job.salary && (
+                    {job.salary && job.salary !== 'Not specified' && job.salary !== '0 - 0 IQD' && (
                       <span className="text-sm font-medium text-emerald-600">
                         {job.salary}
                       </span>
@@ -290,7 +290,7 @@ export function JobDetailClient({
                     </dt>
                     <dd className="font-medium text-gray-900">{job.jobType}</dd>
                   </div>
-                  {job.salary && (
+                  {job.salary && job.salary !== 'Not specified' && job.salary !== '0 - 0 IQD' && (
                     <div>
                       <dt className="text-gray-500">
                         {language === 'ckb' ? 'مووچە' : language === 'ar' ? 'الراتب' : 'Salary'}
@@ -306,12 +306,6 @@ export function JobDetailClient({
                       <dd className="font-medium text-gray-900">{job.category}</dd>
                     </div>
                   )}
-                  <div>
-                    <dt className="text-gray-500">
-                      {language === 'ckb' ? 'سەرچاوە' : language === 'ar' ? 'المصدر' : 'Source'}
-                    </dt>
-                    <dd className="font-medium text-gray-900">{job.source}</dd>
-                  </div>
                   {job.postedAt && (
                     <div>
                       <dt className="text-gray-500">
