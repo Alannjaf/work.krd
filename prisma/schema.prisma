@@ -314,3 +314,30 @@ model BlogPost {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  titleEn     String?
+  titleKu     String?
+  titleAr     String?
+  company     String
+  location    String
+  category    String?
+  jobType     String   @default("Full Time")
+  salary      String?
+  description String?  @db.Text
+  contact     String?
+  source      String   @default("fjik.krd")
+  sourceUrl   String?
+  postedAt    DateTime?
+  isActive    Boolean  @default(true)
+  slug        String   @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([location])
+  @@index([category])
+  @@index([isActive])
+}

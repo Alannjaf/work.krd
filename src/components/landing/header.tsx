@@ -51,6 +51,7 @@ export function Header() {
     { href: '#features', label: t('nav.features') },
     { href: '#pricing', label: t('nav.pricing') },
     { href: '/blog', label: t('nav.blog') },
+    { href: '/jobs', label: t('nav.jobs') },
     { href: '/services', label: t('nav.services') },
   ]
 

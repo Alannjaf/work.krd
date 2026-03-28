@@ -15,7 +15,8 @@
     "signUp": "Sign Up",
     "dashboard": "Dashboard",
     "signOut": "Sign Out",
-    "services": "Services"
+    "services": "Services",
+    "jobs": "Jobs"
   },
   "hero": {
     "title": "Create Your Perfect Resume with AI",
