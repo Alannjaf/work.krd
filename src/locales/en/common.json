@@ -14,7 +14,8 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "dashboard": "Dashboard",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "services": "Services"
   },
   "hero": {
     "title": "Create Your Perfect Resume with AI",
@@ -43,7 +44,7 @@
         "description": "Let AI help you write compelling content for your resume"
       },
       "templates": {
-        "title": "Professional Templates", 
+        "title": "Professional Templates",
         "description": "Choose from a variety of ATS-friendly templates"
       },
       "realtime": {
@@ -114,7 +115,7 @@
       "planBadge": "{plan} Plan",
       "stats": {
         "resumesUsed": "Resumes Used",
-        "aiUsage": "AI Usage", 
+        "aiUsage": "AI Usage",
         "pdfExports": "PDF Exports",
         "resumeImports": "Resume Imports"
       },
@@ -337,7 +338,7 @@
       "title": "Send us a Message",
       "firstName": "First Name",
       "firstNamePlaceholder": "Enter your first name",
-      "lastName": "Last Name", 
+      "lastName": "Last Name",
       "lastNamePlaceholder": "Enter your last name",
       "email": "Email Address",
       "emailPlaceholder": "Enter your email address",
@@ -345,7 +346,10 @@
       "subjectPlaceholder": "What's this about?",
       "message": "Message",
       "messagePlaceholder": "Tell us how we can help you...",
-      "submit": "Send Message"
+      "submit": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent successfully! We'll get back to you soon.",
+      "error": "Failed to send message. Please try again."
     }
   },
   "forms": {
@@ -920,7 +924,7 @@
         "planBadge": "{plan} Plan",
         "stats": {
           "resumesUsed": "Resumes Used",
-          "aiUsage": "AI Usage", 
+          "aiUsage": "AI Usage",
           "pdfExports": "PDF Exports",
           "resumeImports": "Resume Imports"
         },
@@ -1537,6 +1541,83 @@
         "sent": "Sent",
         "noEmailLogs": "No email logs yet"
       }
+    },
+    "services": {
+      "hero": {
+        "badge": "Digital Services",
+        "titleBefore": "We Build ",
+        "titleHighlight": "Digital Tools",
+        "titleAfter": " for Kurdish Businesses",
+        "subtitle": "Online stores, automated content, and AI consulting — built by someone who understands the local market.",
+        "whatsappCta": "Chat on WhatsApp",
+        "learnMore": "See Our Services",
+        "location": "Based in Erbil, Kurdistan"
+      },
+      "section": {
+        "title": "Our Services",
+        "subtitle": "Stores, content automation, and AI consulting — tailored for businesses in Kurdistan"
+      },
+      "stats": {
+        "resumes": "Resumes Built",
+        "users": "Kurdish Users",
+        "channels": "Automated YouTube Channels"
+      },
+      "cards": {
+        "startsAt": "Starts at",
+        "orderNow": "Order via WhatsApp",
+        "onlineStore": {
+          "title": "Online Store Setup",
+          "description": "Launch your own online store connected to Instagram & Facebook with local payment integration.",
+          "f1": "Instagram & Facebook shop integration",
+          "f2": "ZainCash & FastPay payment setup",
+          "f3": "Product catalog with photos & descriptions",
+          "f4": "Order tracking & delivery management",
+          "popular": "Most Popular",
+          "price": "450,000",
+          "priceUnit": "IQD",
+          "timeline": "Delivered in 1 week"
+        },
+        "automatedContent": {
+          "title": "Automated Content",
+          "description": "AI-generated daily social media content in Kurdish, Arabic, and English — posts, videos, and captions on autopilot.",
+          "f1": "Daily AI-generated social media posts",
+          "f2": "Kurdish, Arabic & English content",
+          "f3": "Videos, images & captions included",
+          "f4": "Fully automated — zero effort from you",
+          "price": "300,000",
+          "priceUnit": "IQD/month",
+          "timeline": "Setup in 3 days"
+        },
+        "aiConsulting": {
+          "title": "AI Consulting",
+          "description": "Train your team to use AI tools effectively. We set up ChatGPT, Claude, and custom automations for your business.",
+          "f1": "Hands-on AI training for your team",
+          "f2": "ChatGPT & Claude setup for your workflows",
+          "f3": "Automate repetitive business tasks",
+          "price": "75,000",
+          "priceUnit": "IQD/hour",
+          "timeline": "Flexible scheduling"
+        }
+      },
+      "trust": {
+        "title": "Why Work With Us",
+        "subtitle": "Years of experience in telecom, design, and technology — now available for your business",
+        "badges": {
+          "korek": "Korek Telecom",
+          "design": "10+ Years Design",
+          "tools": "Next.js & AI",
+          "location": "Erbil"
+        }
+      },
+      "cta": {
+        "title": "Let's Build Something Together",
+        "subtitle": "Let's discuss your project. Send us a message and we'll get back to you within hours.",
+        "whatsapp": "Message on WhatsApp",
+        "email": "Send an Email",
+        "emailSubject": "Service Inquiry from work.krd",
+        "responseTime": "We typically respond within 2 hours"
+      },
+      "whatsappMessage": "Hi! I'm interested in your digital services from work.krd"
     }
   },
   "import": {
@@ -1656,43 +1737,6 @@
     "copyright": "© 2025 Work.krd. All rights reserved.",
     "poweredBy": "Powered by Google Gemini AI",
     "securePayments": "Secure Payments by FIB & Nasspay"
-  },
-  "contact": {
-    "title": "Get in Touch",
-    "subtitle": "Have questions or need help? We're here to support you on your career journey.",
-    "info": {
-      "title": "Contact Information",
-      "email": {
-        "title": "Email Support"
-      },
-      "phone": {
-        "title": "Phone Support"
-      },
-      "chat": {
-        "title": "Live Chat",
-        "content": "Available 9 AM - 6 PM (GMT+3)"
-      },
-      "address": {
-        "title": "Office Address"
-      }
-    },
-    "form": {
-      "title": "Send us a Message",
-      "firstName": "First Name",
-      "firstNamePlaceholder": "Enter your first name",
-      "lastName": "Last Name", 
-      "lastNamePlaceholder": "Enter your last name",
-      "email": "Email Address",
-      "emailPlaceholder": "Enter your email address",
-      "subject": "Subject",
-      "subjectPlaceholder": "What's this about?",
-      "message": "Message",
-      "messagePlaceholder": "Tell us how we can help you...",
-      "submit": "Send Message",
-      "sending": "Sending...",
-      "success": "Message sent successfully! We'll get back to you soon.",
-      "error": "Failed to send message. Please try again."
-    }
   },
   "pricing": {
     "title": "Choose the Right Plan for You",
