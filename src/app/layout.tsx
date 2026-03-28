@@ -65,16 +65,36 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://work.krd',
-    languages: {
-      en: 'https://work.krd/en',
-      ar: 'https://work.krd/ar',
-      ckb: 'https://work.krd/ckb',
-      'x-default': 'https://work.krd/en',
-    } as Record<string, string>,
   },
   verification: {
     // Add verification tokens when available
     // google: 'your-google-verification-code',
+  },
+}
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://work.krd/#organization',
+  name: 'Work.krd',
+  url: 'https://work.krd',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://work.krd/logo.svg',
+  },
+  description:
+    'Professional resume builder with AI assistance, supporting Kurdish, Arabic, and English languages. Digital services for businesses in Kurdistan.',
+  sameAs: [
+    'https://x.com/workkrd',
+    'https://www.facebook.com/profile.php?id=843311732209489',
+    'https://www.instagram.com/work.krd',
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'alan.ahmed@magency.me',
+    contactType: 'customer service',
+    areaServed: 'IQ',
+    availableLanguage: ['en', 'ar', 'ckb'],
   },
 }
 
@@ -93,6 +113,10 @@ export default function RootLayout({
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="preconnect" href="https://clerk.com" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          />
         </head>
         <body className={inter.className}>
           <SubscriptionProvider>

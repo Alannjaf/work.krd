@@ -1,56 +1,37 @@
 import { MetadataRoute } from 'next';
-import { getAllPostSlugs } from '@/lib/blog';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://work.krd';
-  const locales = ['en', 'ar', 'ckb'];
 
   const sitemap: MetadataRoute.Sitemap = [];
 
-  // Add root homepage
+  // Homepage
   sitemap.push({
     url: baseUrl,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 1.0,
-    alternates: {
-      languages: {
-        en: `${baseUrl}/en`,
-        ar: `${baseUrl}/ar`,
-        ckb: `${baseUrl}/ckb`,
-        'x-default': `${baseUrl}/en`,
-      } as Record<string, string>,
-    },
   });
 
-  // Public pages (excluding billing — it's behind auth)
+  // Public pages (actual routes that exist)
   const publicPages = [
-    '', // locale home
-    '/privacy',
-    '/terms',
+    { path: '/services', changeFreq: 'weekly' as const, priority: 0.9 },
+    { path: '/blog', changeFreq: 'weekly' as const, priority: 0.8 },
+    { path: '/privacy', changeFreq: 'monthly' as const, priority: 0.3 },
+    { path: '/terms', changeFreq: 'monthly' as const, priority: 0.3 },
   ];
 
-  for (const locale of locales) {
-    for (const page of publicPages) {
-      sitemap.push({
-        url: `${baseUrl}/${locale}${page}`,
-        lastModified: new Date(),
-        changeFrequency: page === '' ? 'weekly' : 'monthly',
-        priority: page === '' ? 0.9 : 0.5,
-      });
-    }
+  for (const page of publicPages) {
+    sitemap.push({
+      url: `${baseUrl}${page.path}`,
+      lastModified: new Date(),
+      changeFrequency: page.changeFreq,
+      priority: page.priority,
+    });
   }
-
-  // Blog index
-  sitemap.push({
-    url: `${baseUrl}/blog`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  });
 
   // Blog posts (with real publishedAt dates)
   const { prisma } = await import('@/lib/prisma');

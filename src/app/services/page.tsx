@@ -66,6 +66,80 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix: stri
   return <span ref={ref}>{count}{suffix}</span>
 }
 
+const servicesJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Service',
+      '@id': 'https://work.krd/services#online-store',
+      name: 'Online Store Development',
+      description:
+        'Professional e-commerce store development for Kurdish and Iraqi businesses with payment integration and product management.',
+      provider: {
+        '@type': 'Organization',
+        '@id': 'https://work.krd/#organization',
+        name: 'Work.krd',
+      },
+      areaServed: {
+        '@type': 'Place',
+        name: 'Kurdistan Region, Iraq',
+      },
+      serviceType: 'E-commerce Development',
+    },
+    {
+      '@type': 'Service',
+      '@id': 'https://work.krd/services#automated-content',
+      name: 'Automated Content Creation',
+      description:
+        'AI-powered automated content creation for social media, marketing, and business communications in Kurdish, Arabic, and English.',
+      provider: {
+        '@type': 'Organization',
+        '@id': 'https://work.krd/#organization',
+        name: 'Work.krd',
+      },
+      areaServed: {
+        '@type': 'Place',
+        name: 'Kurdistan Region, Iraq',
+      },
+      serviceType: 'Content Automation',
+    },
+    {
+      '@type': 'Service',
+      '@id': 'https://work.krd/services#ai-consulting',
+      name: 'AI Consulting',
+      description:
+        'Expert AI consulting services helping businesses in Erbil and Kurdistan leverage artificial intelligence for growth and efficiency.',
+      provider: {
+        '@type': 'Organization',
+        '@id': 'https://work.krd/#organization',
+        name: 'Work.krd',
+      },
+      areaServed: {
+        '@type': 'Place',
+        name: 'Kurdistan Region, Iraq',
+      },
+      serviceType: 'AI Consulting',
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://work.krd',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Services',
+          item: 'https://work.krd/services',
+        },
+      ],
+    },
+  ],
+}
+
 export default function ServicesPage() {
   const { t, isRTL } = useLanguage()
 
@@ -109,6 +183,10 @@ export default function ServicesPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+      />
       <Header />
       <main>
         {/* Hero Section — badge removed, copy is Kurdish-specific */}

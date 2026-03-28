@@ -1,5 +1,16 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /billing
+Disallow: /resume-builder
+Disallow: /clear-cookies
+Disallow: /unsubscribe
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /api/
+Disallow: /demo
 
 Sitemap: https://work.krd/sitemap.xml
