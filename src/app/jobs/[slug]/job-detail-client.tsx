@@ -214,9 +214,9 @@ export function JobDetailClient({
                     {language === 'ckb' ? 'پەیوەندی بە ئیمەیڵ' : language === 'ar' ? 'تقدم عبر البريد' : 'Apply via Email'}
                   </a>
                 )}
-                {!isFjik && job.sourceUrl && (
+                {!isFjik && (
                   <a
-                    href={job.sourceUrl}
+                    href={job.sourceUrl || 'https://jobs.krd/explore-jobs'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
