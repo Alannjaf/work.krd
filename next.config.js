@@ -31,6 +31,17 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // Redirect locale prefixes to root — site uses client-side language switching, not URL-based locales.
+  async redirects() {
+    return [
+      { source: '/ar', destination: '/', permanent: true },
+      { source: '/ar/:path*', destination: '/:path*', permanent: true },
+      { source: '/en', destination: '/', permanent: true },
+      { source: '/en/:path*', destination: '/:path*', permanent: true },
+      { source: '/ckb', destination: '/', permanent: true },
+      { source: '/ckb/:path*', destination: '/:path*', permanent: true },
+    ]
+  },
   // CORS: Next.js same-origin default is intentional — single-domain SaaS, no subdomain API access needed.
   // If subdomain access is ever required, add explicit CORS headers here.
   async headers() {
