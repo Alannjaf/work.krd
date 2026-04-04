@@ -33,8 +33,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Blog posts (with real publishedAt dates)
   const { prisma } = await import('@/lib/prisma');
+
+  // Jobs listing page
+  sitemap.push({
+    url: `${baseUrl}/jobs`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.9,
+  });
+
+  // Individual job pages
+  const jobs = await prisma.job.findMany({
+    where: { isActive: true },
+    select: { slug: true, updatedAt: true },
+  });
+  for (const job of jobs) {
+    if (job.slug) {
+      sitemap.push({
+        url: `${baseUrl}/jobs/${job.slug}`,
+        lastModified: job.updatedAt,
+        changeFrequency: 'daily',
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Blog posts (with real publishedAt dates)
   const posts = await prisma.blogPost.findMany({
     where: { published: true },
     select: { slug: true, publishedAt: true, updatedAt: true },
