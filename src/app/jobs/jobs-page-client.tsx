@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { Header } from '@/components/landing/header'
 import { Footer } from '@/components/landing/footer'
 import Link from 'next/link'
+import { cities } from '@/lib/cities'
+import { categories as jobCategories } from '@/lib/categories'
 import {
   Search,
   MapPin,
@@ -16,6 +18,8 @@ import {
   ChevronRight,
   Filter,
   X,
+  ArrowRight,
+  Tag,
 } from 'lucide-react'
 
 interface SerializedJob {
@@ -503,6 +507,70 @@ export function JobsPageClient({
             </div>
           </div>
         </div>
+        {/* Browse by City & Category */}
+        <section className="bg-white border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Browse by City */}
+            <div className="mb-10">
+              <h2 className={`text-lg font-bold text-gray-900 mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+                {language === 'ckb'
+                  ? 'گەڕان بەپێی شار'
+                  : language === 'ar'
+                    ? 'تصفح حسب المدينة'
+                    : 'Browse Jobs by City'}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {cities.map((city) => (
+                  <Link
+                    key={city.slug}
+                    href={`/jobs-in-${city.slug}`}
+                    className="flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-lg transition-colors group"
+                  >
+                    <MapPin className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-sm font-medium text-gray-800 group-hover:text-blue-700 block truncate">
+                        {city.name.en}
+                      </span>
+                      <span className="text-xs text-gray-400" dir="rtl">
+                        {city.name.ckb}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Browse by Category */}
+            <div>
+              <h2 className={`text-lg font-bold text-gray-900 mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+                {language === 'ckb'
+                  ? 'گەڕان بەپێی بەش'
+                  : language === 'ar'
+                    ? 'تصفح حسب القسم'
+                    : 'Browse Jobs by Category'}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {jobCategories.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/jobs/category/${cat.slug}`}
+                    className="flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-lg transition-colors group"
+                  >
+                    <Tag className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-sm font-medium text-gray-800 group-hover:text-indigo-700 block truncate">
+                        {cat.name.en}
+                      </span>
+                      <span className="text-xs text-gray-400" dir="rtl">
+                        {cat.name.ckb}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

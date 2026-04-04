@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { generateHreflangAlternates } from '@/lib/seo'
 import { JobDetailClient } from './job-detail-client'
 
 export const dynamic = 'force-dynamic'
@@ -34,9 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title} — ${job.company}`,
       description,
     },
-    alternates: {
-      canonical: `https://work.krd/jobs/${slug}`,
-    },
+    alternates: generateHreflangAlternates(`/jobs/${slug}`),
   }
 }
 

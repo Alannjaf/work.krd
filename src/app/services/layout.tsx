@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { generateHreflangAlternates } from '@/lib/seo'
 
 export const metadata: Metadata = {
   title: 'Digital Services for Kurdish Businesses | work.krd',
@@ -38,9 +39,7 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
     creator: '@workkrd',
   },
-  alternates: {
-    canonical: 'https://work.krd/services',
-  },
+  alternates: generateHreflangAlternates('/services'),
 }
 
 export default function ServicesLayout({

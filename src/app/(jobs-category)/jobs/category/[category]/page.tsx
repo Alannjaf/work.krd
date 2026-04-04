@@ -2,7 +2,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCategoryBySlug, getAllCategorySlugs, type CategoryData } from '@/lib/categories'
-import { getCityBySlug } from '@/lib/cities'
+import { getCityBySlug, getAllCitySlugs } from '@/lib/cities'
+import { generateHreflangAlternates } from '@/lib/seo'
 import { prisma } from '@/lib/prisma'
 import { Header } from '@/components/landing/header'
 import { Footer } from '@/components/landing/footer'
@@ -34,9 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
       'Kurdistan jobs',
       'Iraq jobs',
     ],
-    alternates: {
-      canonical: `https://work.krd/jobs/category/${slug}`,
-    },
+    alternates: generateHreflangAlternates(`/jobs/category/${slug}`),
     openGraph: {
       title,
       description,
@@ -299,8 +298,30 @@ export default async function CategoryJobsPage({ params }: { params: Promise<{ c
               </div>
             </div>
 
-            {/* Cross-links to other categories */}
+            {/* Cross-links to all cities */}
             <div className="mt-12 pt-8 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                Browse Jobs by City
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {getAllCitySlugs().map((citySlug) => {
+                  const city = getCityBySlug(citySlug)
+                  if (!city) return null
+                  return (
+                    <Link
+                      key={citySlug}
+                      href={`/jobs-in-${citySlug}`}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline px-3 py-1.5 bg-blue-50 rounded-full"
+                    >
+                      Jobs in {city.name.en}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Cross-links to other categories */}
+            <div className="mt-8 pt-8 border-t border-gray-100">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 Browse Other Job Categories
               </h3>

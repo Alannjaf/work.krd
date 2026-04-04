@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { generateHreflangAlternates } from '@/lib/seo'
 
 export const metadata: Metadata = {
   title: 'Jobs in Kurdistan — Erbil, Sulaymaniyah, Kirkuk | work.krd',
@@ -41,9 +42,7 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
     creator: '@workkrd',
   },
-  alternates: {
-    canonical: 'https://work.krd/jobs',
-  },
+  alternates: generateHreflangAlternates('/jobs'),
 }
 
 export default function JobsLayout({

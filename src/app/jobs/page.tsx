@@ -1,4 +1,7 @@
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import { cities } from '@/lib/cities'
+import { categories as seoCategories } from '@/lib/categories'
 import { JobsPageClient } from './jobs-page-client'
 
 export const dynamic = 'force-dynamic'
@@ -59,14 +62,39 @@ export default async function JobsPage({
   }))
 
   return (
-    <JobsPageClient
-      jobs={serializedJobs}
-      total={total}
-      page={page}
-      totalPages={Math.ceil(total / limit)}
-      locations={LOCATIONS}
-      categories={categoryList}
-      filters={{ location, category, jobType, search }}
-    />
+    <>
+      <JobsPageClient
+        jobs={serializedJobs}
+        total={total}
+        page={page}
+        totalPages={Math.ceil(total / limit)}
+        locations={LOCATIONS}
+        categories={categoryList}
+        filters={{ location, category, jobType, search }}
+      />
+      {/* Server-rendered internal links for SEO crawlers */}
+      <nav aria-label="Browse jobs" className="sr-only">
+        <h2>Browse Jobs by City</h2>
+        <ul>
+          {cities.map((city) => (
+            <li key={city.slug}>
+              <Link href={`/jobs-in-${city.slug}`}>
+                Jobs in {city.name.en}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <h2>Browse Jobs by Category</h2>
+        <ul>
+          {seoCategories.map((cat) => (
+            <li key={cat.slug}>
+              <Link href={`/jobs/category/${cat.slug}`}>
+                {cat.name.en} Jobs
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   )
 }

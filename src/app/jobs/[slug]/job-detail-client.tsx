@@ -352,6 +352,42 @@ export function JobDetailClient({
               </div>
             </section>
           )}
+
+          {/* Browse more links */}
+          <section className="mt-10 pt-8 border-t border-gray-200">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/jobs?location=${encodeURIComponent(job.location)}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-full hover:bg-blue-100 transition-colors"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                {language === 'ckb'
+                  ? `هەموو ئیشەکانی ${job.location}`
+                  : language === 'ar'
+                    ? `جميع وظائف ${job.location}`
+                    : `All jobs in ${job.location}`}
+              </Link>
+              {job.category && (
+                <Link
+                  href={`/jobs?category=${encodeURIComponent(job.category)}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm rounded-full hover:bg-indigo-100 transition-colors"
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  {language === 'ckb'
+                    ? `هەموو ئیشەکانی ${job.category}`
+                    : language === 'ar'
+                      ? `جميع وظائف ${job.category}`
+                      : `All ${job.category} jobs`}
+                </Link>
+              )}
+              <Link
+                href="/jobs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-gray-200 transition-colors"
+              >
+                {language === 'ckb' ? 'هەموو ئیشەکان' : language === 'ar' ? 'جميع الوظائف' : 'Browse all jobs'}
+              </Link>
+            </div>
+          </section>
         </div>
       </main>
       <Footer />

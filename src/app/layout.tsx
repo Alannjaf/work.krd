@@ -5,6 +5,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from 'react-hot-toast'
+import { generateHreflangAlternates, getGSCVerificationCode } from '@/lib/seo'
 import '@/styles/globals.css'
 
 const inter = Inter({ 
@@ -63,12 +64,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  alternates: {
-    canonical: 'https://work.krd',
-  },
+  alternates: generateHreflangAlternates('/'),
   verification: {
-    // Add verification tokens when available
-    // google: 'your-google-verification-code',
+    google: getGSCVerificationCode(),
   },
 }
 

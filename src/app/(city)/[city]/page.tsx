@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCityBySlug, getAllCitySlugs, type CityData } from '@/lib/cities'
+import { generateHreflangAlternates } from '@/lib/seo'
 import { Header } from '@/components/landing/header'
 import { Footer } from '@/components/landing/footer'
 import { FileText, Sparkles, Download, CheckCircle2, Briefcase, MapPin, ArrowRight } from 'lucide-react'
@@ -32,9 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
       'Kurdish resume builder',
       'ATS resume Kurdistan',
     ],
-    alternates: {
-      canonical: `https://work.krd/${slug}`,
-    },
+    alternates: generateHreflangAlternates(`/${slug}`),
     openGraph: {
       title,
       description,

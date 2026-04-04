@@ -1,5 +1,6 @@
 import { getAllPosts } from '@/lib/blog'
 import type { Metadata } from 'next'
+import { generateHreflangAlternates } from '@/lib/seo'
 import { BlogPageClient } from './blog-page-client'
 
 export const dynamic = 'force-dynamic'
@@ -21,9 +22,7 @@ export const metadata: Metadata = {
     description:
       'Tips, guides, and insights on resume writing, career development, and job hunting.',
   },
-  alternates: {
-    canonical: 'https://work.krd/blog',
-  },
+  alternates: generateHreflangAlternates('/blog'),
 }
 
 export default async function BlogPage() {

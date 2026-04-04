@@ -2,6 +2,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCityBySlug, getAllCitySlugs, type CityData } from '@/lib/cities'
+import { getAllCategorySlugs, getCategoryBySlug, categories as allCategories } from '@/lib/categories'
+import { generateHreflangAlternates } from '@/lib/seo'
 import { prisma } from '@/lib/prisma'
 import { Header } from '@/components/landing/header'
 import { Footer } from '@/components/landing/footer'
@@ -34,9 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
       'Kurdistan jobs',
       'Iraq jobs',
     ],
-    alternates: {
-      canonical: `https://work.krd/jobs-in-${slug}`,
-    },
+    alternates: generateHreflangAlternates(`/jobs-in-${slug}`),
     openGraph: {
       title,
       description,
@@ -163,23 +163,45 @@ export default async function CityJobsPage({ params }: { params: Promise<{ city:
           </div>
         </section>
 
-        {/* Top Industries */}
+        {/* Top Categories in this City */}
         <section className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Top Hiring Industries in {city.name.en}
+            Top Job Categories in {city.name.en}
           </h2>
           <div className="flex flex-wrap gap-2">
-            {city.keyIndustries.en.map((industry, i) => (
-              <span
-                key={industry}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700"
-              >
-                {industry}
-                <span className="text-xs text-gray-400" dir="rtl">
-                  {city.keyIndustries.ckb[i]}
-                </span>
-              </span>
-            ))}
+            {allCategories
+              .filter((cat) => cat.topCities.includes(slug))
+              .map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/jobs/category/${cat.slug}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  {cat.name.en}
+                  <span className="text-xs text-gray-400" dir="rtl">
+                    {cat.name.ckb}
+                  </span>
+                </Link>
+              ))}
+            {/* Also show industries that don't have a category page */}
+            {city.keyIndustries.en
+              .filter((industry) => !allCategories.some((cat) => cat.topCities.includes(slug) && cat.name.en === industry))
+              .slice(0, 3)
+              .map((industry, i) => {
+                const ckbIndex = city.keyIndustries.en.indexOf(industry)
+                return (
+                  <span
+                    key={industry}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700"
+                  >
+                    {industry}
+                    <span className="text-xs text-gray-400" dir="rtl">
+                      {city.keyIndustries.ckb[ckbIndex]}
+                    </span>
+                  </span>
+                )
+              })}
           </div>
         </section>
 
@@ -302,8 +324,30 @@ export default async function CityJobsPage({ params }: { params: Promise<{ city:
               </div>
             </div>
 
-            {/* Cross-links to other cities */}
+            {/* Cross-links to categories */}
             <div className="mt-12 pt-8 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                Browse Jobs by Category
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {getAllCategorySlugs().map((catSlug) => {
+                  const cat = getCategoryBySlug(catSlug)
+                  if (!cat) return null
+                  return (
+                    <Link
+                      key={catSlug}
+                      href={`/jobs/category/${catSlug}`}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline px-3 py-1.5 bg-indigo-50 rounded-full"
+                    >
+                      {cat.name.en}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Cross-links to other cities */}
+            <div className="mt-8 pt-8 border-t border-gray-100">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 Jobs in Other Cities
               </h3>
