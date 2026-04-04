@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllCitySlugs } from '@/lib/cities';
+import { getAllCategorySlugs } from '@/lib/categories';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -74,6 +75,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const citySlug of getAllCitySlugs()) {
     sitemap.push({
       url: `${baseUrl}/jobs-in-${citySlug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    });
+  }
+
+  // Job category pages (programmatic SEO)
+  for (const catSlug of getAllCategorySlugs()) {
+    sitemap.push({
+      url: `${baseUrl}/jobs/category/${catSlug}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.85,
