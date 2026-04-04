@@ -70,6 +70,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  // City job listing pages (programmatic SEO)
+  for (const citySlug of getAllCitySlugs()) {
+    sitemap.push({
+      url: `${baseUrl}/jobs-in-${citySlug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    });
+  }
+
   // Blog posts (with real publishedAt dates)
   const posts = await prisma.blogPost.findMany({
     where: { published: true },
