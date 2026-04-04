@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { getAllCitySlugs } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -57,6 +58,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       });
     }
+  }
+
+  // City landing pages (programmatic SEO)
+  for (const citySlug of getAllCitySlugs()) {
+    sitemap.push({
+      url: `${baseUrl}/${citySlug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
   }
 
   // Blog posts (with real publishedAt dates)
