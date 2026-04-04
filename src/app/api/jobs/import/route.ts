@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
           contact: job.contact ? String(job.contact) : null,
           source: String(job.source || 'fjik.krd'),
           sourceUrl: job.source_url ? String(job.source_url) : null,
-          postedAt: job.posted_at ? new Date(String(job.posted_at)) : null,
+          postedAt: job.posted_at ? new Date(String(job.posted_at)) : new Date(),
           slug,
           isActive: true,
         },
