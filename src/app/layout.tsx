@@ -80,7 +80,7 @@ const organizationJsonLd = {
   url: 'https://work.krd',
   logo: {
     '@type': 'ImageObject',
-    url: 'https://work.krd/logo.svg',
+    url: 'https://work.krd/logo.png',
   },
   description:
     'Professional resume builder with AI assistance, supporting Kurdish, Arabic, and English languages. Digital services for businesses in Kurdistan.',
