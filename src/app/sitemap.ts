@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getAllCitySlugs } from '@/lib/cities';
 import { getAllCategorySlugs } from '@/lib/categories';
+import { getAllServiceSlugs, bestServiceCities } from '@/lib/best-services';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -89,6 +90,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.85,
     });
+  }
+
+  // "Best X in City" pages (programmatic SEO)
+  for (const serviceSlug of getAllServiceSlugs()) {
+    for (const citySlug of bestServiceCities) {
+      sitemap.push({
+        url: `${baseUrl}/best/${serviceSlug}/${citySlug}`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      });
+    }
   }
 
   // Blog posts (with real publishedAt dates)
