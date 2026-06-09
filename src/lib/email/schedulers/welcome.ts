@@ -1,16 +1,16 @@
 /**
  * Welcome email series scheduler.
  *
- * The welcome series has 4 steps (Day 0, 2, 7, 14). Because the EmailJob table
- * has a unique constraint on (userId, campaign, status), only one PENDING job
- * per campaign per user can exist at a time. The series works as a chain:
+ * The welcome series has 4 steps (Day 0, 2, 7, 14). The schedulers keep at most
+ * one PENDING job per (user, campaign) — dedup is enforced in code (look for an
+ * existing PENDING job before creating). The series works as a chain:
  *
  *   1. scheduleWelcomeSeries() creates the Day 0 PENDING job
  *   2. The cron processor sends it and marks it SENT
  *   3. The processor calls scheduleNextWelcomeStep() to create Day 2
  *   4. Repeat until all 4 steps are sent
  *
- * Both functions use upsert for idempotency — safe to call multiple times.
+ * Both functions are idempotent — safe to call multiple times.
  */
 
 import { prisma } from '@/lib/prisma'
@@ -48,16 +48,14 @@ export async function scheduleWelcomeSeries(userId: string) {
 
   const firstStep = WELCOME_STEPS[0]
 
-  const job = await prisma.emailJob.upsert({
-    where: {
-      unique_pending_campaign: {
-        userId,
-        campaign: CAMPAIGN,
-        status: 'PENDING',
-      },
-    },
-    update: {}, // Already exists — no-op
-    create: {
+  // Idempotent: reuse an existing PENDING welcome job, else create the Day 0 job.
+  const existing = await prisma.emailJob.findFirst({
+    where: { userId, campaign: CAMPAIGN, status: 'PENDING' },
+  })
+  if (existing) return existing
+
+  return prisma.emailJob.create({
+    data: {
       userId,
       campaign: CAMPAIGN,
       status: 'PENDING',
@@ -70,8 +68,6 @@ export async function scheduleWelcomeSeries(userId: string) {
       },
     },
   })
-
-  return job
 }
 
 /**
@@ -116,16 +112,14 @@ export async function scheduleNextWelcomeStep(
     scheduledAt.setTime(now.getTime())
   }
 
-  const job = await prisma.emailJob.upsert({
-    where: {
-      unique_pending_campaign: {
-        userId,
-        campaign: CAMPAIGN,
-        status: 'PENDING',
-      },
-    },
-    update: {}, // Already exists — no-op
-    create: {
+  // Idempotent: reuse an existing PENDING welcome job, else create the next step.
+  const existing = await prisma.emailJob.findFirst({
+    where: { userId, campaign: CAMPAIGN, status: 'PENDING' },
+  })
+  if (existing) return existing
+
+  return prisma.emailJob.create({
+    data: {
       userId,
       campaign: CAMPAIGN,
       status: 'PENDING',
@@ -138,8 +132,6 @@ export async function scheduleNextWelcomeStep(
       },
     },
   })
-
-  return job
 }
 
 /**

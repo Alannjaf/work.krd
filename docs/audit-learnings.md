@@ -297,3 +297,9 @@ const mammoth = (await import('mammoth')).default
 ### Commit Only, Wait for "push"
 **Rule**: Netlify auto-builds on push (20 deploys/month limit)
 **Why**: Avoid wasting build quota on WIP commits. Alan controls when to deploy.
+
+## Email System (EmailJob queue)
+
+### Never put a full `@@unique([userId, campaign, status])` on a job-queue table
+**Rule**: Dedup *active* jobs in code (find an existing PENDING row before create) — not via a unique constraint that spans terminal statuses.
+**Why**: A unique on `(userId, campaign, status)` permits only ONE row per status. When a job transitions `PENDING→SENT` and a prior `SENT` row already exists for that `(user, campaign)` — repeat re-engagement, or welcome-series step 2+ — the status UPDATE violates the constraint and throws. The email was already delivered via Resend, so the job is mis-marked `FAILED` (inflated failure metrics) and, for the welcome chain, `scheduleNextWelcomeStep` never runs → Day 7/14 are never scheduled. Fixed 2026-06-09: dropped the constraint (now a plain `@@index([userId, campaign, status])`); the schedulers dedup PENDING in code. Apply to the DB with `npx prisma db push`.

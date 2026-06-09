@@ -221,7 +221,13 @@ model EmailJob {
   updatedAt   DateTime       @updatedAt
   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, campaign, status], name: "unique_pending_campaign")
+  // NOT unique on (userId, campaign, status): a user legitimately accumulates
+  // multiple terminal (SENT/FAILED/CANCELLED) rows per campaign over time
+  // (repeat re-engagement, the multi-step welcome series). The old
+  // @@unique([userId, campaign, status]) blocked the PENDING→SENT transition
+  // whenever a prior SENT row existed → jobs mis-marked FAILED + welcome chain
+  // breaking after Day 0. Dedup of PENDING jobs is now enforced in the schedulers.
+  @@index([userId, campaign, status])
   @@index([status, scheduledAt])
   @@index([userId])
   @@index([campaign])
@@ -298,25 +304,25 @@ enum ReferralStatus {
 }
 
 model BlogPost {
-  id              String   @id @default(cuid())
-  slug            String   @unique
+  id              String    @id @default(cuid())
+  slug            String    @unique
   title           String
-  excerpt         String   @default("")
-  content         String   // markdown content
-  author          String   @default("Work.krd Team")
-  lang            String   @default("en") // en, ar, ckb
-  tags            String[] @default([])
-  published       Boolean  @default(false)
+  excerpt         String    @default("")
+  content         String // markdown content
+  author          String    @default("Work.krd Team")
+  lang            String    @default("en") // en, ar, ckb
+  tags            String[]  @default([])
+  published       Boolean   @default(false)
   publishedAt     DateTime?
   metaDescription String?
-  metaKeywords    String[] @default([])
+  metaKeywords    String[]  @default([])
   featuredImage   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Job {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   titleEn     String?
   titleKu     String?
@@ -324,18 +330,18 @@ model Job {
   company     String
   location    String
   category    String?
-  jobType     String   @default("Full Time")
+  jobType     String    @default("Full Time")
   salary      String?
-  description String?  @db.Text
+  description String?   @db.Text
   contact     String?
-  source      String   @default("fjik.krd")
+  source      String    @default("fjik.krd")
   sourceUrl   String?
   postedAt    DateTime?
-  isActive    Boolean  @default(true)
-  slug        String   @unique
+  isActive    Boolean   @default(true)
+  slug        String    @unique
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([location])
   @@index([category])

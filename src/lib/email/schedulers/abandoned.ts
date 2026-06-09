@@ -116,16 +116,14 @@ export async function scheduleAbandonedResumeEmail(
   resumeId: string,
   resumeTitle: string
 ) {
-  const job = await prisma.emailJob.upsert({
-    where: {
-      unique_pending_campaign: {
-        userId,
-        campaign: CAMPAIGN,
-        status: 'PENDING',
-      },
-    },
-    update: {}, // Already exists — no-op
-    create: {
+  // Idempotent: reuse an existing PENDING job for this user+campaign, else create one.
+  const existing = await prisma.emailJob.findFirst({
+    where: { userId, campaign: CAMPAIGN, status: 'PENDING' },
+  })
+  if (existing) return existing
+
+  return prisma.emailJob.create({
+    data: {
       userId,
       campaign: CAMPAIGN,
       status: 'PENDING',
@@ -136,6 +134,4 @@ export async function scheduleAbandonedResumeEmail(
       },
     },
   })
-
-  return job
 }
